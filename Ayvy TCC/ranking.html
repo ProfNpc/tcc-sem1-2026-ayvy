@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AYVY | Ranking de Visibilidade</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --ayvy-purple: #b06edc;
+        --dark-bg: #0d0d0f;
+        --card-bg: #1a1a1e;
+        --border-color: #2d2d35;
+        --text-gray: #8e8e93;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", sans-serif;
+      }
+
+      body {
+        background-color: var(--dark-bg);
+        color: #ffffff;
+      }
+
+      /* --- NAVBAR --- */
+      .navbar {
+        background: rgba(26, 26, 30, 0.95);
+        padding: 15px 8%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        border-bottom: 1px solid var(--border-color);
+        backdrop-filter: blur(12px);
+        z-index: 1000;
+      }
+
+      .nav-left-group {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        position: relative;
+      }
+
+      .logo {
+        font-weight: 800;
+        font-size: 24px;
+        color: #fff;
+        text-decoration: none;
+        letter-spacing: 1.5px;
+      }
+
+      .logo span {
+        color: var(--ayvy-purple);
+      }
+
+      .nav-right-group {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn-action {
+        background: var(--ayvy-purple);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 13px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-outline {
+        background: transparent;
+        border: 1px solid var(--ayvy-purple);
+        color: var(--ayvy-purple);
+      }
+
+      .btn-action:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.2);
+      }
+
+      /* --- MENU DROPDOWN --- */
+      .hamburguer-icon {
+        font-size: 20px;
+        cursor: pointer;
+        color: var(--ayvy-purple);
+        padding: 5px;
+      }
+
+      .dropdown-box {
+        position: absolute;
+        top: 30px;
+        left: -30px;
+        background: #1c1c21;
+        min-width: 220px;
+        border-radius: -12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: 0.3s ease;
+      }
+
+      /* Hover no Desktop */
+      .nav-left-group:hover .dropdown-box,
+      .dropdown-box.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      .dropdown-box ul {
+        list-style: none;
+        padding: 10px 0;
+      }
+      .dropdown-box li {
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #ccc;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      .dropdown-box li i {
+        color: var(--ayvy-purple);
+      }
+      .dropdown-box li:hover {
+        background: rgba(176, 110, 220, 0.1);
+        color: var(--ayvy-purple);
+      }
+
+      /* --- CONTEÚDO --- */
+      .ranking-wrapper {
+        padding: 130px 8% 60px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .ranking-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .ranking-header p {
+        color: var(--text-gray);
+      }
+
+      .table-container {
+        background: var(--card-bg);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        margin-top: 30px;
+      }
+
+      .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 700px;
+      }
+
+      th {
+        text-align: left;
+        padding: 20px;
+        color: var(--text-gray);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      td {
+        padding: 20px;
+        border-bottom: 1px solid #25252b;
+        vertical-align: middle;
+      }
+
+      .pos-num {
+        font-weight: 800;
+        color: #444;
+        width: 60px;
+      }
+
+      .row-highlight {
+        background: rgba(176, 110, 220, 0.04);
+      }
+      .row-highlight .pos-num {
+        color: var(--ayvy-purple) !important;
+      }
+
+      .star-icon {
+        color: #daa520;
+        /* margin-right: 8px; */
+      }
+
+      .store-profile {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .store-profile img {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        object-fit: cover;
+      }
+
+      .views-count {
+        color: var(--ayvy-purple);
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+
+      .status-pill {
+        background: rgba(176, 110, 220, 0.1);
+        color: var(--ayvy-purple);
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        border: 1px solid rgba(176, 110, 220, 0.2);
+      }
+
+      @media (max-width: 768px) {
+        .navbar {
+          padding: 15px 5%;
+        }
+        .btn-action span {
+          display: none;
+        } /* Deixa só ícone no mobile */
+        .ranking-header h1 {
+          font-size: 2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-left-group" id="menuArea">
+        <i class="fas fa-bars hamburguer-icon" onclick="toggleMobileMenu()"></i>
+        <a href="web.html" class="logo"><span>AYVY</span></a>
+
+        <div class="dropdown-box" id="menuDrop">
+          <ul>
+            <li onclick="location.href = 'web.html'">
+              <i class="fas fa-home"></i> Início
+            </li>
+            <li><i class="fas fa-search"></i> Pesquisar</li>
+            <li><i class="fas fa-trophy"></i> Ranking</li>
+            <li><i class="fas fa-user-circle"></i> Perfil</li>
+            <li><i class="fas fa-info-circle"></i> Sobre</li>
+          </ul>
+        </div>
+      </div>
+      <div class="nav-right-group">
+        <a href="web.html" class="btn-action btn-outline"
+          ><i class="fas fa-arrow-left"></i> <span>Voltar</span></a
+        >
+        <a href="perfil.html" class="btn-action"
+          ><i class="fas fa-user"></i> <span>Perfil</span></a
+        >
+      </div>
+    </nav>
+
+    <main class="ranking-wrapper">
+      <header class="ranking-header">
+        <h1>Ranking de Visibilidade Mensal</h1>
+        <p>Lojas parceiras com maior engajamento (+10k views).</p>
+      </header>
+
+      <div class="table-container">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Perfil Comercial</th>
+                <th>Visualizações</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ranking-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      function toggleMobileMenu() {
+        if (window.innerWidth < 1024) {
+          document.getElementById("menuDrop").classList.toggle("active");
+        }
+      }
+
+      // Fecha o menu ao clicar fora
+      document.addEventListener("click", (e) => {
+        if (!document.getElementById("menuArea").contains(e.target)) {
+          document.getElementById("menuDrop").classList.remove("active");
+        }
+      });
+
+      const lojas = [
+        {
+          nome: "rafaele_fashion",
+          views: 125900,
+          img: "https://i.pravatar.cc/100?u=2",
+        },
+        {
+          nome: "livre_store",
+          views: 98450,
+          img: "https://i.pravatar.cc/100?u=1",
+        },
+        {
+          nome: "urban_vibes",
+          views: 15400,
+          img: "https://i.pravatar.cc/100?u=7",
+        },
+        {
+          nome: "itb_moda",
+          views: 12100,
+          img: "https://i.pravatar.cc/100?u=5",
+        },
+        { nome: "loja_oculta", views: 500, img: "" }, // Não vai aparecer (<10k)
+      ];
+
+      function carregar() {
+        const body = document.getElementById("ranking-body");
+
+        // Filtra > 10.000 e ordena
+        const filtrados = lojas
+          .filter((l) => l.views > 10000)
+          .sort((a, b) => b.views - a.views);
+
+        body.innerHTML = filtrados
+          .map((loja, i) => {
+            const isTop = i < 3;
+            const rowClass = isTop ? 'class="row-highlight"' : "";
+            // Criamos a variável da estrela aqui
+            const star = isTop ? `<i class="fas fa-star star-icon"></i>` : "";
+
+            return `
+                    <tr ${rowClass}>
+                        <td class="pos-num">${i + 1}º</td>
+                        <td>
+                            <div class="store-profile">
+                                <img src="${loja.img || "https://via.placeholder.com/40"}" alt="logo">
+                                <span style="font-weight: 600;">${loja.nome}</span>
+                            </div>
+                        </td>
+                        <td class="views-count">${loja.views.toLocaleString("pt-BR")}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                ${star} <span class="status-pill">VERIFICADO</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+          })
+          .join("");
+      }
+
+      window.onload = carregar;
+    </script>
+  </body>
+</html>

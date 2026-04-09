@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="login.css" />
+    <title>Login da AYVY</title>
+  </head>
+  <body>
+    <!-- Container principal do formulário de login -->
+    <main class="container" style="display: none">
+      <form>
+        <h1>Login AYVY</h1>
+
+        <!-- Campo de email/usuário -->
+        <div class="input-box">
+          <input placeholder="Usuário" type="email" />
+          <i class="bx bxs-user"></i>
+        </div>
+
+        <!-- Campo de senha -->
+        <div class="input-box">
+          <input placeholder="Senha" type="password" />
+          <i class="bx bxs-lock-alt"></i>
+        </div>
+
+        <!-- Lembrar senha e link de esqueci senha -->
+        <div class="remember-forgot">
+          <label>
+            <input type="checkbox" />
+            Lembrar Senha
+          </label>
+          <a class="forgot-link" href="esqueci-senha.html"
+            >Esqueci minha senha</a
+          >
+        </div>
+
+        <!-- Botão de login -->
+        <button type="submit" class="login">Login</button>
+
+        <!-- Link de cadastro -->
+        <div class="resgister-link">
+          <p>Não tem uma conta? <a href="cadastro.html">Cadastre-se</a></p>
+        </div>
+
+        <!-- Botão para voltar à página inicial -->
+        <a class="back-home" href="web.html">Voltar para a tela inicial</a>
+      </form>
+    </main>
+    <script>
+      // exibe .container após 5s com transição suave
+      setTimeout(() => {
+        const el = document.querySelector(".container");
+        if (!el) return;
+        el.style.display = "block";
+        // configura estado inicial para a transição
+        el.style.opacity = "0";
+        el.style.transform = "translateY(10px)";
+        el.style.transition = "opacity 400ms ease, transform 400ms ease";
+        // força reflow para garantir que a transição ocorra
+        void el.offsetWidth;
+        // inicia a animação no próximo frame
+        requestAnimationFrame(() => {
+          el.style.opacity = "1";
+          el.style.transform = "translateY(0)";
+        });
+      }, 100);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,203 @@
+/* ============================================================
+   ESTILOS CSS (Mantendo o padrão da marca AYVY)
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+
+/* Configurações Globais */
+* {
+  margin: 0; /* Remove margens padrão */
+  padding: 0; /* Remove preenchimentos padrão */
+  box-sizing: border-box; /* Inclui bordas no cálculo de tamanho */
+  font-family: "Montserrat", sans-serif; /* Aplica a fonte oficial */
+}
+
+/* Estilo do Fundo (Igual ao Login) */
+body {
+  display: flex; /* Centraliza o conteúdo */
+  justify-content: center; /* Centraliza horizontalmente */
+  align-items: center; /* Centraliza verticalmente */
+  min-height: 100vh; /* Garante altura total da tela */
+  background: url(img/imagem-ayvy-clara.png); /* Fundo padrão */
+  background-size: cover; /* Imagem cobre a tela toda */
+  background-position: center; /* Centraliza a imagem de fundo */
+  padding: 20px 0; /* Garante espaço em dispositivos pequenos */
+}
+
+/* Ajuste para Fundo Mobile */
+@media screen and (max-width: 480px) {
+  body {
+    background-image: url(img/fundo-celular-ayvy.png);
+    background-position: top center;
+  }
+}
+
+/* Container da Janela (Glassmorphism) */
+.container {
+  width: min(420px, 100%); /* Largura máxima, mas responsiva */
+  max-width: 420px;
+  background-color: transparent; /* Fundo transparente para o blur aparecer */
+  border: 2px solid rgba(255, 255, 255, 0.2); /* Borda fina branca translúcida */
+  border-radius: 10px; /* Cantos levemente arredondados */
+  color: #fff; /* Texto em branco */
+  padding: 30px 40px; /* Espaçamento interno */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Sombra suave ao redor */
+  backdrop-filter: blur(15px); /* Efeito de vidro fosco */
+}
+
+/* Título Principal */
+.container h1 {
+  font-size: 30px; /* Tamanho do título */
+  text-align: center; /* Centraliza o texto */
+  margin-bottom: 10px; /* Espaço abaixo do título */
+}
+
+/* Texto de Instrução */
+.container p.instrucao {
+  text-align: center; /* Centraliza o texto informativo */
+  font-size: 14px; /* Tamanho menor para a instrução */
+  margin-bottom: 20px; /* Espaço antes dos campos */
+  color: #efefef; /* Cinza bem claro */
+}
+
+/* Caixa de Input (Campos de Senha) */
+.input-box {
+  position: relative; /* Permite posicionar o ícone dentro */
+  width: 100%; /* Ocupa a largura total */
+  height: 50px; /* Altura do campo */
+  margin: 25px 0; /* Espaçamento entre os campos */
+}
+
+/* Estilo do Campo de Digitação */
+.input-box input {
+  width: 100%; /* Ocupa a largura da caixa */
+  height: 100%; /* Ocupa a altura da caixa */
+  background-color: transparent; /* Fundo invisível */
+  border: 2px solid rgba(0, 0, 0, 0.2); /* Borda escura suave */
+  border-radius: 40px; /* Formato arredondado (padrão AYVY) */
+  outline: none; /* Remove o contorno azul ao clicar */
+  font-size: 16px; /* Tamanho da letra digitada */
+  color: #fff; /* Cor da letra branca */
+  padding: 20px 45px 20px 20px; /* Espaço para o ícone na direita */
+}
+
+/* Cor do texto de exemplo (Placeholder) */
+.input-box input::placeholder {
+  color: #c5c5c5;
+}
+
+/* Ícone dentro do campo */
+.input-box i {
+  position: absolute; /* Fixa o ícone */
+  right: 20px; /* Afasta da borda direita */
+  top: 50%; /* Centraliza verticalmente */
+  transform: translateY(-50%); /* Ajuste fino de centralização */
+  font-size: 20px; /* Tamanho do ícone */
+}
+
+/* Opções de Checkbox (Lembrar Senha) */
+.remember-forgot {
+  display: flex; /* Alinhamento flexível */
+  justify-content: flex-start; /* Alinha à esquerda */
+  margin: -10px 0 20px; /* Ajuste de margem */
+}
+
+.remember-forgot label {
+  font-size: 14px; /* Tamanho do texto de lembrar */
+  cursor: pointer; /* Cursor de clique */
+}
+
+.remember-forgot label input {
+  accent-color: #fff; /* Cor do check em branco */
+  margin-right: 10px; /* Espaço entre check e texto */
+}
+
+/* Botão Salvar (Estilo Principal) */
+.btn-save {
+  width: 100%; /* Largura total */
+  height: 50px; /* Altura do botão */
+  background-color: #fff; /* Fundo branco sólido */
+  border: none; /* Sem bordas iniciais */
+  border-radius: 40px; /* Bordas redondas */
+  cursor: pointer; /* Mãozinha ao passar o mouse */
+  font-size: 16px; /* Tamanho da letra */
+  color: #333; /* Letra escura para contraste */
+  font-weight: 600; /* Negrito */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra leve */
+  transition: 0.3s; /* Suaviza a animação de hover */
+}
+
+/* Efeito de passar o mouse no botão */
+.btn-save:hover {
+  background-color: transparent; /* Fica transparente */
+  border: 2px solid rgba(255, 255, 255, 0.2); /* Aparece borda fina */
+  color: #fff; /* Letra muda para branco */
+}
+
+/* Link para Voltar ao Login */
+.back-login {
+  display: block; /* Transforma em bloco para centralizar */
+  width: 100%; /* Largura total */
+  text-align: center; /* Centraliza o texto */
+  margin-top: 25px; /* Espaço acima do link */
+  color: #fff; /* Cor branca */
+  text-decoration: none; /* Sem sublinhado */
+  font-size: 14px; /* Tamanho da letra */
+  font-weight: 600; /* Negrito */
+  padding: 10px; /* Área de toque */
+  border-radius: 40px; /* Bordas redondas */
+  border: 1px solid rgba(255, 255, 255, 0.4); /* Borda sutil */
+  background: rgba(255, 255, 255, 0.05); /* Fundo levemente visível */
+}
+
+.back-login:hover {
+  background: rgba(255, 255, 255, 0.15); /* Escurece um pouco no hover */
+  text-decoration: underline; /* Sublinha ao passar o mouse */
+}
+
+/* Ajustes Responsivos (Mobile) */
+@media screen and (max-width: 480px) {
+  body {
+    padding: 20px 0;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    width: min(95%, 360px); /* Ocupa quase toda a largura no celular */
+    max-width: 360px;
+    padding: 24px 20px; /* Reduz padding interno */
+    margin: 20px auto;
+  }
+
+  .container h1 {
+    font-size: 24px;
+  }
+
+  .container p.instrucao {
+    font-size: 13px;
+  }
+
+  .input-box {
+    margin: 18px 0;
+  }
+
+  .input-box input {
+    font-size: 15px;
+    padding: 18px 42px 18px 18px;
+  }
+
+  .input-box i {
+    right: 16px;
+    font-size: 18px;
+  }
+
+  .btn-save {
+    height: 48px;
+    font-size: 15px;
+  }
+
+  .back-login {
+    padding: 12px;
+    font-size: 14px;
+  }
+}

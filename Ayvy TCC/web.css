@@ -1,0 +1,895 @@
+/* ============================================================
+   CONFIGURAÇÕES GERAIS DE CORES E VARIÁVEIS DO PROJETO
+   ============================================================ */
+
+/* Define as cores padrão que serão usadas em todo o projeto */
+:root {
+  --ayvy-purple: #b06edc; /* Variável do Roxo AYVY: Usada em botões, logos e destaques */
+  --dark: #191b23; /* Variável do Preto Escuro: Usada no rodapé e botões de busca */
+}
+
+/* Estilização da estrutura principal da página */
+body {
+  margin: 0; /* Remove as margens laterais padrão do navegador */
+  font-family: "Segoe UI", sans-serif; /* Define a fonte padrão do sistema */
+  overflow-x: hidden; /* Evita que a página balance para os lados no celular */
+  background: #fff; /* Define a cor de fundo do site como branco */
+}
+
+/* ============================================================
+   NAVBAR FIXA (BARRA DE NAVEGAÇÃO SUPERIOR)
+   ============================================================ */
+
+/* .navbar-top-fixed: A barra branca que fica presa no topo do site */
+.navbar-top-fixed {
+  position: fixed; /* Trava a barra no topo para ela não sumir ao rolar */
+  top: 0; /* Cola a barra no limite superior da tela */
+  width: 100%; /* Faz a barra ocupar toda a largura da esquerda à direita */
+  height: 70px; /* Define a altura exata da barra de navegação */
+  background: white; /* Define a cor branca de fundo da barra */
+  display: flex; /* Ativa o modo de alinhamento flexível para os itens internos */
+  justify-content: space-between; /* Separa a Logo dos botões de Login, jogando cada um para um canto */
+  align-items: center; /* Centraliza verticalmente o conteúdo dentro da altura de 70px */
+  padding: 0 40px; /* Dá um respiro de 40px nas laterais para não grudar na tela */
+  z-index: 1000; /* Garante que a barra passe por cima de banners e imagens */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Cria aquela sombra fininha embaixo da barra */
+}
+
+/* .mobile-only: Classe usada para identificar elementos que só aparecem no celular */
+.navbar-top-fixed.mobile-only {
+  display: none; /* No computador, essa barra mobile fica escondida */
+}
+
+/* Regras de adaptação para telas de celular (até 768px) */
+@media screen and (max-width: 768px) {
+  /* Esconde a barra de computador quando entra no modo celular */
+  .navbar-top-fixed {
+    display: none;
+  }
+
+  /* Exibe a barra configurada especificamente para celulares */
+  .navbar-top-fixed.mobile-only {
+    display: flex; /* Ativa a barra mobile */
+    align-items: center; /* Centraliza os itens verticalmente no mobile */
+    justify-content: center; /* Centraliza o conteúdo no meio da tela do celular */
+    gap: 12px; /* Cria um espaço entre a logo e o ícone de menu */
+    height: 60px; /* Altura menor da barra para telas de celular */
+    padding: 0 15px; /* Reduz o preenchimento lateral para ganhar espaço */
+  }
+
+  /* .nav-left: Bloco que segura o Hambúrguer e a Logo no mobile */
+  .navbar-top-fixed.mobile-only .nav-left {
+    width: 100%; /* Ocupa toda a largura disponível na esquerda */
+    display: flex; /* Alinha hambúrguer e logo lado a lado */
+    align-items: center; /* Centraliza os dois na mesma linha */
+    gap: 10px; /* Espaço entre o hambúrguer e a escrita AYVY */
+    padding: 0; /* Zera os espaçamentos extras */
+  }
+
+  /* .nav-right: Remove os botões de login do topo quando estiver no celular */
+  .navbar-top-fixed.mobile-only .nav-right {
+    display: none;
+  }
+
+  /* .logo-brand: Ajuste do tamanho da marca AYVY para telas pequenas */
+  .navbar-top-fixed.mobile-only .logo-brand {
+    font-size: 1.1rem; /* Diminui a letra da logo no celular */
+    margin-right: 0; /* Remove a distância da direita que tinha no PC */
+  }
+
+  /* .nav-link-top: Esconde os links (Sobre, Suporte) do topo no mobile */
+  .navbar-top-fixed.mobile-only .nav-link-top {
+    display: none;
+  }
+
+  /* .menu-container-sensor: Desativa o efeito de abrir menu apenas passando o mouse no celular */
+  .navbar-top-fixed.mobile-only .menu-container-sensor:hover .gaveta-flutuante {
+    opacity: 1; /* Mantém a visibilidade controlada pelo clique */
+    pointer-events: none; /* Impede que o toque "fantasma" abra o menu sem querer */
+  }
+
+  /* .btn-round: Ajuste de tamanho dos botões redondos no menu mobile */
+  .navbar-top-fixed.mobile-only .btn-round {
+    padding: 6px 15px; /* Diminui o preenchimento para o botão caber no menu lateral */
+    font-size: 12px; /* Letra menor para os botões do celular */
+  }
+
+  /* .gaveta-flutuante: O menu lateral que "corre" da esquerda no celular */
+  .navbar-top-fixed.mobile-only .gaveta-flutuante {
+    position: fixed; /* Prende o menu na tela inteira do celular */
+    top: 0; /* Começa no topo absoluto */
+    left: -100%; /* Esconde o menu totalmente para fora da lateral esquerda */
+    width: 80vw; /* Define que o menu ocupa 80% da largura do celular */
+    max-width: 280px; /* Não deixa o menu mobile ficar gigante em tablets */
+    height: 100vh; /* Faz o menu ter a altura total da tela do aparelho */
+    background: white; /* Fundo branco para o menu lateral */
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.14); /* Sombra na direita para destacar do site */
+    transition:
+      transform 0.3s ease,
+      opacity 0.3s ease; /* Animação de deslizar e aparecer */
+    transform: translateX(-100%); /* Posição inicial (escondido) */
+    opacity: 0; /* Começa invisível */
+    pointer-events: none; /* Desativa cliques enquanto o menu estiver fechado */
+    padding: 20px; /* Espaço interno para os itens não grudarem na borda */
+    z-index: 1001; /* Fica acima da barra de navegação principal */
+    display: flex; /* Ativa o modo de empilhamento de itens */
+    flex-direction: column; /* Coloca um link abaixo do outro no menu */
+  }
+
+  /* .gaveta-flutuante.open: Classe que o JS ativa para abrir o menu no mobile */
+  .navbar-top-fixed.mobile-only .gaveta-flutuante.open {
+    transform: translateX(0); /* Faz o menu deslizar para dentro da tela */
+    opacity: 1; /* Torna o menu visível */
+    pointer-events: auto; /* Permite que o usuário clique nos links */
+  }
+
+  /* .gaveta-footer: A área final do menu lateral (onde fica o Sair/Botões) */
+  .navbar-top-fixed.mobile-only .gaveta-footer,
+  .gaveta-footer {
+    margin-top: auto; /* Empurra este bloco para o final do menu */
+    position: sticky; /* Fixa no rodapé do menu lateral */
+    bottom: 0; /* Alinha na base */
+    background: white; /* Fundo branco para não transparecer itens atrás */
+    padding-top: 12px; /* Espaço acima da linha divisória */
+    border-top: 1px solid #eee; /* Linha cinza fina para separar do resto do menu */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* .gaveta-header: Cabeçalho interno do menu mobile */
+  .gaveta-header {
+    text-align: center; /* Centraliza a logo ou título no topo do menu */
+    margin-bottom: 20px; /* Espaço entre o topo e os links */
+  }
+
+  /* .logo-brand-mobile: A escrita da marca dentro do menu lateral */
+  .logo-brand-mobile {
+    font-weight: bold; /* Deixa o nome AYVY em negrito */
+    font-size: 24px; /* Tamanho da logo dentro do menu */
+    color: var(--ayvy-purple); /* Cor roxa característica da marca */
+  }
+
+  /* .mobile-buttons: Container dos botões de Login/Cadastrar no mobile */
+  .mobile-buttons {
+    margin-top: 20px; /* Afasta os botões dos links de cima */
+    display: flex; /* Alinhamento flexível */
+    flex-direction: column; /* Empilha os botões um sobre o outro */
+    gap: 10px; /* Espaço entre o botão de entrar e o de criar conta */
+    align-items: center; /* Centraliza os botões no menu */
+    width: 100%;
+  }
+
+  /* .mobile-buttons .btn-round: Centraliza o texto dos botões no mobile */
+  .mobile-buttons .btn-round {
+    text-align: center;
+    width: 100%;
+    max-width: 200px;
+  }
+}
+
+/* ============================================================
+   ESTILOS DOS ELEMENTOS INTERNOS DA NAVBAR
+   ============================================================ */
+
+/* .nav-left: Agrupa a Logo e o Menu Hambúrguer na esquerda */
+.nav-left {
+  display: flex; /* Coloca os itens em linha horizontal */
+  align-items: center; /* Centraliza verticalmente a logo e o ícone */
+}
+
+/* .menu-container-sensor: Área invisível que detecta o mouse para abrir o menu no PC */
+.menu-container-sensor {
+  position: relative; /* Permite que a janela suspensa se posicione em relação a ele */
+  margin-right: 20px; /* Espaço entre o hambúrguer e a marca AYVY */
+}
+
+/* .hamburguer-icon: O ícone de três barrinhas do menu */
+.hamburguer-icon {
+  font-size: 20px; /* Tamanho do ícone de menu */
+  cursor: pointer; /* Transforma a seta do mouse em "mãozinha" de link */
+  color: var(--dark); /* Cor preta definida nas variáveis */
+  padding: 5px; /* Aumenta a área de clique para facilitar o uso */
+}
+
+/* .gaveta-flutuante: A janela do menu suspenso que aparece no computador */
+.gaveta-flutuante {
+  position: absolute; /* Faz a janela flutuar abaixo do ícone */
+  top: 29px; /* Distância exata para alinhar com a base da navbar */
+  left: -10px; /* Alinhamento lateral para não cortar a sombra */
+  width: 220px; /* Largura da janelinha do menu suspenso */
+  background: white; /* Cor de fundo branca do menu */
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1); /* Sombra que dá efeito de objeto flutuando */
+  transition: 0.9s; /* Tempo suave (quase 1s) para o menu aparecer (fade-in) */
+  opacity: 0; /* Começa invisível por padrão */
+  pointer-events: none; /* Impede que o usuário clique no menu enquanto ele está invisível */
+  padding: 20px; /* Espaço interno para os links não grudarem na borda branca */
+}
+
+/* Efeito de Hover: Quando o mouse passa no sensor, a janela flutuante aparece */
+.menu-container-sensor:hover .gaveta-flutuante {
+  opacity: 1; /* Torna o menu 100% visível */
+  pointer-events: auto; /* Habilita o clique nos links */
+}
+
+/* Ajustes da Gaveta Mobile (Duplicado para garantir prioridade de estilo) */
+.navbar-top-fixed.mobile-only .gaveta-flutuante {
+  position: fixed; /* Trava o menu na lateral da tela do celular */
+  top: 0; /* Alinha no topo */
+  left: -300px; /* Esconde o menu 300px para fora da tela */
+  width: 100%; /* Faz o container ocupar a largura */
+  max-width: 280px; /* Limita a largura do menu lateral */
+  height: 100vh; /* Altura total do visor */
+  min-height: 100vh; /* Garante que não encolha */
+  bottom: 0; /* Alinha na base */
+  box-sizing: border-box; /* Garante que o padding não aumente o tamanho total */
+  margin: 0; /* Remove margens externas */
+  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.15); /* Sombra lateral no celular */
+  background: #fff; /* Fundo branco */
+  opacity: 1; /* Mantém opacidade total quando aberto */
+  pointer-events: auto; /* Habilita o toque */
+  transition: left 0.25s ease; /* Velocidade da animação de deslizar lateral */
+  padding: 20px; /* Preenchimento interno do menu */
+  z-index: 1002; /* Fica por cima de tudo no mobile */
+  display: flex; /* Ativa layout flex */
+  flex-direction: column; /* Organiza links em pé */
+  justify-content: flex-start; /* Alinha o conteúdo no início (topo) do menu */
+  overflow-y: auto; /* Se tiver muitos links, permite rolar o menu para baixo */
+  overflow-x: hidden; /* Bloqueia rolagem lateral dentro do menu */
+}
+
+/* Estado de Aberto: Faz o menu entrar na tela */
+.navbar-top-fixed.mobile-only .gaveta-flutuante.open {
+  left: 0;
+}
+
+/* .mobile-overlay: A camada escura que cobre o site quando o menu mobile abre */
+.mobile-overlay {
+  position: fixed; /* Prende na tela inteira */
+  inset: 0; /* Cobre os 4 cantos (top, bottom, left, right) */
+  background: rgba(0, 0, 0, 0.4); /* Cor preta com 40% de transparência */
+  opacity: 0; /* Começa invisível */
+  visibility: hidden; /* Fica totalmente desativado para o navegador */
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease; /* Transição rápida do fundo escuro */
+  z-index: 1000; /* Fica entre o menu e o site */
+}
+
+/* .mobile-overlay.active: Ativa o fundo escuro via JavaScript */
+.mobile-overlay.active {
+  opacity: 1; /* Torna o fundo escuro visível */
+  visibility: visible; /* Ativa a interação */
+}
+
+/* Logout confirmation modal */
+.logout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+  z-index: 1050;
+}
+
+.logout-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.logout-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  width: min(320px, 90%);
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0.2s ease;
+  z-index: 1055;
+  text-align: center;
+}
+
+.logout-modal.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.logout-modal p {
+  margin: 0 0 20px;
+  font-size: 1rem;
+  color: #222;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.logout-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.logout-actions .btn-round {
+  width: auto;
+  min-width: 120px;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.logout-actions .btn-logout.confirm {
+  background: #f2f2f2;
+  color: #333;
+  border: none;
+}
+
+.logout-actions .btn-round:not(.btn-logout) {
+  background: var(--ayvy-purple);
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.logout-actions .btn-round:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* .gaveta-header: Alinhamento da logo e botão de fechar no topo do menu mobile */
+.gaveta-header {
+  display: flex; /* Coloca logo e ícone de fechar na mesma linha */
+  justify-content: space-between; /* Joga a logo para um lado e o 'X' para o outro */
+  align-items: center; /* Centraliza os dois verticalmente */
+  margin-bottom: 20px; /* Espaço antes de começar a lista de links */
+}
+
+/* .logo-brand-mobile: Estilo do nome AYVY no topo do menu do celular */
+.logo-brand-mobile {
+  font-weight: bold; /* Letra grossa */
+  font-size: 1.4rem; /* Tamanho médio/grande da fonte */
+  color: var(--ayvy-purple); /* Aplica o roxo da marca */
+}
+
+/* .close-menu: O ícone de fechar (X) dentro do menu mobile */
+.close-menu {
+  cursor: pointer; /* Mostra que é clicável */
+  color: #333; /* Cor cinza escuro para o ícone */
+}
+
+/* .nav-links: A lista de links (naves) dentro da janela mobile */
+.navbar-top-fixed.mobile-only .nav-links {
+  display: flex; /* Alinha os itens da lista */
+  flex-direction: column; /* Coloca um link embaixo do outro */
+  gap: 12px; /* Espaçamento entre cada linha de link */
+  padding: 0; /* Remove o recuo padrão da lista */
+}
+
+/* .nav-links li: Cada item individual da lista de links mobile */
+.navbar-top-fixed.mobile-only .nav-links li {
+  list-style: none; /* Tira a bolinha preta da lista */
+  font-size: 1rem; /* Tamanho de leitura confortável */
+  color: #333; /* Cor do texto do link */
+  width: 100%; /* Ocupa a largura total da janelinha */
+  white-space: nowrap; /* Impede que o texto quebre em duas linhas */
+  overflow: hidden; /* Corta o texto que for maior que o menu */
+  text-overflow: ellipsis; /* Se o nome for muito grande, coloca "..." no fim */
+}
+
+/* .nav-right: Esconde a área de login da barra mobile (pois ela vai para dentro do menu) */
+.navbar-top-fixed.mobile-only .nav-right {
+  display: none;
+}
+
+/* .mobile-buttons: O bloco de botões de Login e Cadastro no fim do menu mobile */
+.mobile-buttons {
+  margin-top: 18px; /* Espaço entre a lista de links e os botões */
+  display: flex; /* Habilita flexbox */
+  flex-direction: column; /* Empilha os botões */
+  gap: 10px; /* Distância entre os botões */
+  padding-bottom: 20px; /* Espaço no final para não grudar na borda do menu */
+}
+
+/* .mobile-buttons .btn-round: Estilo específico dos botões arredondados no celular */
+.mobile-buttons .btn-round {
+  width: calc(100% - 0px); /* Faz o botão ter a largura total do menu lateral */
+  text-align: center; /* Centraliza o texto "Login" ou "Cadastrar" */
+  display: inline-flex; /* Permite alinhamento interno flexível */
+  justify-content: center; /* Centraliza o conteúdo horizontalmente */
+  box-sizing: border-box; /* Garante que bordas e preenchimento não quebrem o tamanho */
+  white-space: nowrap; /* Evita que o texto pule de linha */
+  overflow: hidden; /* Esconde texto excedente */
+  text-overflow: ellipsis; /* Adiciona "..." se necessário */
+  padding: 8px 12px; /* Preenchimento interno do botão */
+  margin: 0; /* Zera margens externas */
+  min-height: 36px; /* Altura mínima para facilitar o clique com o dedo */
+}
+
+/* .logo-brand: A logo principal AYVY na barra superior (Desktop) */
+.logo-brand {
+  font-weight: bold; /* Deixa a marca com texto bem visível (negrito) */
+  font-size: 24px; /* Tamanho da logo principal */
+  color: var(--ayvy-purple); /* Cor roxa AYVY */
+  cursor: pointer; /* Indica que clicar na logo leva à Home */
+  margin-right: 25px; /* Espaço para os links de texto que vêm em seguida */
+}
+
+/* .nav-links: A lista de links que aparece dentro do menu suspenso (Desktop) */
+.nav-links {
+  list-style: none; /* Tira as bolinhas da lista */
+  padding: 0; /* Zera o recuo lateral da lista */
+}
+
+/* .nav-links li: Cada linha de opção dentro do menu suspenso do PC */
+.nav-links li {
+  padding: 12px 0; /* Espaço entre um link e outro (em cima e embaixo) */
+  border-bottom: 1px solid #eee; /* Cria aquela linha cinza clarinha para separar as opções */
+  cursor: pointer; /* Mostra a mãozinha ao passar o mouse na opção */
+  color: #333; /* Cor do texto da opção */
+}
+
+/* .nav-link-top: Os links de texto que ficam soltos no topo (Sobre, Suporte, App) */
+.nav-link-top {
+  text-decoration: none; /* Remove o sublinhado azul padrão de links */
+  color: #666; /* Cor cinza para não brigar com a logo */
+  margin-right: 20px; /* Distância entre os links (Sobre | Suporte | App) */
+  font-size: 14px; /* Tamanho de leitura discreto */
+}
+
+/* .nav-right: A área que segura os botões de Login e Cadastro (Lado Direito) */
+.nav-right {
+  padding-right: 50px; /* Afasta os botões da borda direita da tela */
+}
+
+/* .btn-round: Estilo base de botões arredondados (Login) */
+.btn-round {
+  text-decoration: none; /* Tira o sublinhado do texto do botão */
+  color: #333; /* Texto em preto/cinza escuro */
+  border: 1px solid #333; /* Borda fina preta para o botão de Login */
+  padding: 8px 20px; /* Espaço interno: 8px altura e 20px largura */
+  border-radius: 30px; /* A mágica que deixa o botão totalmente redondo nas pontas */
+  font-size: 14px; /* Tamanho da letra no botão */
+  margin-left: 10px; /* Espaço entre o botão de Login e o de Cadastro */
+  cursor: pointer; /* Indica que o botão é clicável */
+}
+
+/* .btn-round.purple: Estilo do botão de destaque (Cadastrar) */
+.btn-round.purple {
+  background: var(--ayvy-purple); /* Pinta o fundo do botão de roxo */
+  color: white; /* Texto em branco para melhor leitura no roxo */
+  border: none; /* Tira a borda preta para o fundo roxo brilhar sozinho */
+}
+
+.btn-round.btn-logout {
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+/* ============================================================
+   SEÇÃO DO BANNER PRINCIPAL (IMAGEM TOPO)
+   ============================================================ */
+
+/* .banner-total: Container que segura a imagem principal do topo */
+.banner-total {
+  width: 100vw; /* Ocupa 100% da largura visual da janela */
+  margin-top: 70px; /* Afasta a imagem para baixo da navbar (que tem 70px) */
+  text-align: center; /* Centraliza a imagem se ela for menor que a tela */
+}
+
+/* .img-ponta-a-ponta: A imagem em si dentro do banner */
+.img-ponta-a-ponta {
+  width: 100%; /* Faz a imagem crescer até as bordas da tela */
+  display: block; /* Remove um espacinho em branco que o navegador cria embaixo de imagens */
+}
+
+/* ============================================================
+   SEÇÃO DE BUSCA E PESQUISA
+   ============================================================ */
+
+/* .search-overlay-center: O bloco central onde fica o título e a barra de busca */
+.search-overlay-center {
+  padding: 50px 0; /* Dá 50px de espaço em cima e embaixo da busca */
+}
+
+/* .main-title: O título grande de boas-vindas do site */
+.main-title {
+  font-size: 38px; /* Letra bem grande e chamativa */
+  color: #222; /* Cor cinza quase preta */
+  font-weight: 800; /* Deixa o título muito grosso (Extra Negrito) */
+  margin-bottom: 30px; /* Espaço entre o título e a barra de busca */
+}
+
+/* .search-bar-clean: A moldura arredondada da barra de pesquisa */
+.search-bar-clean {
+  display: flex; /* Faz o campo de texto e o botão de lupa ficarem na mesma linha */
+  width: 600px; /* Define o comprimento total da barra de pesquisa */
+  border: 1px solid #ccc; /* Linha cinza clara em volta da barra */
+  border-radius: 50px; /* Deixa a barra inteira redonda nas pontas */
+  margin: 0 auto; /* Centraliza a barra de pesquisa no meio da página */
+  overflow: hidden; /* Garante que nada (botão ou texto) saia para fora das pontas redondas */
+}
+
+/* .search-bar-clean input: O local onde o usuário digita o texto */
+.search-bar-clean input {
+  flex: 1; /* Faz o campo de digitação ocupar todo o espaço disponível na barra */
+  border: none; /* Tira a borda padrão do campo de digitação */
+  padding-left: 25px; /* Afasta o texto do início para não grudar na curva da barra */
+  outline: none; /* Tira aquela borda azul feia que o navegador põe ao clicar */
+  font-size: 16px; /* Tamanho confortável para digitar */
+  border-radius: 50px; /* Mantém o arredondamento interno */
+}
+
+/* .btn-search-black: O botão preto com a lupa na ponta da busca */
+.btn-search-black {
+  background: var(--dark); /* Pinta o botão com a cor preta das variáveis */
+  color: white; /* Texto e ícone em branco */
+  border: none; /* Remove bordas extras do botão */
+  padding: 15px 30px; /* Define o tamanho do botão (gordinho nas laterais) */
+  border-radius: 50px; /* Arredonda as pontas do botão para casar com a barra */
+  font-weight: bold; /* Texto "Pesquisar" em negrito */
+  cursor: pointer; /* Indica clique */
+  display: flex; /* Habilita alinhamento interno */
+  align-items: center; /* Centraliza ícone e texto verticalmente */
+  justify-content: center; /* Centraliza ícone e texto horizontalmente */
+}
+
+/* .btn-search-black i: O ícone de lupa (FontAwesome) dentro do botão de busca */
+.btn-search-black i {
+  margin-right: 8px; /* Dá um espacinho entre a lupa e a palavra "Pesquisar" */
+  font-size: 16px; /* Tamanho da lupa */
+  color: white; /* Lupa na cor branca */
+}
+
+/* ============================================================
+   SEÇÃO DO CARROSSEL DE MARCAS (BRANDS)
+   ============================================================ */
+
+/* .brand-slider-section: O container que segura todo o carrossel de logos */
+.brand-slider-section {
+  overflow: hidden;
+  padding: 30px 0; /* Espaço acima e abaixo do carrossel */
+}
+
+/* .slider-title-center: O título discreto em cima das logos que rolam */
+.slider-title-center {
+  text-align: center; /* Centraliza o texto "As melhores marcas" */
+  margin-bottom: 20px; /* Espaço antes de começar o movimento das logos */
+  font-size: 18px; /* Tamanho médio */
+  color: #333; /* Cinza escuro */
+}
+
+/* .brand-item: Cada nome de loja individual que aparece no carrossel */
+.brand-item {
+  width: 250px; /* Largura fixa de cada item no carrossel */
+  font-weight: 900; /* Texto extremamente grosso para destacar nomes */
+  color: #777; /* Cinza médio para um visual moderno */
+  font-size: 1.2rem; /* Tamanho da letra da marca */
+  text-align: center; /* Centraliza o nome no seu espaço de 250px */
+}
+
+/* .brand-track: A "esteira" invisível que carrega todas as marcas e se move */
+.brand-track {
+  display: flex; /* Coloca todas as marcas em uma linha só */
+  animation: scroll 20s linear infinite; /* Ativa o movimento de 20 segundos infinito e constante */
+  width: calc(250px * 10); /* Calcula a largura total somando todos os itens */
+}
+
+/* @keyframes scroll: Define como o carrossel se move */
+@keyframes scroll {
+  from {
+    transform: translateX(0); /* Ponto de partida da esteira */
+  }
+  to {
+    transform: translateX(
+      calc(-250px * 5)
+    ); /* Ponto final que cria a ilusão de loop infinito */
+  }
+}
+
+/* ============================================================
+   SEÇÃO DE CARDS E PERFIS (GRADE DE CONTEÚDO)
+   ============================================================ */
+
+/* .section-title-center: Títulos das seções do meio da página */
+.section-title-center {
+  text-align: center; /* Centraliza títulos como "Nossos Parceiros" */
+  margin: 50px 0 30px; /* 50px de espaço em cima e 30px embaixo */
+  font-size: 26px; /* Tamanho grande de subtítulo */
+}
+
+/* .profile-grid: A malha organizada que segura os cards das lojas */
+.profile-grid {
+  display: grid; /* Ativa o sistema de grade (Grid Layout) */
+  grid-template-columns: repeat(
+    3,
+    1fr
+  ); /* Cria exatamente 3 colunas de tamanhos iguais */
+  gap: 25px; /* Espaço entre um card e outro */
+  padding: 0 50px; /* Recuo lateral para os cards não tocarem no fim da tela */
+}
+
+/* .card-insta: O container individual de cada loja (estilo card do Instagram) */
+.card-insta {
+  border: 1px solid #eee; /* Borda cinza muito clarinha em volta do card */
+  border-radius: 12px; /* Arredonda os cantos do card inteiro */
+  overflow: hidden; /* Faz com que a imagem interna respeite as pontas redondas do card */
+  background: #fff; /* Fundo branco do card */
+}
+
+/* .card-header: A parte de cima do card onde fica o avatar e o nome */
+.card-header {
+  padding: 12px; /* Espaçamento interno para os itens não grudarem na borda */
+  display: flex; /* Alinha foto e nome na horizontal */
+  align-items: center; /* Centraliza o nome na altura da foto de perfil */
+  font-weight: bold; /* Deixa o nome da loja em negrito */
+}
+
+/* .avatar-mini: A pequena foto de perfil da loja no topo do card */
+.avatar-mini {
+  width: 30px; /* Largura da fotinho */
+  height: 30px; /* Altura da fotinho */
+  border-radius: 50%; /* Transforma o quadrado da foto em um círculo perfeito */
+  margin-right: 10px; /* Espaço entre a foto e o nome da loja */
+}
+
+/* .card-img: A foto principal do produto ou loja no meio do card */
+.card-img {
+  width: 100%; /* Faz a imagem ocupar 100% da largura do card */
+  height: 300px; /* Trava a altura em 300px para todos os cards ficarem iguais */
+  object-fit: cover; /* Se a imagem for desproporcional, ela corta o excesso sem esticar */
+}
+
+/* .btn-visit: O botão roxo "Visitar Loja" no rodapé do card */
+.btn-visit {
+  width: 100%; /* Faz o botão ocupar toda a largura da base do card */
+  padding: 12px; /* Define a altura interna (espessura) do botão */
+  background: var(--ayvy-purple); /* Aplica o roxo oficial AYVY */
+  color: white; /* Texto branco para destaque */
+  border: none; /* Remove bordas de sistema do botão */
+  cursor: pointer; /* Indica que o card pode ser clicado para abrir a loja */
+  font-weight: bold; /* Texto do botão em negrito */
+}
+
+/* ============================================================
+   RODAPÉ FINAL DO SITE (FOOTER)
+   ============================================================ */
+
+/* .site-footer: A faixa preta no final da página com informações extras */
+.site-footer {
+  background: var(--dark); /* Cor preta das variáveis para o fundo do rodapé */
+  color: white; /* Letras em branco para ler no fundo escuro */
+  padding: 40px; /* Espaço grande interno para o conteúdo respirar */
+  text-align: center; /* Centraliza as frases de copyright ou links */
+  margin-top: 50px; /* Espaço para o rodapé não ficar colado nos cards */
+}
+
+/* ============================================================
+   AJUSTES ADICIONAIS PARA CELULAR (ÚLTIMO BLOCO)
+   ============================================================ */
+@media screen and (max-width: 768px) {
+  /* Força as configurações da barra mobile no topo do celular */
+  .navbar-top-fixed.mobile-only {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 58px;
+    z-index: 1000;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 12px;
+  }
+
+  /* Ajuste de margem do banner para não ficar coberto pela barra mobile */
+  .banner-total {
+    margin-top: 60px;
+  }
+
+  /* Reduz o preenchimento da área de busca no celular */
+  .search-overlay-center {
+    padding: 30px 12px;
+  }
+
+  /* Diminui o tamanho do título principal no celular para não quebrar a tela */
+  .main-title {
+    font-size: 24px;
+    margin-bottom: 18px;
+  }
+
+  /* Faz a barra de busca ocupar toda a largura disponível no celular */
+  .search-bar-clean {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Ajusta o texto digitado no celular */
+  .search-bar-clean input {
+    font-size: 14px;
+    padding: 12px 14px;
+  }
+
+  /* Botão de pesquisa menor para caber na tela do celular */
+  .btn-search-black {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  /* Seção das marcas mais compacta no celular */
+  .brand-slider-section {
+    padding: 20px 8px;
+  }
+
+  /* Ajusta a grade de profiles para mobile - uma coluna por card */
+  .profile-grid {
+    grid-template-columns: 1fr; /* Muda para apenas 1 coluna em mobile */
+    padding: 0 12px; /* Reduz o padding lateral para ganhar espaço */
+    gap: 16px; /* Reduz o espaço entre cards */
+  }
+
+  /* Reduz a altura da imagem do card em mobile */
+  .card-img {
+    height: 200px; /* Altura menor para não ocupar espaço demais */
+  }
+
+  /* Ajusta o título da seção para mobile */
+  .section-title-center {
+    margin: 25px 0 20px; /* Reduz as margens */
+    font-size: 20px; /* Reduz o tamanho da fonte */
+  }
+
+  /* Ajusta o rodapé para mobile */
+  .site-footer {
+    padding: 25px 12px; /* Reduz o padding */
+    font-size: 12px; /* Letra menor */
+  }
+}
+
+/* ================================
+   ESTILOS DO CARRINHO LATERAL
+   ================================ */
+.cart-icon {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--ayvy-purple);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1002;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.cart-icon span {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ff4d4d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: white;
+}
+
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: -360px;
+  width: 360px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.15);
+  transition: right 0.3s ease;
+  z-index: 1003;
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-drawer.open {
+  right: 0;
+}
+
+.cart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #eee;
+  font-weight: bold;
+}
+
+.cart-header i {
+  cursor: pointer;
+}
+
+.cart-items {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+}
+
+.cart-item img {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.cart-footer {
+  padding: 20px;
+  border-top: 1px solid #eee;
+}
+
+.cart-footer input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.cart-footer button {
+  width: 100%;
+  padding: 12px;
+  background: var(--ayvy-purple);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  z-index: 1001;
+}
+
+.cart-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hidden {
+  display: none !important;
+}
