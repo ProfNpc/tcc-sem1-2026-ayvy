@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AYVY</title>
+    <link rel="stylesheet" href="web.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <viewport content="width=device-width, initial-scale=1.0"></viewport>
+  </head>
+  <body>
+    <header class="navbar-top-fixed">
+      <div class="nav-left">
+        <div class="menu-container-sensor">
+          <i class="fas fa-bars hamburguer-icon"></i>
+          <nav class="gaveta-flutuante">
+            <ul class="nav-links">
+              <li onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+                <i class="fas fa-home"></i> Início
+              </li>
+              <li
+                onclick="
+                  window.scrollTo({
+                    top: document.getElementById('search-section').offsetTop,
+                    behavior: 'smooth',
+                  })
+                "
+              >
+                <i class="fas fa-search"></i> Pesquisar
+              </li>
+              <li>
+                <a href="ranking.html"><i class="fas fa-trophy"></i> Ranking</a>
+              </li>
+              <li><i class="fas fa-user-circle"></i> Perfil</li>
+              <li onclick="showLogoutConfirm()">
+                <i class="fas fa-sign-out-alt"></i> Sair
+              </li>
+            </ul>
+            <div class="gaveta-footer">
+              <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+            </div>
+          </nav>
+        </div>
+
+        <span
+          class="logo-brand"
+          onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+        >
+          AYVY
+        </span>
+
+        <a href="#" class="nav-link-top">Sobre</a>
+        <a
+          href="#"
+          onclick="
+            openHelp();
+            return false;
+          "
+          class="nav-link-top"
+        >
+          Suporte AYVY</a
+        >
+        <a href="#" class="nav-link-top">Baixe o App</a>
+      </div>
+
+      <div class="nav-right">
+        <a id="btn-login" href="login.html" class="btn-round">Fazer login</a>
+        <a id="btn-cadastro" href="cadastro.html" class="btn-round purple"
+          >Cadastre-se</a
+        >
+      </div>
+
+      <!--favicon-->
+      <link rel="icon" href="img/img-folha-ayvy-16.png" type="image/png>" />
+    </header>
+
+    <header class="navbar-top-fixed mobile-only">
+      <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+      <div class="nav-left">
+        <div class="menu-container-sensor">
+          <i
+            class="fas fa-bars hamburguer-icon"
+            onclick="toggleMobileMenu()"
+          ></i>
+          <nav class="gaveta-flutuante" id="mobileMenu">
+            <div class="gaveta-header">
+              <span class="logo-brand-mobile">AYVY</span>
+              <i
+                class="fas fa-times close-menu"
+                onclick="toggleMobileMenu()"
+              ></i>
+            </div>
+            <ul class="nav-links">
+              <li
+                onclick="
+                  closeMobileMenu();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                "
+              >
+                <i class="fas fa-home"></i> Início
+              </li>
+              <li
+                onclick="
+                  closeMobileMenu();
+                  window.scrollTo({
+                    top: document.getElementById('search-section').offsetTop,
+                    behavior: 'smooth',
+                  });
+                "
+              >
+                <i class="fas fa-search"></i> Pesquisar
+              </li>
+              <li onclick="closeMobileMenu()">
+                <a href="ranking.html"><i class="fas fa-trophy"></i> Ranking</a>
+              </li>
+              <li onclick="closeMobileMenu()">
+                <i class="fas fa-user-circle"></i> Perfil
+              </li>
+              <li onclick="closeMobileMenu()">
+                <i class="fas fa-info-circle"></i> Sobre
+              </li>
+              <li
+                onclick="
+                  closeMobileMenu();
+                  document
+                    .getElementById('support-section')
+                    .scrollIntoView({ behavior: 'smooth' });
+                "
+              >
+                <i class="fas fa-question-circle"></i> Suporte AYVY
+              </li>
+              <li onclick="closeMobileMenu()">
+                <i class="fas fa-download"></i> Baixe o App
+              </li>
+            </ul>
+            <div class="gaveta-footer">
+              <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+              <div class="mobile-buttons">
+                <a href="login.html" class="btn-round">Fazer login</a>
+                <a href="login.html" class="btn-round purple">Cadastre-se</a>
+                <a
+                  href="#"
+                  class="btn-round btn-logout"
+                  onclick="
+                    showLogoutConfirm();
+                    closeMobileMenu();
+                    return false;
+                  "
+                  >Sair</a
+                >
+              </div>
+            </div>
+          </nav>
+        </div>
+
+        <span
+          class="logo-brand"
+          onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+          >AYVY</span
+        >
+      </div>
+
+      <!--favicon-->
+      <link rel="icon" href="img/img-folha-ayvy-16.png" type="image/png>" />
+    </header>
+
+    <!-- Ícone do carrinho flutuante (mostrado após login) -->
+    <div
+      class="cart-icon"
+      id="cartIcon"
+      onclick="toggleCarrinho()"
+      style="display: none"
+    >
+      <i class="fas fa-shopping-cart"></i>
+      <span id="cartCount">0</span>
+    </div>
+
+    <!-- Gaveta de carrinho lateral -->
+    <div class="cart-drawer" id="cartDrawer">
+      <div class="cart-header">
+        <span>Carrinho de Compras</span>
+        <i class="fas fa-times" onclick="toggleCarrinho()"></i>
+      </div>
+      <div class="cart-items" id="cartItems"></div>
+      <div class="cart-footer">
+        <input
+          type="text"
+          id="cepInput"
+          placeholder="Digite seu CEP"
+          maxlength="8"
+        />
+        <button onclick="calculateFreight()">Calcular Frete</button>
+        <p id="freightResult"></p>
+        <button class="btn-finalize" onclick="finalizePurchase()">
+          Finalizar Compra
+        </button>
+      </div>
+    </div>
+
+    <!-- Fundo escuro por trás do carrinho -->
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCarrinho()"></div>
+
+    <!-- Modal de confirmação de logout -->
+    <div
+      class="logout-overlay"
+      id="logoutOverlay"
+      onclick="hideLogoutConfirm()"
+    ></div>
+    <div class="logout-modal" id="logoutModal">
+      <p>Tem certeza que deseja sair?</p>
+      <div class="logout-actions">
+        <button class="btn-round btn-logout confirm" onclick="confirmLogout()">
+          Sim, certeza
+        </button>
+        <button class="btn-round" onclick="hideLogoutConfirm()">Não</button>
+      </div>
+    </div>
+
+    <section class="banner-total">
+      <img
+        src="img/img-curta-ayvy.jpeg"
+        alt="AYVY Logo"
+        class="img-ponta-a-ponta"
+      />
+      <div class="search-overlay-center" id="search-section">
+        <h1 class="main-title">
+          A plataforma de visibilidade para o seu negócio
+        </h1>
+        <div class="search-bar-clean">
+          <input
+            type="text"
+            placeholder="Busque por lojas, produtos ou tendências..."
+          />
+          <button class="btn-search-black">
+            <i class="fas fa-search"></i> Pesquisar
+          </button>
+        </div>
+        <p class="sub-text-hero">
+          Conectando lojistas e clientes em um só lugar.
+        </p>
+      </div>
+    </section>
+
+    <section class="brand-slider-section">
+      <h2 class="slider-title-center">Empresas em destaque na plataforma:</h2>
+      <div class="brand-container">
+        <div class="brand-track">
+          <div class="brand-item">RAFAELE FASHION</div>
+          <div class="brand-item">LIVRE STORE</div>
+          <div class="brand-item">TREND SHOP</div>
+          <div class="brand-item">BOHO CHIC</div>
+          <div class="brand-item">MODA & CIA</div>
+          <div class="brand-item">URBAN STYLE</div>
+          <div class="brand-item">CLASSIC WEAR</div>
+          <div class="brand-item">ELEGANCE BOUTIQUE</div>
+          <div class="brand-item">FASHION HUB</div>
+          <div class="brand-item">STREET VIBE</div>
+        </div>
+      </div>
+    </section>
+
+    <main class="content-profiles">
+      <div class="container">
+        <h2 class="section-title-center">Explore Perfis em Alta</h2>
+        <div class="profile-grid">
+          <div class="card-insta">
+            <div class="card-header">
+              <img src="https://i.pravatar.cc/100?u=1" class="avatar-mini" />
+              <span>rafaele_fashion</span>
+            </div>
+            <img
+              src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400"
+              class="card-img"
+            />
+            <button class="btn-visit">Ver Loja</button>
+          </div>
+          <div class="card-insta">
+            <div class="card-header">
+              <img src="https://i.pravatar.cc/100?u=2" class="avatar-mini" />
+              <span>livre_store</span>
+            </div>
+            <img
+              src="https://images.unsplash.com/photo-1529139570566-6467084aee13?w=400"
+              class="card-img"
+            />
+            <button class="btn-visit">Ver Loja</button>
+          </div>
+          <div class="card-insta">
+            <div class="card-header">
+              <img src="https://i.pravatar.cc/100?u=3" class="avatar-mini" />
+              <span>itb_moda</span>
+            </div>
+            <img
+              src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400"
+              class="card-img"
+            />
+            <button class="btn-visit">Ver Loja</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer" id="support-section">
+      <div class="footer-info">
+        <p><strong>ITB Brasílio Flores de Azevedo (FIEB)</strong></p>
+        <p>R. Interna Grupo Bandeirante, 138 - Jardim Belval, Barueri - SP</p>
+        <p>Tel: (11) 4199-4220</p>
+      </div>
+    </footer>
+
+    <script src="web.js"></script>
+    <script>
+      function openHelp() {
+        document
+          .getElementById("support-section")
+          .scrollIntoView({ behavior: "smooth" });
+        // ("Suporte ITB FIEB\nTel: (11) 4199-4220");
+      }
+    </script>
+  </body>
+</html>
