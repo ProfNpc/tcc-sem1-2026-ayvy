@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro AYVY</title>
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="cadastro.css" />
+  </head>
+  <body>
+    <main class="container" style="display: none">
+      <form>
+        <h1>Cadastro AYVY</h1>
+
+        <!-- Seleção do tipo de usuário -->
+        <p style="text-align: center; font-size: 13px; margin-bottom: 10px">
+          O que você deseja ser?
+        </p>
+        <div class="user-type-selection">
+          <div class="radio-card">
+            <input
+              type="radio"
+              id="cliente"
+              name="tipo"
+              value="cliente"
+              checked
+              onchange="mudarDoc()"
+            />
+            <label for="cliente">Sou Cliente</label>
+          </div>
+          <div class="radio-card">
+            <input
+              type="radio"
+              id="lojista"
+              name="tipo"
+              value="lojista"
+              onchange="mudarDoc()"
+            />
+            <label for="lojista">Sou Lojista</label>
+          </div>
+        </div>
+
+        <!-- Campo de nome completo -->
+        <div class="input-box">
+          <i class="bx bxs-user"></i>
+          <input type="text" placeholder="Nome Completo" required />
+        </div>
+
+        <!-- Campo de data de nascimento -->
+        <span class="label-pequena">Data de Nascimento</span>
+        <div class="input-box">
+          <i class="bx bxs-calendar"></i>
+          <input type="date" required />
+        </div>
+
+        <!-- Campo de e-mail -->
+        <div class="input-box">
+          <i class="bx bxs-envelope"></i>
+          <input type="email" placeholder="E-mail" required />
+        </div>
+
+        <!-- Campo de documento (CPF ou CNPJ) -->
+        <div class="input-box">
+          <i class="bx bxs-id-card"></i>
+          <input type="text" id="documento" placeholder="CPF" required />
+        </div>
+
+        <!-- Campos de endereço com API de CEP -->
+        <div class="input-box">
+          <i class="bx bxs-map-pin"></i>
+          <input
+            type="text"
+            id="cep"
+            placeholder="CEP"
+            maxlength="8"
+            required
+            onblur="buscarCEP()"
+          />
+        </div>
+
+        <div class="input-box">
+          <i class="bx bxs-direction-left"></i>
+          <input
+            type="text"
+            id="logradouro"
+            placeholder="Logradouro"
+            required
+          />
+        </div>
+
+        <div class="input-box">
+          <i class="bx bxs-navigation"></i>
+          <input type="text" id="numero" placeholder="Número" required />
+        </div>
+
+        <div class="input-box">
+          <i class="bx bxs-building-house"></i>
+          <input type="text" id="bairro" placeholder="Bairro" required />
+        </div>
+
+        <div class="input-box">
+          <i class="bx bxs-city"></i>
+          <input type="text" id="cidade" placeholder="Cidade" required />
+        </div>
+
+        <div class="input-box">
+          <i class="bx bxs-map-alt"></i>
+          <input
+            type="text"
+            id="estado"
+            placeholder="Estado (Ex: SP)"
+            maxlength="2"
+            required
+          />
+        </div>
+
+        <!-- Campos de senha -->
+        <div class="input-box">
+          <i class="bx bxs-lock-alt"></i>
+          <input type="password" placeholder="Crie uma Senha" required />
+        </div>
+
+        <div class="input-box">
+          <i class="bx bxs-lock-open-alt"></i>
+          <input type="password" placeholder="Confirme a Senha" required />
+        </div>
+
+        <!-- Checkbox de lembrar senha -->
+        <div class="remember-forgot">
+          <label><input type="checkbox" /> Lembrar Senha</label>
+        </div>
+
+        <!-- Botão de finalizar cadastro -->
+        <button type="submit" class="btn-register">Finalizar Cadastro</button>
+
+        <!-- Link para login -->
+        <div class="login-link">
+          <p>Já tem uma conta? <a href="login.html">Faça Login</a></p>
+        </div>
+
+        <!-- Botão para voltar à tela inicial -->
+        <a class="back-home" href="web.html">Voltar para a tela inicial</a>
+      </form>
+    </main>
+
+    <script src="cadastro.js"></script>
+  </body>
+</html>

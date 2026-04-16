@@ -1,0 +1,165 @@
+/* Configuração Geral */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Montserrat", sans-serif;
+}
+
+/* Navbar Fixa e Estilo da Logo */
+.navbar-sobre {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 5%;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  position: fixed; /* Mantém presa no topo */
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.logo-link {
+  font-weight: bold;
+  font-size: 26px;
+  color: #b06edc;
+  text-decoration: none; /* Remove o sublinhado do link */
+  transition: 0.3s;
+}
+
+.logo-link:hover {
+  opacity: 0.8;
+}
+
+/* Banner Principal */
+.banner-topo {
+  margin-top: 70px; /* Para não ficar embaixo da navbar */
+  width: 100%;
+  height: 350px;
+}
+.banner-topo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Seção de Texto */
+.secao-texto {
+  padding: 80px 10% 40px;
+  text-align: center;
+}
+.secao-texto h1 {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+/* Seção Equipe e Banner de Grupo */
+.equipe-completa {
+  padding: 40px 5%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.foto-grupo-destaque {
+  width: 100%;
+  max-width: 900px;
+  height: 450px;
+  margin-bottom: 100px; /* Espaço extra para não encavalar nos membros */
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+.foto-grupo-destaque img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Layout dos Membros */
+.membro-row {
+  display: flex;
+  align-items: center;
+  gap: 50px;
+  width: 100%;
+  max-width: 1000px;
+  margin-bottom: 80px;
+}
+
+.membro-row.reverso {
+  flex-direction: row-reverse;
+}
+
+.membro-media {
+  width: 300px;
+  height: 300px;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.4s ease;
+  flex-shrink: 0;
+}
+
+.membro-media:hover {
+  transform: scale(1.1);
+} /* Foto expande para frente */
+
+.membro-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.membro-info h3 {
+  color: #b06edc;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+.membro-info p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #555;
+}
+
+/* Rodapé */
+.footer-ayvy {
+  background: #191b23;
+  color: #fff;
+  padding: 60px 0;
+  text-align: center;
+}
+.footer-box {
+  border: 1px solid #444;
+  display: inline-block;
+  padding: 25px 50px;
+}
+
+/* ============================================================
+   MOBILE (AJUSTES PARA CELULAR)
+   ============================================================ */
+@media (max-width: 768px) {
+  .secao-texto {
+    padding: 60px 5% 20px;
+  }
+  .secao-texto h1 {
+    font-size: 24px;
+  }
+
+  .foto-grupo-destaque {
+    height: 250px;
+    margin-bottom: 50px;
+  }
+
+  .membro-row,
+  .membro-row.reverso {
+    flex-direction: column; /* Empilha no celular */
+    text-align: center;
+    gap: 20px;
+  }
+
+  .membro-media {
+    width: 250px;
+    height: 250px;
+  }
+}
