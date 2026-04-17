@@ -1,4 +1,4 @@
-package br.belval.com.ayvy;
+package br.belval.com.ayvy.model;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
