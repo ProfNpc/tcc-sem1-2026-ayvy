@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil do Cliente | AYVY</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/css/geral.css" />
+  <link rel="stylesheet" href="assets/css/perfil-cliente.css">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+  />
+</head>
+<body class="page-perfil">
+
+  <div id="ayvy-navbar"></div>
+
+  <div class="container">
+
+    <!-- CARD PERFIL -->
+    <div class="perfil-card">
+
+      <!-- BANNER TOPO -->
+      <div class="banner-topo"></div>
+
+      <!-- FOTO DE PERFIL -->
+      <div class="foto-container">
+        <img id="fotoPerfil" src="assets/img/ayvy-media-a.png" alt="Foto de Perfil">
+        
+        <input type="file" id="uploadFoto" accept="image/*">
+        <label for="uploadFoto">Alterar Foto</label>
+      </div>
+
+      <h2 id="nomeUsuario">Meu Perfil</h2>
+
+    </div>
+
+    <!-- DADOS PESSOAIS -->
+    <div class="info-card">
+      <h2>Dados Pessoais</h2>
+      <p>Email: cliente@email.com</p>
+      <p>Telefone: (11) 99999-9999</p>
+      <button>Editar Dados</button>
+    </div>
+
+    <!-- ENDEREÇO -->
+    <div class="info-card">
+      <h2>Endereço</h2>
+      <p>Rua Exemplo, 123</p>
+      <p>Cidade - Estado</p>
+      <button>Editar Endereço</button>
+    </div>
+
+    <!-- HISTÓRICO DE COMPRAS -->
+    <div class="info-card">
+      <h2>Meus Pedidos</h2>
+      <ul>
+        <li>Pedido #001 - Entregue</li>
+        <li>Pedido #002 - Em andamento</li>
+        <li>Pedido #003 - Cancelado</li>
+      </ul>
+    </div>
+
+    <!-- SEGURANÇA -->
+    <div class="info-card">
+      <h2>Segurança</h2>
+      <button>Alterar Senha</button>
+    </div>
+
+  </div>
+
+  <!-- JS -->
+  <script src="assets/js/auth.js"></script>
+  <script>
+    AyvyAuth.requireAuth();
+  </script>
+  <script src="assets/js/components/cart.js"></script>
+  <script src="assets/js/components/navbar.js"></script>
+  <script>
+    AyvyNavbar.mount();
+  </script>
+
+  <script src="assets/js/perfil-cliente.js"></script>
+</body>
+</html>

@@ -7,6 +7,9 @@
           <li onclick="window.location.href='/'">
             <i class="fas fa-home"></i> Início
           </li>
+          <li id="navPerfilItem" style="display: none" onclick="window.location.href='perfil.html'">
+            <i class="fas fa-user-circle"></i> Perfil
+          </li>
           <li onclick="window.location.href='ranking.html'">
             <i class="fas fa-trophy"></i> Ranking
           </li>
@@ -16,7 +19,7 @@
           <li onclick="AyvyNavbar.scrollToSupport()">
             <i class="fas fa-question-circle"></i> Suporte AYVY
           </li>
-          <li onclick="AyvyNavbar.showLogoutConfirm()">
+          <li id="navSairItem" style="display: none" onclick="AyvyNavbar.showLogoutConfirm()">
             <i class="fas fa-sign-out-alt"></i> Sair
           </li>
         </ul>
@@ -84,6 +87,13 @@
             <i class="fas fa-home"></i> Início
           </li>
           <li
+            id="navPerfilItemMobile"
+            style="display: none"
+            onclick="AyvyNavbar.closeMobileMenu(); window.location.href='perfil.html';"
+          >
+            <i class="fas fa-user-circle"></i> Perfil
+          </li>
+          <li
             onclick="AyvyNavbar.closeMobileMenu(); window.location.href='ranking.html';"
           >
             <i class="fas fa-trophy"></i> Ranking
@@ -96,7 +106,7 @@
           <li onclick="AyvyNavbar.closeMobileMenu(); AyvyNavbar.scrollToSupport();">
             <i class="fas fa-question-circle"></i> Suporte AYVY
           </li>
-          <li onclick="AyvyNavbar.showLogoutConfirm(); AyvyNavbar.closeMobileMenu();">
+          <li id="navSairItemMobile" style="display: none" onclick="AyvyNavbar.showLogoutConfirm(); AyvyNavbar.closeMobileMenu();">
             <i class="fas fa-sign-out-alt"></i> Sair
           </li>
         </ul>
@@ -107,6 +117,8 @@
             <a href="login.html" class="btn-round">Fazer login</a>
             <a href="cadastro.html" class="btn-round purple">Cadastre-se</a>
             <a
+              id="navSairBtnMobile"
+              style="display: none"
               href="#"
               class="btn-round btn-logout"
               onclick="AyvyNavbar.showLogoutConfirm(); AyvyNavbar.closeMobileMenu(); return false;"
