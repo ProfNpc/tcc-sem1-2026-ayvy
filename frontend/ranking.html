@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AYVY | Ranking de Visibilidade</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="assets/css/geral.css" />
+  </head>
+  <body class="page-ranking">
+    <div id="ayvy-navbar"></div>
+
+    <main class="ranking-wrapper">
+      <header class="ranking-header">
+        <h1>Ranking de Visibilidade Mensal</h1>
+        <p>Lojas parceiras com maior engajamento (+10k views).</p>
+      </header>
+
+      <div class="table-container">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Perfil Comercial</th>
+                <th>Visualizações</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ranking-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/components/cart.js"></script>
+    <script src="assets/js/components/navbar.js"></script>
+    <script>
+      AyvyNavbar.mount();
+    </script>
+    <script src="assets/js/ranking.js"></script>
+  </body>
+</html>

@@ -1,0 +1,179 @@
+<header class="navbar-top-fixed">
+  <div class="nav-left">
+    <div class="menu-container-sensor">
+      <i class="fas fa-bars hamburguer-icon"></i>
+      <nav class="gaveta-flutuante">
+        <ul class="nav-links">
+          <li onclick="window.location.href='/'">
+            <i class="fas fa-home"></i> Início
+          </li>
+          <li onclick="window.location.href='ranking.html'">
+            <i class="fas fa-trophy"></i> Ranking
+          </li>
+          <li onclick="window.location.href='sobre.html'">
+            <i class="fas fa-info-circle"></i> Sobre
+          </li>
+          <li onclick="AyvyNavbar.scrollToSupport()">
+            <i class="fas fa-question-circle"></i> Suporte AYVY
+          </li>
+          <li onclick="AyvyNavbar.showLogoutConfirm()">
+            <i class="fas fa-sign-out-alt"></i> Sair
+          </li>
+        </ul>
+        <div class="gaveta-footer">
+          <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+        </div>
+      </nav>
+    </div>
+
+    <a class="logo-brand" href="/">AYVY</a>
+
+    <a href="sobre.html" class="nav-link-top">Sobre</a>
+    <a
+      href="#"
+      class="nav-link-top"
+      onclick="AyvyNavbar.scrollToSupport(); return false;"
+      >Suporte AYVY</a
+    >
+    <a href="#" class="nav-link-top">Baixe o App</a>
+  </div>
+
+  <div class="nav-right">
+    <a id="btn-login" href="login.html" class="btn-round">Fazer login</a>
+    <a id="btn-cadastro" href="cadastro.html" class="btn-round purple"
+      >Cadastre-se</a
+    >
+
+    <!-- Carrinho (só aparece quando logado) -->
+    <div
+      class="nav-cart-icon"
+      id="navCartIcon"
+      onclick="AyvyCart.toggle()"
+      style="display: none"
+      title="Carrinho"
+    >
+      <i class="fas fa-shopping-cart"></i>
+      <span id="cartCount">0</span>
+    </div>
+  </div>
+
+  <link rel="icon" href="assets/img/img-folha-ayvy-16.png" type="image/png" />
+</header>
+
+<header class="navbar-top-fixed mobile-only">
+  <div class="mobile-overlay" onclick="AyvyNavbar.toggleMobileMenu()"></div>
+  <div class="nav-left">
+    <div class="menu-container-sensor">
+      <i
+        class="fas fa-bars hamburguer-icon"
+        onclick="AyvyNavbar.toggleMobileMenu()"
+      ></i>
+      <nav class="gaveta-flutuante" id="mobileMenu">
+        <div class="gaveta-header">
+          <span class="logo-brand-mobile">AYVY</span>
+          <i
+            class="fas fa-times close-menu"
+            onclick="AyvyNavbar.toggleMobileMenu()"
+          ></i>
+        </div>
+
+        <ul class="nav-links">
+          <li
+            onclick="AyvyNavbar.closeMobileMenu(); window.location.href='/';"
+          >
+            <i class="fas fa-home"></i> Início
+          </li>
+          <li
+            onclick="AyvyNavbar.closeMobileMenu(); window.location.href='ranking.html';"
+          >
+            <i class="fas fa-trophy"></i> Ranking
+          </li>
+          <li
+            onclick="AyvyNavbar.closeMobileMenu(); window.location.href='sobre.html';"
+          >
+            <i class="fas fa-info-circle"></i> Sobre
+          </li>
+          <li onclick="AyvyNavbar.closeMobileMenu(); AyvyNavbar.scrollToSupport();">
+            <i class="fas fa-question-circle"></i> Suporte AYVY
+          </li>
+          <li onclick="AyvyNavbar.showLogoutConfirm(); AyvyNavbar.closeMobileMenu();">
+            <i class="fas fa-sign-out-alt"></i> Sair
+          </li>
+        </ul>
+
+        <div class="gaveta-footer">
+          <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+          <div class="mobile-buttons">
+            <a href="login.html" class="btn-round">Fazer login</a>
+            <a href="cadastro.html" class="btn-round purple">Cadastre-se</a>
+            <a
+              href="#"
+              class="btn-round btn-logout"
+              onclick="AyvyNavbar.showLogoutConfirm(); AyvyNavbar.closeMobileMenu(); return false;"
+              >Sair</a
+            >
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <a class="logo-brand" href="/">AYVY</a>
+  </div>
+
+  <!-- Carrinho (mobile) -->
+  <div
+    class="nav-cart-icon"
+    id="navCartIconMobile"
+    onclick="AyvyCart.toggle()"
+    style="display: none"
+    title="Carrinho"
+  >
+    <i class="fas fa-shopping-cart"></i>
+    <span id="cartCountMobile">0</span>
+  </div>
+
+  <link rel="icon" href="assets/img/img-folha-ayvy-16.png" type="image/png" />
+</header>
+
+<div
+  class="logout-overlay"
+  id="logoutOverlay"
+  onclick="AyvyNavbar.hideLogoutConfirm()"
+></div>
+<div class="logout-modal" id="logoutModal">
+  <p>Tem certeza que deseja sair?</p>
+  <div class="logout-actions">
+    <button
+      class="btn-round btn-logout confirm"
+      onclick="AyvyNavbar.confirmLogout()"
+    >
+      Sim, certeza
+    </button>
+    <button class="btn-round" onclick="AyvyNavbar.hideLogoutConfirm()">Não</button>
+  </div>
+</div>
+
+<!-- Gaveta do carrinho (compartilhada em todas as páginas) -->
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <span>Carrinho de Compras</span>
+    <i class="fas fa-times" onclick="AyvyCart.toggle()"></i>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <input
+      type="text"
+      id="cepInput"
+      placeholder="Digite seu CEP"
+      maxlength="8"
+    />
+    <button onclick="AyvyCart.calculateFreight()">Calcular Frete</button>
+    <p id="freightResult"></p>
+    <button class="btn-finalize" onclick="AyvyCart.finalizePurchase()">
+      Finalizar Compra
+    </button>
+  </div>
+</div>
+
+<div class="cart-overlay" id="cartOverlay" onclick="AyvyCart.toggle()"></div>
+
