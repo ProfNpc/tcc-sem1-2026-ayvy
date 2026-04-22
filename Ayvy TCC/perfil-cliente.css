@@ -1,0 +1,100 @@
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+
+  /* FUNDO COM IMAGEM + CAMADA ROXA */
+  background: 
+    linear-gradient(rgba(176, 110, 220, 0.75), rgba(176, 110, 220, 0.75)),
+    url("img/img-curta-ayvy.jpeg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* CARD PERFIL */
+.perfil-card {
+  background: rgba(176, 110, 220, 0.95);
+  color: white;
+  text-align: center;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  backdrop-filter: blur(6px);
+}
+
+/* FOTO DE PERFIL */
+.foto-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.foto-container img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 4px solid white;
+  object-fit: cover;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.foto-container input {
+  display: none;
+}
+
+.foto-container label {
+  margin-top: 10px;
+  background: white;
+  color: #b06edc;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.foto-container label:hover {
+  background: #f3e8ff;
+}
+
+/* CARDS DE INFORMAÇÃO */
+.info-card {
+  background: rgba(255, 255, 255, 0.97);
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  backdrop-filter: blur(6px);
+}
+
+h2 {
+  color: #6d3bbd; /* tom mais escuro do roxo */
+}
+
+p, li {
+  color: #333;
+}
+
+/* BOTÃO */
+button {
+  background: #b06edc;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 10px;
+}
+
+button:hover {
+  background: #8e4fc0; /* roxo mais escuro para hover */
+}
