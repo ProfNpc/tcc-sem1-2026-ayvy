@@ -51,24 +51,6 @@
         <a class="back-home" href="web.html">Voltar para a tela inicial</a>
       </form>
     </main>
-    <script>
-      // exibe .container após 5s com transição suave
-      setTimeout(() => {
-        const el = document.querySelector(".container");
-        if (!el) return;
-        el.style.display = "block";
-        // configura estado inicial para a transição
-        el.style.opacity = "0";
-        el.style.transform = "translateY(10px)";
-        el.style.transition = "opacity 400ms ease, transform 400ms ease";
-        // força reflow para garantir que a transição ocorra
-        void el.offsetWidth;
-        // inicia a animação no próximo frame
-        requestAnimationFrame(() => {
-          el.style.opacity = "1";
-          el.style.transform = "translateY(0)";
-        });
-      }, 100);
-    </script>
+    <script src="login.js"></script>
   </body>
 </html>
