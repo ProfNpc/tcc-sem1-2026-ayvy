@@ -1,70 +1,288 @@
+<!-- perfil-cliente.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Perfil do Cliente | AYVY</title>
+  <title>Meu Perfil | AYVY</title>
 
-  <!-- CSS -->
   <link rel="stylesheet" href="perfil-cliente.css">
+
+  <!-- Ícones -->
+  <link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
+
 <body>
 
-  <div class="container">
+  <!-- TOPO -->
+  <header class="topo">
 
-    <!-- CARD PERFIL -->
-    <div class="perfil-card">
+    <div class="topo-superior">
 
-      <!-- BANNER TOPO -->
-      <div class="banner-topo"></div>
-
-      <!-- FOTO DE PERFIL -->
-      <div class="foto-container">
-        <img id="fotoPerfil" src="img/user.png" alt="Foto de Perfil">
-        
-        <input type="file" id="uploadFoto" accept="image/*">
-        <label for="uploadFoto">Alterar Foto</label>
+      <div class="topo-links">
+        <a href="#">Central do Vendedor</a>
+        <a href="#">Vender na AYVY</a>
+        <a href="#">Baixe o App</a>
       </div>
 
-      <h2 id="nomeUsuario">Meu Perfil</h2>
+      <div class="topo-links">
+        <a href="#">
+          <i class="fa-regular fa-bell"></i>
+          Notificações
+        </a>
+
+        <a href="#">Ajuda</a>
+
+        <a href="#">Português (BR)</a>
+
+        <a href="#">
+          <i class="fa-regular fa-user"></i>
+          
+        </a>
+      </div>
 
     </div>
 
-    <!-- DADOS PESSOAIS -->
-    <div class="info-card">
-      <h2>Dados Pessoais</h2>
-      <p>Email: cliente@email.com</p>
-      <p>Telefone: (11) 99999-9999</p>
-      <button>Editar Dados</button>
+    <!-- BARRA PRINCIPAL -->
+    <div class="barra-principal">
+
+      <div class="logo">
+        AYVY
+      </div>
+
+      <div class="busca">
+
+        <input
+          type="text"
+          placeholder="Buscar na AYVY"
+        >
+
+        <button>
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+
+      </div>
+
+      <div class="carrinho">
+        <i class="fa-solid fa-cart-shopping"></i>
+      </div>
+
     </div>
 
-    <!-- ENDEREÇO -->
-    <div class="info-card">
-      <h2>Endereço</h2>
-      <p>Rua Exemplo, 123</p>
-      <p>Cidade - Estado</p>
-      <button>Editar Endereço</button>
-    </div>
+  </header>
 
-    <!-- HISTÓRICO DE COMPRAS -->
-    <div class="info-card">
-      <h2>Meus Pedidos</h2>
-      <ul>
-        <li>Pedido #001 - Entregue</li>
-        <li>Pedido #002 - Em andamento</li>
-        <li>Pedido #003 - Cancelado</li>
-      </ul>
-    </div>
+  <!-- CONTEÚDO -->
+  <div class="container">
 
-    <!-- SEGURANÇA -->
-    <div class="info-card">
-      <h2>Segurança</h2>
-      <button>Alterar Senha</button>
-    </div>
+    <!-- MENU -->
+    <aside class="sidebar">
+
+      <!-- PERFIL -->
+      <div class="usuario">
+
+        <img
+          src="img/user.png"
+          alt="Usuário"
+        >
+
+        <div>
+          <h3>.................</h3>
+
+          <a href="#">
+            <i class="fa-solid fa-pen"></i>
+            Editar Perfil
+          </a>
+        </div>
+
+      </div>
+
+      <!-- MENU -->
+      <div class="menu">
+
+        <div class="menu-titulo">
+
+          <i class="fa-regular fa-user"></i>
+          Minha Conta
+
+        </div>
+
+        <div class="submenu">
+
+          <a href="#" class="ativo">
+            Perfil
+          </a>
+
+          <a href="#">
+            Cartões / Contas Bancárias
+          </a>
+
+          <a href="#">
+            Endereços
+          </a>
+
+          <a href="#">
+            Trocar Senha
+          </a>
+
+          <a href="#">
+            Preferências de Cookies
+          </a>
+
+          <a href="#">
+            Configurações de Privacidade
+          </a>
+
+        </div>
+
+        <a href="#" class="menu-link">
+          <i class="fa-regular fa-clipboard"></i>
+          Minhas Compras
+        </a>
+
+        <a href="#" class="menu-link">
+          <i class="fa-regular fa-bell"></i>
+          Notificações
+        </a>
+
+        <a href="#" class="menu-link">
+          <i class="fa-solid fa-ticket"></i>
+          Meus Cupons
+        </a>
+
+      </div>
+
+    </aside>
+
+    <!-- PAINEL -->
+    <main class="painel">
+
+      <div class="painel-card">
+
+        <div class="painel-topo">
+
+          <h2>Meu Perfil</h2>
+
+          <p>
+            Gerenciar e proteger sua conta
+          </p>
+
+        </div>
+
+        <div class="linha"></div>
+
+        <div class="perfil-grid">
+
+          <!-- FORM -->
+          <div class="formulario">
+
+            <div class="campo">
+              <label>Nome de usuário</label>
+
+              <input
+                type="text"
+                value="****************"
+              >
+            </div>
+
+            <div class="campo">
+              <label>Nome</label>
+
+              <input
+                type="text"
+                placeholder="Digite seu nome"
+              >
+            </div>
+
+            <div class="campo-texto">
+              <label>Email</label>
+
+              <span>
+                **********@gmail.com
+              </span>
+
+              <a href="#">Trocar</a>
+            </div>
+
+            <div class="campo-texto">
+              <label>Telefone</label>
+
+              <span>
+                **********
+              </span>
+
+              <a href="#">Trocar</a>
+            </div>
+
+            <div class="campo-radio">
+
+              <label>Sexo</label>
+
+              <div class="radios">
+
+                <label>
+                  <input type="radio" name="sexo">
+                  Masculino
+                </label>
+
+                <label>
+                  <input type="radio" name="sexo">
+                  Feminino
+                </label>
+
+                <label>
+                  <input type="radio" name="sexo">
+                  Outros
+                </label>
+
+              </div>
+
+            </div>
+
+            <button class="btn-salvar">
+              Gravar
+            </button>
+
+          </div>
+
+          <!-- FOTO -->
+          <div class="foto-lateral">
+
+            <img
+              id="fotoPerfil"
+              src="img/user.png"
+              alt="Foto"
+            >
+
+            <input
+              type="file"
+              id="uploadFoto"
+              accept="image/*"
+            >
+
+            <label for="uploadFoto">
+              Selecionar A Imagem
+            </label>
+
+            <p>
+              Tamanho máximo: 1 MB
+            </p>
+
+            <p>
+              Formatos: .JPEG, .PNG
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
 
   </div>
 
-  <!-- JS -->
   <script src="perfil-cliente.js"></script>
+
 </body>
 </html>
