@@ -765,6 +765,7 @@ body.page-sobre .banner-topo img {
 body.page-sobre .secao-texto {
   padding: 80px 10% 40px;
   text-align: center;
+  color: var(--ayvy-purple);
 }
 
 body.page-sobre .secao-texto h1 {
