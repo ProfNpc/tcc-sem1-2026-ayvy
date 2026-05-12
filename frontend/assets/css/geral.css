@@ -1,4 +1,4 @@
-/* CSS único (navbar + index + sobre + ranking)
+/* CSS único (navbar + index + sobre + ranking + perfil)
    Regra do projeto: páginas importam somente este arquivo. */
 
 /* ========================================================================== */
@@ -1026,6 +1026,320 @@ body.page-ranking .status-pill {
 @media (max-width: 768px) {
   body.page-ranking .ranking-header h1 {
     font-size: 2rem;
+  }
+}
+
+/* ========================================================================== */
+/* PERFIL (perfil.html — body.page-perfil)                                    */
+/* ========================================================================== */
+
+body.page-perfil {
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  /* Fundo cinza-claro atrás dos dois cartões */
+  background-color: #f5f5f5;
+  background-image: none;
+}
+
+body.page-perfil .perfil-page {
+  padding: 24px clamp(16px, 5vw, 56px) 48px;
+  box-sizing: border-box;
+}
+
+body.page-perfil .perfil-container {
+  display: flex;
+  align-items: stretch;
+  gap: 28px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body.page-perfil .sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+body.page-perfil .usuario {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+body.page-perfil .usuario img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+body.page-perfil .usuario h3 {
+  margin: 0 0 5px;
+  font-size: 1rem;
+  color: #333;
+}
+
+body.page-perfil .usuario a {
+  color: #6d1bb3;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+body.page-perfil .usuario a:hover {
+  text-decoration: underline;
+}
+
+body.page-perfil .menu-titulo {
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body.page-perfil .submenu {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+body.page-perfil .submenu a {
+  text-decoration: none;
+  color: #555;
+  padding: 10px 0;
+  transition: color 0.2s;
+}
+
+body.page-perfil .submenu a:hover,
+body.page-perfil .submenu a.ativo {
+  color: #6d1bb3;
+  font-weight: bold;
+}
+
+body.page-perfil .menu-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #555;
+  padding: 12px 0;
+}
+
+body.page-perfil .menu-link:hover {
+  color: #6d1bb3;
+}
+
+body.page-perfil .painel {
+  flex: 1;
+  min-width: 0;
+}
+
+body.page-perfil .painel-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 35px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+body.page-perfil .painel-topo h2 {
+  font-size: 28px;
+  margin: 0 0 8px;
+  color: #222;
+}
+
+body.page-perfil .painel-topo p {
+  margin: 0;
+  color: #666;
+}
+
+body.page-perfil .linha {
+  width: 100%;
+  height: 1px;
+  background: #ddd;
+  margin: 25px 0;
+}
+
+body.page-perfil .perfil-grid {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+body.page-perfil .formulario {
+  width: 100%;
+  min-width: 0;
+}
+
+body.page-perfil .campo {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+body.page-perfil .campo label {
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #444;
+}
+
+body.page-perfil .campo input {
+  width: 100%;
+  max-width: 100%;
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  outline: none;
+  font-size: 1rem;
+}
+
+body.page-perfil .campo input:focus {
+  border-color: #6d1bb3;
+}
+
+body.page-perfil .campo-texto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+body.page-perfil .campo-texto label {
+  width: 100px;
+  flex-shrink: 0;
+  font-weight: bold;
+  color: #444;
+}
+
+body.page-perfil .campo-texto-valor {
+  color: #333;
+  flex: 1;
+  min-width: 0;
+  word-break: break-all;
+}
+
+body.page-perfil .campo-texto-mascarado {
+  font-family: ui-monospace, "Cascadia Code", "Segoe UI Mono", Consolas, monospace;
+  letter-spacing: 0.02em;
+  color: #555;
+}
+
+body.page-perfil .campo-texto a {
+  color: #6d1bb3;
+  text-decoration: none;
+}
+
+body.page-perfil .campo-texto a:hover {
+  text-decoration: underline;
+}
+
+body.page-perfil .campo-radio {
+  margin-bottom: 25px;
+}
+
+body.page-perfil .campo-radio > label {
+  display: block;
+  font-weight: bold;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+body.page-perfil .radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+body.page-perfil .radios label {
+  font-weight: normal;
+  color: #555;
+  cursor: pointer;
+}
+
+body.page-perfil .btn-salvar {
+  background: #6d1bb3;
+  color: #fff;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+body.page-perfil .btn-salvar:hover {
+  background: #55108f;
+}
+
+body.page-perfil .foto-lateral {
+  width: 250px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+body.page-perfil .foto-lateral img {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 20px;
+  border: 5px solid #eee;
+  display: inline-block;
+}
+
+body.page-perfil .foto-lateral input {
+  display: none;
+}
+
+body.page-perfil .foto-lateral label {
+  display: inline-block;
+  background: #6d1bb3;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+body.page-perfil .foto-lateral label:hover {
+  background: #55108f;
+}
+
+body.page-perfil .foto-lateral p {
+  color: #777;
+  font-size: 13px;
+  margin: 5px 0 0;
+}
+
+@media (max-width: 1000px) {
+  body.page-perfil .perfil-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  body.page-perfil .sidebar {
+    width: 100%;
+  }
+
+  body.page-perfil .perfil-grid {
+    flex-direction: column;
+  }
+
+  body.page-perfil .foto-lateral {
+    width: 100%;
   }
 }
 

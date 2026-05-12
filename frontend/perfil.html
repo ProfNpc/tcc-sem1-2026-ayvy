@@ -1,87 +1,152 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Perfil do Cliente | AYVY</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meu Perfil | AYVY</title>
+    <link rel="stylesheet" href="assets/css/geral.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+  <body class="page-perfil">
+    <div id="ayvy-navbar"></div>
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="assets/css/geral.css" />
-  <link rel="stylesheet" href="assets/css/perfil-cliente.css">
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-  />
-</head>
-<body class="page-perfil">
+    <div class="perfil-page">
+      <div class="perfil-container">
+        <aside class="sidebar">
+          <div class="usuario">
+            <img
+              class="js-perfil-avatar"
+              src="assets/img/ayvy-media-a.png"
+              alt="Foto do usuário"
+            />
+            <div>
+              <h3 id="nomePerfilSidebar">Minha conta</h3>
+              <a href="#painel-perfil">
+                <i class="fa-solid fa-pen"></i>
+                Editar perfil
+              </a>
+            </div>
+          </div>
 
-  <div id="ayvy-navbar"></div>
+          <nav class="menu" aria-label="Minha conta">
+            <div class="menu-titulo">
+              <i class="fa-regular fa-user"></i>
+              Minha conta
+            </div>
+            <div class="submenu">
+              <a href="perfil.html" class="ativo">Perfil</a>
+              <a href="#">Cartões / contas bancárias</a>
+              <a href="#">Endereços</a>
+              <a href="#">Trocar senha</a>
+              <a href="#">Preferências de cookies</a>
+              <a href="#">Configurações de privacidade</a>
+            </div>
+            <a href="#" class="menu-link">
+              <i class="fa-regular fa-clipboard"></i>
+              Minhas compras
+            </a>
+            <a href="#" class="menu-link">
+              <i class="fa-regular fa-bell"></i>
+              Notificações
+            </a>
+            <a href="#" class="menu-link">
+              <i class="fa-solid fa-ticket"></i>
+              Meus cupons
+            </a>
+          </nav>
+        </aside>
 
-  <div class="container">
+        <main class="painel" id="painel-perfil">
+          <div class="painel-card">
+            <div class="painel-topo">
+              <h2>Meu perfil</h2>
+              <p>Gerenciar e proteger sua conta</p>
+            </div>
+            <div class="linha"></div>
 
-    <!-- CARD PERFIL -->
-    <div class="perfil-card">
+            <div class="perfil-grid">
+              <div class="formulario">
+                <div class="campo">
+                  <label for="inputNomeUsuario">Nome de usuário</label>
+                  <input
+                    id="inputNomeUsuario"
+                    type="text"
+                    placeholder="****************"
+                    autocomplete="username"
+                  />
+                </div>
+                <div class="campo">
+                  <label for="inputNomeCompleto">Nome</label>
+                  <input
+                    id="inputNomeCompleto"
+                    type="text"
+                    placeholder="Digite seu nome"
+                    autocomplete="name"
+                  />
+                </div>
+                <div class="campo-texto">
+                  <label>Email</label>
+                  <span class="campo-texto-valor campo-texto-mascarado">**********@gmail.com</span>
+                  <a href="#">Trocar</a>
+                </div>
+                <div class="campo-texto">
+                  <label>Telefone</label>
+                  <span class="campo-texto-valor campo-texto-mascarado">**********</span>
+                  <a href="#">Trocar</a>
+                </div>
+                <div class="campo-radio">
+                  <label>Sexo</label>
+                  <div class="radios">
+                    <label>
+                      <input type="radio" name="sexo" value="m" />
+                      Masculino
+                    </label>
+                    <label>
+                      <input type="radio" name="sexo" value="f" />
+                      Feminino
+                    </label>
+                    <label>
+                      <input type="radio" name="sexo" value="o" />
+                      Outros
+                    </label>
+                  </div>
+                </div>
+                <button type="button" class="btn-salvar">Gravar</button>
+              </div>
 
-      <!-- BANNER TOPO -->
-      <div class="banner-topo"></div>
-
-      <!-- FOTO DE PERFIL -->
-      <div class="foto-container">
-        <img id="fotoPerfil" src="assets/img/ayvy-media-a.png" alt="Foto de Perfil">
-        
-        <input type="file" id="uploadFoto" accept="image/*">
-        <label for="uploadFoto">Alterar Foto</label>
+              <div class="foto-lateral">
+                <img
+                  class="js-perfil-avatar"
+                  src="assets/img/ayvy-media-a.png"
+                  alt="Foto de perfil"
+                />
+                <input
+                  type="file"
+                  id="uploadFoto"
+                  accept="image/jpeg,image/png,image/jpg"
+                />
+                <label for="uploadFoto">Selecionar imagem</label>
+                <p>Tamanho máximo: 1 MB</p>
+                <p>Formatos: .JPEG, .PNG</p>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
-
-      <h2 id="nomeUsuario">Meu Perfil</h2>
-
     </div>
 
-    <!-- DADOS PESSOAIS -->
-    <div class="info-card">
-      <h2>Dados Pessoais</h2>
-      <p>Email: cliente@email.com</p>
-      <p>Telefone: (11) 99999-9999</p>
-      <button>Editar Dados</button>
-    </div>
-
-    <!-- ENDEREÇO -->
-    <div class="info-card">
-      <h2>Endereço</h2>
-      <p>Rua Exemplo, 123</p>
-      <p>Cidade - Estado</p>
-      <button>Editar Endereço</button>
-    </div>
-
-    <!-- HISTÓRICO DE COMPRAS -->
-    <div class="info-card">
-      <h2>Meus Pedidos</h2>
-      <ul>
-        <li>Pedido #001 - Entregue</li>
-        <li>Pedido #002 - Em andamento</li>
-        <li>Pedido #003 - Cancelado</li>
-      </ul>
-    </div>
-
-    <!-- SEGURANÇA -->
-    <div class="info-card">
-      <h2>Segurança</h2>
-      <button>Alterar Senha</button>
-    </div>
-
-  </div>
-
-  <!-- JS -->
-  <script src="assets/js/auth.js"></script>
-  <script>
-    AyvyAuth.requireAuth();
-  </script>
-  <script src="assets/js/components/cart.js"></script>
-  <script src="assets/js/components/navbar.js"></script>
-  <script>
-    AyvyNavbar.mount();
-  </script>
-
-  <script src="assets/js/perfil-cliente.js"></script>
-</body>
+    <script src="assets/js/auth.js"></script>
+    <script>
+      AyvyAuth.requireAuth();
+    </script>
+    <script src="assets/js/components/cart.js"></script>
+    <script src="assets/js/components/navbar.js"></script>
+    <script>
+      AyvyNavbar.mount();
+    </script>
+    <script src="assets/js/perfil-cliente.js"></script>
+  </body>
 </html>
