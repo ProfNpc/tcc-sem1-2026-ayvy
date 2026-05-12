@@ -913,15 +913,15 @@ body.page-sobre .membro-media {
 
 /* ========================================================================== */
 /* RANKING                                                                     */
-/* ========================================================================== */
+/* ========================================================================== *
 
 body.page-ranking {
   font-family: "Segoe UI", sans-serif;
 }
 
 body.page-ranking {
-  background-color: var(--dark-bg);
-  color: #ffffff;
+  background-color: #ffffff;
+  color: var(--ayvy-purple);
 }
 
 body.page-ranking .ranking-wrapper {
@@ -1028,6 +1028,7 @@ body.page-ranking .status-pill {
     font-size: 2rem;
   }
 }
+/
 
 /* ========================================================================== */
 /* PERFIL (perfil.html — body.page-perfil)                                    */
@@ -1089,7 +1090,7 @@ body.page-perfil .usuario h3 {
 }
 
 body.page-perfil .usuario a {
-  color: #6d1bb3;
+  color: var(--ayvy-purple);
   text-decoration: none;
   font-size: 14px;
 }
@@ -1122,7 +1123,7 @@ body.page-perfil .submenu a {
 
 body.page-perfil .submenu a:hover,
 body.page-perfil .submenu a.ativo {
-  color: #6d1bb3;
+  color: var(--ayvy-purple);
   font-weight: bold;
 }
 
@@ -1136,7 +1137,7 @@ body.page-perfil .menu-link {
 }
 
 body.page-perfil .menu-link:hover {
-  color: #6d1bb3;
+  color: var(--ayvy-purple);
 }
 
 body.page-perfil .painel {
@@ -1205,7 +1206,7 @@ body.page-perfil .campo input {
 }
 
 body.page-perfil .campo input:focus {
-  border-color: #6d1bb3;
+  border-color: var(--ayvy-purple);
 }
 
 body.page-perfil .campo-texto {
@@ -1237,7 +1238,7 @@ body.page-perfil .campo-texto-mascarado {
 }
 
 body.page-perfil .campo-texto a {
-  color: #6d1bb3;
+  color: var(--ayvy-purple);
   text-decoration: none;
 }
 
@@ -1270,7 +1271,7 @@ body.page-perfil .radios label {
 }
 
 body.page-perfil .btn-salvar {
-  background: #6d1bb3;
+  background: var(--ayvy-purple);
   color: #fff;
   border: none;
   padding: 14px 28px;
@@ -1281,7 +1282,7 @@ body.page-perfil .btn-salvar {
 }
 
 body.page-perfil .btn-salvar:hover {
-  background: #55108f;
+  background: var(--ayvy-purple);
 }
 
 body.page-perfil .foto-lateral {
@@ -1306,7 +1307,7 @@ body.page-perfil .foto-lateral input {
 
 body.page-perfil .foto-lateral label {
   display: inline-block;
-  background: #6d1bb3;
+  background: var(--ayvy-purple);
   color: #fff;
   padding: 12px 20px;
   border-radius: 10px;
@@ -1315,7 +1316,7 @@ body.page-perfil .foto-lateral label {
 }
 
 body.page-perfil .foto-lateral label:hover {
-  background: #55108f;
+  background: var(--ayvy-purple);
 }
 
 body.page-perfil .foto-lateral p {
