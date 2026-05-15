@@ -1,3 +1,9 @@
+body {
+  zoom: 1.1; /* Isso equivale aos 110% do navegador */
+  -moz-transform: scale(1.1); /* Suporte para Firefox */
+  -moz-transform-origin: top center;
+}
+
 /* Configuração Geral */
 * {
   margin: 0;
@@ -60,21 +66,40 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-top: 40px;
 }
 
+/* Container limpo, sem fundo e sem caixa */
 .foto-grupo-destaque {
   width: 100%;
   max-width: 900px;
-  height: 450px;
-  margin-bottom: 100px; /* Espaço extra para não encavalar nos membros */
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  margin: 0 auto 50px auto;
+  background: transparent; /* Garante que não tenha cor de fundo */
+  box-shadow: none; /* Remove qualquer sombra do bloco todo */
+  text-align: left; /* Alinha a legenda à esquerda, bem rente à foto */
 }
+
 .foto-grupo-destaque img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  border-radius: 15px;
+  display: block;
+  margin-bottom: 8px; /* Distância bem pequena entre foto e texto */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra apenas na foto */
+}
+
+/* Legenda simples em uma linha só */
+.legenda-equipe {
+  font-size: 14px; /* Bem pequenininha como você pediu */
+  color: #333; /* Cor neutra para os nomes */
+  margin: 0;
+  padding: 0;
+}
+
+.legenda-equipe strong {
+  color: #b06edc; /* Roxo para o título */
+  font-weight: bold;
+  font-size: 14px;
 }
 
 /* Layout dos Membros */
@@ -85,6 +110,7 @@
   width: 100%;
   max-width: 1000px;
   margin-bottom: 80px;
+  margin-top: 60px;
 }
 
 .membro-row.reverso {
@@ -129,11 +155,6 @@
   padding: 60px 0;
   text-align: center;
 }
-.footer-box {
-  border: 1px solid #444;
-  display: inline-block;
-  padding: 25px 50px;
-}
 
 /* ============================================================
    MOBILE (AJUSTES PARA CELULAR)
@@ -162,4 +183,30 @@
     width: 250px;
     height: 250px;
   }
+}
+/* ============================================================
+   AJUSTE PARA AUMENTAR O ZOOM DA PÁGINA
+   ============================================================ */
+
+/* Aumenta a largura máxima dos textos de história */
+.secao-texto {
+  padding: 80px 5%; /* Diminuí a margem lateral para o texto espalhar mais */
+}
+
+.secao-texto p {
+  max-width: 1200px; /* Aumentei o limite de largura do texto */
+  margin: 0 auto;
+  font-size: 1.1rem; /* Aumenta levemente a letra */
+}
+
+/* Aumenta a largura das linhas da equipe */
+.membro-row {
+  max-width: 1200px; /* De 1000px para 1200px */
+  gap: 80px; /* Mais espaço entre a foto e o texto */
+}
+
+/* Aumenta um pouco as fotos para preencherem a tela */
+.membro-media {
+  width: 350px; /* De 300px para 350px */
+  height: 350px;
 }
