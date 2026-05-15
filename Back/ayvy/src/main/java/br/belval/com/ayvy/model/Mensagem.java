@@ -10,7 +10,6 @@ public class Mensagem {
 	private String texto;
 	private LocalDateTime data_envio;
 	private LocalDateTime data_recebimento;
-}
 
 public Mensagem() {
 	
