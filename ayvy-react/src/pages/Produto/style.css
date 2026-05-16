@@ -1,0 +1,18 @@
+.produto-not-found {
+  padding: 2rem;
+  text-align: center;
+}
+
+.produto-loja-link {
+  color: #666;
+  margin: 0 0 0.5rem;
+}
+
+.produto-titulo {
+  margin-top: 0;
+}
+
+.produto-preco {
+  font-size: 1.25rem;
+  font-weight: 700;
+}

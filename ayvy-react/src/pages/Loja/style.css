@@ -1,0 +1,18 @@
+.loja-not-found {
+  padding: 2rem;
+  text-align: center;
+}
+
+.loja-hero-title {
+  margin: 0 0 0.25rem;
+}
+
+.loja-hero-handle {
+  margin: 0;
+  color: #666;
+}
+
+.loja-hero-bio {
+  margin-top: 0.75rem;
+  max-width: 520px;
+}
