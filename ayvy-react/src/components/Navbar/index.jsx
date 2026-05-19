@@ -10,7 +10,7 @@ import "./style.css";
 
 export default function Navbar() {
   const { loggedIn, logout } = useAuth();
-  const { cart, toggle } = useCart();
+  const { cartCount, toggle } = useCart();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -124,7 +124,7 @@ export default function Navbar() {
             role="presentation"
           >
             <i className="fas fa-shopping-cart" />
-            <span id="cartCount">{cart.length}</span>
+            <span id="cartCount">{cartCount}</span>
           </div>
         </div>
       </header>
@@ -133,7 +133,7 @@ export default function Navbar() {
         key={location.pathname}
         loggedIn={loggedIn}
         onLogoutRequest={() => setLogoutOpen(true)}
-        cartCount={cart.length}
+        cartCount={cartCount}
         onCartClick={toggle}
       />
 

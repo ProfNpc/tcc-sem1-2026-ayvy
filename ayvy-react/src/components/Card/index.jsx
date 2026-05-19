@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { formatSoldLabel } from "../../utils/productHelpers";
 import "./style.css";
 
 /**
@@ -14,21 +15,37 @@ export default function Card({
   price,
   productId,
   shopSlug,
+  rating,
+  soldCount,
+  discountPercent = 0,
   linkLabel = "Ver Loja",
 }) {
   if (variant === "product") {
     const to = `/loja/${shopSlug}/p/${productId}`;
+    const showDiscount = discountPercent > 0;
+
     return (
-      <div className="card-insta">
-        <div className="card-header">
-          <span>{title}</span>
+      <Link to={to} className="card-product-shopee">
+        <div className="card-product-shopee__img-wrap">
+          <img src={img} alt={title} loading="lazy" />
         </div>
-        <img src={img} className="card-img" alt="" />
-        {price ? <p className="card-price-line">{price}</p> : null}
-        <Link className="btn-visit" to={to}>
-          {linkLabel}
-        </Link>
-      </div>
+        <div className="card-product-shopee__body">
+          <h3 className="card-product-shopee__title">{title}</h3>
+          <div className="card-product-shopee__price-row">
+            <span className="card-product-shopee__price">{price}</span>
+            {showDiscount && (
+              <span className="card-product-shopee__discount">-{discountPercent}%</span>
+            )}
+          </div>
+          <div className="card-product-shopee__meta">
+            <span className="card-product-shopee__rating">
+              <i className="fas fa-star" aria-hidden />
+              {Number(rating).toFixed(1)}
+            </span>
+            <span className="card-product-shopee__sold">{formatSoldLabel(soldCount)}</span>
+          </div>
+        </div>
+      </Link>
     );
   }
 
