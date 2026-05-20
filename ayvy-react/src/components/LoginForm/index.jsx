@@ -7,7 +7,7 @@ export default function LoginForm({ onSubmit }) {
       <h1>Login AYVY</h1>
 
       <div className="input-box">
-        <input placeholder="Usuário" type="email" name="email" />
+        <input placeholder="Usuário (admin, itb_moda…)" type="text" name="email" autoComplete="username" />
         <i className="bx bxs-user" />
       </div>
 

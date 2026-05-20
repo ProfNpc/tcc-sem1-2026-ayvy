@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import LoginForm from "../../components/LoginForm";
 import { useAuth } from "../../context/AuthContext";
+import { getHomePathForRole } from "../../utils/mockAuthUsers";
 import useExternalStylesOnce from "../../hooks/useExternalStylesOnce";
 import { loginPageHrefs } from "../../utils/authPageStyles";
 import "./style.css";
 
 export default function Login() {
-  const { loggedIn, loginMock } = useAuth();
+  const { loggedIn, loginMock, role, shopSlug } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [visible, setVisible] = useState(false);
@@ -21,11 +22,17 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    if (loggedIn) {
-      const from = location.state?.from;
-      navigate(typeof from === "string" && from ? from : "/", { replace: true });
-    }
-  }, [loggedIn, location.state, navigate]);
+    if (!loggedIn || !role) return;
+
+    const from = location.state?.from;
+    const roleHome = getHomePathForRole(role, shopSlug);
+    const dest =
+      role === "cliente" && typeof from === "string" && from && from !== "/login"
+        ? from
+        : roleHome;
+
+    navigate(dest, { replace: true });
+  }, [loggedIn, role, shopSlug, location.state, navigate]);
 
   function onSubmit(e) {
     e.preventDefault();

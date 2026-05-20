@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import Card from "../../components/Card";
 import Footer from "../../components/Footer";
 import FloatingChat from "../../components/FloatingChat";
+import { useAuth } from "../../context/AuthContext";
+import { isShopOwner } from "../../utils/mockAuthUsers";
 import { SHOPS, normalizeSlugParam } from "../../utils/lojistaData";
 import { enrichProduct, enrichShop } from "../../utils/productHelpers";
 import "./style.css";
@@ -23,9 +25,12 @@ export default function Loja() {
   const slug = normalizeSlugParam(raw || "");
   const shopRaw = SHOPS[slug];
   const shop = shopRaw ? enrichShop(shopRaw, slug) : null;
+  const { user } = useAuth();
+  const isOwner = isShopOwner(user, slug);
 
   const [chatOpen, setChatOpen] = useState(false);
   const [followingSlugs, setFollowingSlugs] = useState(() => readFollowing());
+  const [hiddenProductIds, setHiddenProductIds] = useState([]);
 
   if (!shop) {
     return (
@@ -37,6 +42,7 @@ export default function Loja() {
   }
 
   const isFollowing = followingSlugs.includes(slug);
+  const visibleProducts = shop.products.filter((p) => !hiddenProductIds.includes(p.id));
 
   function toggleFollow() {
     setFollowingSlugs((prev) => {
@@ -48,11 +54,18 @@ export default function Loja() {
     });
   }
 
+  function handleDeleteProduct(productId) {
+    const ok = window.confirm("Remover este produto da vitrine? (mock — depois virá da API)");
+    if (!ok) return;
+    setHiddenProductIds((prev) => [...prev, productId]);
+  }
+
   return (
     <div className="page-loja-extra">
       <section className="loja-hero">
         <img src={shop.avatar} alt="" className="loja-hero-avatar" />
         <div className="loja-hero-content">
+          {isOwner ? <span className="loja-owner-badge">Sua loja</span> : null}
           <h1 className="loja-hero-title">{shop.name}</h1>
           <p className="loja-hero-handle">{shop.handle}</p>
           <p className="loja-hero-bio">{shop.bio}</p>
@@ -64,13 +77,14 @@ export default function Loja() {
             ))}
           </div>
         </div>
-        <div className="loja-hero-actions">
-          <button
-            type="button"
-            className={`loja-btn-follow ${isFollowing ? "is-following" : ""}`}
-            onClick={toggleFollow}
-            aria-pressed={isFollowing}
-          >
+        {!isOwner ? (
+          <div className="loja-hero-actions">
+            <button
+              type="button"
+              className={`loja-btn-follow ${isFollowing ? "is-following" : ""}`}
+              onClick={toggleFollow}
+              aria-pressed={isFollowing}
+            >
               {isFollowing ? (
                 <>
                   <i className="fas fa-check" aria-hidden /> Seguindo
@@ -87,14 +101,17 @@ export default function Loja() {
               onClick={() => setChatOpen(true)}
             >
               <i className="fas fa-comment-dots" aria-hidden /> Enviar mensagem
-          </button>
-        </div>
+            </button>
+          </div>
+        ) : null}
       </section>
 
       <section className="loja-catalogo">
-        <h2 className="loja-produtos-titulo">Recomendado para você</h2>
+        <h2 className="loja-produtos-titulo">
+          {isOwner ? "Seus produtos" : "Recomendado para você"}
+        </h2>
         <div className="loja-product-grid">
-          {shop.products.map((p) => {
+          {visibleProducts.map((p) => {
             const product = enrichProduct(p, shop);
             return (
               <Card
@@ -108,19 +125,31 @@ export default function Loja() {
                 discountPercent={product.discountPercent}
                 productId={product.id}
                 shopSlug={slug}
+                ownerMode={isOwner}
+                onDelete={() => handleDeleteProduct(p.id)}
               />
             );
           })}
+          {isOwner ? (
+            <Link to={`/loja/${slug}/produto/novo`} className="loja-add-product-card">
+              <span className="loja-add-product-card__icon" aria-hidden>
+                +
+              </span>
+              <span className="loja-add-product-card__label">Adicionar produto</span>
+            </Link>
+          ) : null}
         </div>
       </section>
 
       <Footer />
-      <FloatingChat
-        shopName={shop.name}
-        shopAvatar={shop.avatar}
-        defaultOpen={chatOpen}
-        onOpenChange={setChatOpen}
-      />
+      {!isOwner ? (
+        <FloatingChat
+          shopName={shop.name}
+          shopAvatar={shop.avatar}
+          defaultOpen={chatOpen}
+          onOpenChange={setChatOpen}
+        />
+      ) : null}
     </div>
   );
 }

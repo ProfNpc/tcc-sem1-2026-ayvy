@@ -1,4 +1,47 @@
 /* Card de produto na loja (estilo vitrine) */
+.card-product-shopee--owner {
+  position: relative;
+  display: block;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.card-product-shopee--owner .card-product-shopee__link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.card-product-shopee--owner:hover {
+  border-color: var(--ayvy-purple, #b06edc);
+  box-shadow: 0 6px 16px rgba(176, 110, 220, 0.12);
+}
+
+.card-product-shopee__delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #c0392b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.card-product-shopee__delete:hover {
+  background: #fff;
+  color: #a93226;
+}
+
 .card-product-shopee {
   display: block;
   text-decoration: none;

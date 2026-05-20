@@ -5,6 +5,10 @@ import "./style.css";
 
 export default function NavbarMobile({
   loggedIn,
+  isAdmin,
+  isLojista,
+  isCliente,
+  minhaLojaPath = "/",
   onLogoutRequest,
   cartCount,
   onCartClick,
@@ -54,7 +58,17 @@ export default function NavbarMobile({
                   <i className="fas fa-home" /> Início
                 </Link>
               </li>
-              <li style={{ display: loggedIn ? "" : "none" }}>
+              <li style={{ display: isAdmin ? "" : "none" }}>
+                <Link to="/admin" onClick={() => setMobileOpen(false)}>
+                  <i className="fas fa-shield-alt" /> Painel admin
+                </Link>
+              </li>
+              <li style={{ display: isLojista ? "" : "none" }}>
+                <Link to={minhaLojaPath} onClick={() => setMobileOpen(false)}>
+                  <i className="fas fa-store" /> Minha loja
+                </Link>
+              </li>
+              <li style={{ display: isCliente && loggedIn ? "" : "none" }}>
                 <Link to="/perfil" onClick={() => setMobileOpen(false)}>
                   <i className="fas fa-user-circle" /> Perfil
                 </Link>
@@ -124,7 +138,7 @@ export default function NavbarMobile({
         className="nav-cart-icon"
         id="navCartIconMobile"
         onClick={onCartClick}
-        style={{ display: loggedIn ? "flex" : "none" }}
+        style={{ display: isCliente && loggedIn ? "flex" : "none" }}
         title="Carrinho"
         role="presentation"
       >

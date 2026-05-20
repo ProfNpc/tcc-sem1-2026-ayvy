@@ -1,0 +1,9 @@
+@import "../PanelLayout/panel-layout.css";
+
+.panel-shell--admin .panel-sidebar {
+  border-right-color: #e8dff3;
+}
+
+.panel-shell--admin .panel-logo {
+  color: var(--ayvy-purple, #b06edc);
+}

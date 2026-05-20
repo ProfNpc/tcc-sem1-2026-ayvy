@@ -9,7 +9,8 @@ import NavbarMobile from "../NavbarMobile";
 import "./style.css";
 
 export default function Navbar() {
-  const { loggedIn, logout } = useAuth();
+  const { loggedIn, logout, isAdmin, isLojista, isCliente, shopSlug } = useAuth();
+  const minhaLojaPath = shopSlug ? `/loja/${shopSlug}` : "/";
   const { cartCount, toggle } = useCart();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const navigate = useNavigate();
@@ -34,7 +35,17 @@ export default function Navbar() {
                     <i className="fas fa-home" /> Início
                   </Link>
                 </li>
-                <li style={{ display: loggedIn ? "" : "none" }}>
+                <li style={{ display: isAdmin ? "" : "none" }}>
+                  <Link to="/admin">
+                    <i className="fas fa-shield-alt" /> Painel admin
+                  </Link>
+                </li>
+                <li style={{ display: isLojista ? "" : "none" }}>
+                  <Link to={minhaLojaPath}>
+                    <i className="fas fa-store" /> Minha loja
+                  </Link>
+                </li>
+                <li style={{ display: isCliente && loggedIn ? "" : "none" }}>
                   <Link to="/perfil">
                     <i className="fas fa-user-circle" /> Perfil
                   </Link>
@@ -119,7 +130,7 @@ export default function Navbar() {
             className="nav-cart-icon"
             id="navCartIcon"
             onClick={toggle}
-            style={{ display: loggedIn ? "flex" : "none" }}
+            style={{ display: isCliente && loggedIn ? "flex" : "none" }}
             title="Carrinho"
             role="presentation"
           >
@@ -132,6 +143,10 @@ export default function Navbar() {
       <NavbarMobile
         key={location.pathname}
         loggedIn={loggedIn}
+        isAdmin={isAdmin}
+        isLojista={isLojista}
+        isCliente={isCliente}
+        minhaLojaPath={minhaLojaPath}
         onLogoutRequest={() => setLogoutOpen(true)}
         cartCount={cartCount}
         onCartClick={toggle}

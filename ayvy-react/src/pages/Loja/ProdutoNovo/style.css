@@ -1,0 +1,33 @@
+.loja-produto-novo-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.loja-produto-novo-card {
+  background: #fff;
+  border: 1px solid #ececf0;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.loja-produto-novo-card h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+}
+
+.loja-produto-novo-card p {
+  margin: 0 0 1rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.loja-produto-novo-back {
+  color: var(--ayvy-purple, #b06edc);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.loja-produto-novo-back:hover {
+  text-decoration: underline;
+}

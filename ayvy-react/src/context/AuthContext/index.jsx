@@ -1,17 +1,25 @@
 import { createContext, useCallback, useContext, useMemo, useSyncExternalStore } from "react";
+import { resolveMockSession, ROLES } from "../../utils/mockAuthUsers";
 import "./style.css";
 
 const AUTH_KEY = "ayvy.auth";
 
-function readLogged() {
+function readSession() {
   try {
-    return localStorage.getItem(AUTH_KEY) === "1";
+    const raw = localStorage.getItem(AUTH_KEY);
+    if (!raw) return null;
+    if (raw === "1") {
+      return { role: ROLES.CLIENTE, login: "", displayName: "Cliente" };
+    }
+    const parsed = JSON.parse(raw);
+    if (!parsed?.role) return null;
+    return parsed;
   } catch {
-    return false;
+    return null;
   }
 }
 
-let loggedSnapshot = readLogged();
+let sessionSnapshot = readSession();
 const listeners = new Set();
 
 function subscribe(cb) {
@@ -20,44 +28,51 @@ function subscribe(cb) {
 }
 
 function getSnapshot() {
-  return loggedSnapshot;
+  return sessionSnapshot;
 }
 
-function setLogged(next) {
-  loggedSnapshot = next;
+function persistSession(session) {
+  sessionSnapshot = session;
+  try {
+    if (session) {
+      localStorage.setItem(AUTH_KEY, JSON.stringify(session));
+    } else {
+      localStorage.removeItem(AUTH_KEY);
+    }
+  } catch {
+    /* ignore */
+  }
   listeners.forEach((l) => l());
 }
 
 export default function AuthProvider({ children }) {
-  const loggedIn = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const user = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const loggedIn = Boolean(user);
 
-  const loginMock = useCallback((email, password) => {
-    if (!email || !password) return false;
-    try {
-      localStorage.setItem(AUTH_KEY, "1");
-      setLogged(true);
-      return true;
-    } catch {
-      return false;
-    }
+  const loginMock = useCallback((loginInput, password) => {
+    const session = resolveMockSession(loginInput, password);
+    if (!session) return false;
+    persistSession(session);
+    return true;
   }, []);
 
   const logout = useCallback(() => {
-    try {
-      localStorage.removeItem(AUTH_KEY);
-    } catch {
-      /* ignore */
-    }
-    setLogged(false);
+    persistSession(null);
   }, []);
 
   const value = useMemo(
     () => ({
+      user,
       loggedIn,
+      role: user?.role ?? null,
+      isAdmin: user?.role === ROLES.ADMIN,
+      isLojista: user?.role === ROLES.LOJISTA,
+      isCliente: user?.role === ROLES.CLIENTE,
+      shopSlug: user?.shopSlug ?? null,
       loginMock,
       logout,
     }),
-    [loggedIn, loginMock, logout],
+    [user, loggedIn, loginMock, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
