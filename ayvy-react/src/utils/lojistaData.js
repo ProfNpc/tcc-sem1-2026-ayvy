@@ -186,34 +186,28 @@ export const SHOPS = {
       products: [
         {
           id: "ls-1",
-          title: "Moletom oversized",
-          price: "R$ 199,90",
+          title: "Jaqueta Track Purple",
+          price: "R$ 700,00",
           discountPercent: 20,
           soldCount: 890,
-          images: [
-            "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600",
-            "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=600",
-          ],
-          description: "Capuz duplo, bolso canguru. Interior felpado.",
+          images: ["/assets/img/Blusaroxa.png",
+          "/assets/img/Blusaroxav.png",],
+           description: "Capuz duplo, bolso canguru. Interior felpado.",
         },
         {
           id: "ls-2",
-          title: "Camiseta boxy",
-          price: "R$ 79,90",
-          images: [
-            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600",
-            "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=600",
-          ],
+          title: "Tênis New Balance 530 unissex",
+          price: "R$ 749,90",
+          images: ["/assets/img/NBcinza2.png",
+            "/assets/img/NBbranco.png",
+          "/assets/img/NBpreto1.png",],
           description: "Algodão penteado 180g, gola canelada reforçada.",
         },
         {
           id: "ls-3",
-          title: "Boné dad hat",
-          price: "R$ 69,90",
-          images: [
-            "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=600",
-            "https://images.unsplash.com/photo-1534215754734-75e352d1abce?w=600",
-          ],
+          title: "Bota Timberland",
+          price: "R$ 280,0",
+          images: ["/assets/img/BotaYellow.png",],
           description: "Bordado frontal, regulagem de metal.",
         },
         {
