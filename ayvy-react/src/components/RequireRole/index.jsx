@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { getHomePathForRole } from "../../utils/mockAuthUsers";
+import { getPostLoginPath } from "../../utils/mockAuthUsers";
 import "./style.css";
 
 /**
@@ -16,7 +16,7 @@ export default function RequireRole({ role, children }) {
   }
 
   if (!allowed.includes(user.role)) {
-    return <Navigate to={getHomePathForRole(user.role, user.shopSlug)} replace />;
+    return <Navigate to={getPostLoginPath(user)} replace />;
   }
 
   return children;

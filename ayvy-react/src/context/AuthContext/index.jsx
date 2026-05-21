@@ -13,6 +13,10 @@ function readSession() {
     }
     const parsed = JSON.parse(raw);
     if (!parsed?.role) return null;
+    const role = String(parsed.role).toLowerCase();
+    if (role === ROLES.ADMIN || role === ROLES.LOJISTA || role === ROLES.CLIENTE) {
+      return { ...parsed, role };
+    }
     return parsed;
   } catch {
     return null;
@@ -51,9 +55,9 @@ export default function AuthProvider({ children }) {
 
   const loginMock = useCallback((loginInput, password) => {
     const session = resolveMockSession(loginInput, password);
-    if (!session) return false;
+    if (!session) return null;
     persistSession(session);
-    return true;
+    return session;
   }, []);
 
   const logout = useCallback(() => {

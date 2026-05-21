@@ -7,6 +7,11 @@ export const ROLES = {
 };
 
 /** @type {Record<string, { role: string, login: string, displayName: string, shopSlug?: string }>} */
+const LOGIN_ALIASES = {
+  administrador: "admin",
+  adm: "admin",
+};
+
 export const MOCK_AUTH_USERS = {
   admin: {
     role: ROLES.ADMIN,
@@ -36,9 +41,10 @@ export function normalizeLoginInput(raw) {
 export function resolveMockSession(loginInput, password) {
   if (!password?.trim()) return null;
 
-  const key = normalizeLoginInput(loginInput);
-  if (!key) return null;
+  const rawKey = normalizeLoginInput(loginInput);
+  if (!rawKey) return null;
 
+  const key = LOGIN_ALIASES[rawKey] || rawKey;
   const known = MOCK_AUTH_USERS[key];
   if (known) return { ...known };
 
@@ -49,11 +55,26 @@ export function resolveMockSession(loginInput, password) {
   };
 }
 
-/** @param {string} role @param {string} [shopSlug] */
-export function getHomePathForRole(role, shopSlug) {
+/** @param {string} role */
+export function getHomePathForRole(role) {
   if (role === ROLES.ADMIN) return "/admin";
-  if (role === ROLES.LOJISTA) {
-    return shopSlug ? `/loja/${shopSlug}` : "/";
+  return "/";
+}
+
+/**
+ * Destino após login (prioriza papel, não a home genérica do site).
+ * @param {{ role: string, shopSlug?: string }} session
+ * @param {string} [from]
+ */
+export function getPostLoginPath(session, from) {
+  if (session.role === ROLES.ADMIN) {
+    return "/admin";
+  }
+  if (session.role === ROLES.LOJISTA) {
+    return "/";
+  }
+  if (typeof from === "string" && from && from !== "/login" && !from.startsWith("/admin")) {
+    return from;
   }
   return "/";
 }

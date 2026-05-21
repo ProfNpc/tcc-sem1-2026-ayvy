@@ -40,6 +40,11 @@ export default function Navbar() {
                     <i className="fas fa-shield-alt" /> Painel admin
                   </Link>
                 </li>
+                <li style={{ display: isLojista && loggedIn ? "" : "none" }}>
+                  <Link to="/perfil">
+                    <i className="fas fa-user-circle" /> Meu perfil
+                  </Link>
+                </li>
                 <li style={{ display: isLojista ? "" : "none" }}>
                   <Link to={minhaLojaPath}>
                     <i className="fas fa-store" /> Minha loja

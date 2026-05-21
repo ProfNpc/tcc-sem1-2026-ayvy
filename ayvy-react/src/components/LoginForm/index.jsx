@@ -7,18 +7,23 @@ export default function LoginForm({ onSubmit }) {
       <h1>Login AYVY</h1>
 
       <div className="input-box">
-        <input placeholder="Usuário (admin, itb_moda…)" type="text" name="email" autoComplete="username" />
+        <input
+          placeholder="Usuário"
+          type="text"
+          name="username"
+          autoComplete="username"
+        />
         <i className="bx bxs-user" />
       </div>
 
       <div className="input-box">
-        <input placeholder="Senha" type="password" name="password" />
+        <input placeholder="Senha" type="password" name="password" autoComplete="current-password" />
         <i className="bx bxs-lock-alt" />
       </div>
 
       <div className="remember-forgot">
         <label>
-          <input type="checkbox" />
+          <input type="checkbox" name="remember" />
           Lembrar Senha
         </label>
         <Link className="forgot-link" to="/esqueci-senha">
