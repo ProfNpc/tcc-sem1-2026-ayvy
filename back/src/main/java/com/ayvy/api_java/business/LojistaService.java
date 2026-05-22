@@ -60,7 +60,8 @@ public class LojistaService {
                 .bannerUrl(request.getBannerUrl())
                 .logoUrl(request.getLogoUrl())
                 .descricao(request.getDescricao())
-                .status(StatusLoja.pendente)
+                .status(StatusLoja.aprovado)
+                .aprovadoEm(LocalDateTime.now())
                 .build();
 
         return repository.saveAndFlush(lojista);
@@ -103,6 +104,13 @@ public class LojistaService {
         }
         if (lojista.getStatus() != null) {
             lojistaEntity.setStatus(lojista.getStatus());
+            if (lojista.getStatus() == StatusLoja.aprovado) {
+                if (lojistaEntity.getAprovadoEm() == null) {
+                    lojistaEntity.setAprovadoEm(LocalDateTime.now());
+                }
+            } else {
+                lojistaEntity.setAprovadoEm(null);
+            }
         }
 
         return repository.saveAndFlush(lojistaEntity);

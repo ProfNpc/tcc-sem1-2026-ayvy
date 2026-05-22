@@ -1,0 +1,373 @@
+.admin-crud-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.admin-crud-alert {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.admin-crud-alert--error {
+  background: #fdecea;
+  color: #b42318;
+  border: 1px solid #f5c2c0;
+}
+
+.admin-crud-alert--info {
+  background: #f0f4ff;
+  color: #344054;
+  border: 1px solid #d0d5dd;
+}
+
+.admin-crud-loading {
+  color: #666;
+  padding: 2rem;
+  text-align: center;
+}
+
+.admin-crud-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-crud-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.admin-crud-table th,
+.admin-crud-table td {
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-crud-table th {
+  color: #666;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.admin-crud-actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.admin-crud-btn-sm {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.admin-crud-btn-sm--danger {
+  color: #b42318;
+  border-color: #f5c2c0;
+}
+
+.admin-crud-btn-sm--primary {
+  background: var(--ayvy-purple, #b06edc);
+  color: #fff;
+  border-color: transparent;
+}
+
+.admin-crud-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 22, 40, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+}
+
+.admin-crud-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.admin-crud-modal h2 {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+}
+
+.admin-crud-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.admin-crud-field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 0.3rem;
+}
+
+.admin-crud-field input,
+.admin-crud-field select,
+.admin-crud-field textarea {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.admin-crud-field textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.admin-crud-hint {
+  font-size: 0.78rem;
+  color: #888;
+  margin: 0;
+}
+
+.admin-crud-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eee;
+}
+
+.admin-crud-img-preview {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.admin-crud-img-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.admin-badge--status {
+  text-transform: capitalize;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: #f0f0f5;
+  color: #444;
+}
+
+.admin-badge--status.aprovado,
+.admin-badge--status.ativo {
+  background: #e8f8ef;
+  color: #137333;
+}
+
+.admin-badge--status.pendente {
+  background: #fff4e5;
+  color: #b45309;
+}
+
+.admin-form-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--ayvy-purple, #b06edc);
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.admin-form-back:hover {
+  text-decoration: underline;
+}
+
+.admin-form-page {
+  max-width: 640px;
+}
+
+.admin-form-page--wide {
+  max-width: 720px;
+}
+
+.admin-crud-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 520px) {
+  .admin-crud-field-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-galeria-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+}
+
+.admin-galeria-item {
+  position: relative;
+  width: 88px;
+  height: 88px;
+}
+
+.admin-galeria-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.admin-galeria-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-badge--status.rascunho {
+  background: #f0f0f5;
+  color: #555;
+}
+
+.admin-badge--status.inativo,
+.admin-badge--status.suspenso {
+  background: #fdecea;
+  color: #b42318;
+}
+
+.admin-badge--status.esgotado {
+  background: #fff4e5;
+  color: #b45309;
+}
+
+.admin-form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.admin-upload-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px dashed #ccc;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.admin-upload-placeholder {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  color: #999;
+  font-size: 0.75rem;
+  border-radius: 8px;
+  background: #eee;
+}
+
+.admin-upload-preview {
+  width: 120px;
+  height: 80px;
+}
+
+.admin-upload-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-upload-label-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.9rem;
+  background: var(--ayvy-purple, #b06edc);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-upload-input-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin-usuario-selector-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.admin-usuario-selector-row select {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.admin-crud-btn-sm,
+.admin-crud-actions a.admin-crud-btn-sm {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}

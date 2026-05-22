@@ -3,6 +3,7 @@ package com.ayvy.api_java.business;
 import com.ayvy.api_java.dto.ProdutoImagemRequest;
 import com.ayvy.api_java.infrastructure.entities.Produto;
 import com.ayvy.api_java.infrastructure.entities.ProdutoImagem;
+import com.ayvy.api_java.infrastructure.enums.StatusProduto;
 import com.ayvy.api_java.infrastructure.repositories.ProdutoImagemRepository;
 import com.ayvy.api_java.infrastructure.repositories.ProdutoRepository;
 import org.springframework.http.HttpStatus;
@@ -30,8 +31,24 @@ public class ProdutoService {
     }
 
     public Produto salvarProduto(Produto produto) {
+        if (produto.getLojista() == null || produto.getLojista().getId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Campo 'lojista' (id) é obrigatório");
+        }
         validarCaminhoImagem(produto.getImagemPrincipalUrl());
+        aplicarDefaults(produto);
         return repository.saveAndFlush(produto);
+    }
+
+    private void aplicarDefaults(Produto produto) {
+        if (produto.getEstoque() == null) {
+            produto.setEstoque(0);
+        }
+        if (produto.getVisualizacoesTotal() == null) {
+            produto.setVisualizacoesTotal(0);
+        }
+        if (produto.getStatusProduto() == null) {
+            produto.setStatusProduto(StatusProduto.rascunho);
+        }
     }
 
     public Produto buscarProdutoPorId(Integer id) {
@@ -105,6 +122,19 @@ public class ProdutoService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto não encontrado");
         }
         return produtoImagemRepository.findByProduto_IdOrderByOrdemAsc(produtoId);
+    }
+
+    public void removerImagem(Integer produtoId, Integer imagemId) {
+        if (!repository.existsById(produtoId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto não encontrado");
+        }
+        ProdutoImagem imagem = produtoImagemRepository.findById(imagemId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Imagem não encontrada")
+        );
+        if (!imagem.getProduto().getId().equals(produtoId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Imagem não pertence a este produto");
+        }
+        produtoImagemRepository.delete(imagem);
     }
 
     private void validarCaminhoImagem(String caminho) {

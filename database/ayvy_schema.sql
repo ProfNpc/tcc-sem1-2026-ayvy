@@ -70,7 +70,7 @@ CREATE TABLE lojistas (
   banner_url      VARCHAR(500) NULL,
   logo_url        VARCHAR(500) NULL COMMENT 'Logo da loja (avatar da vitrine)',
   descricao       TEXT NULL,
-  status_loja     ENUM('pendente', 'aprovado', 'rejeitado', 'suspenso') NOT NULL DEFAULT 'pendente',
+  status_loja     ENUM('pendente', 'aprovado', 'rejeitado', 'suspenso') NOT NULL DEFAULT 'aprovado',
   aprovado_em     DATETIME NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uk_lojistas_usuario (usuario_id),

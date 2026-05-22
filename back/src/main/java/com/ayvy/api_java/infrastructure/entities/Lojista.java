@@ -43,7 +43,7 @@ public class Lojista {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status_loja", nullable = false)
-    private StatusLoja status = StatusLoja.pendente;
+    private StatusLoja status = StatusLoja.aprovado;
 
     @Column(name = "aprovado_em")
     private LocalDateTime aprovadoEm;

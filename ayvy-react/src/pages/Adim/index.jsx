@@ -1,6 +1,10 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { listClientes, listLojistas, listProdutos, listUsuarios } from "../../services/adminApi";
+import { resolveImageUrl } from "../../utils/imageUrl";
 import { ADMIN_OVERVIEW } from "../../utils/adminDashboardMock";
 import "./style.css";
+import "./admin-crud.css";
 
 function MetricRing({ percent }) {
   const r = 36;
@@ -45,8 +49,48 @@ function MiniChart({ values }) {
 }
 
 export default function AdminHome() {
-  const { platform, metrics, moderation, performance, recentLojistas, recentOrders } =
-    ADMIN_OVERVIEW;
+  const { platform, moderation, performance, recentOrders } = ADMIN_OVERVIEW;
+  const [metrics, setMetrics] = useState(ADMIN_OVERVIEW.metrics);
+  const [recentLojistas, setRecentLojistas] = useState(ADMIN_OVERVIEW.recentLojistas);
+  const [apiOk, setApiOk] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [, clientes, lojistas, produtos] = await Promise.all([
+          listUsuarios(),
+          listClientes(),
+          listLojistas(),
+          listProdutos(),
+        ]);
+        if (cancelled) return;
+        const lojaList = (lojistas || []).map((l) => ({
+          slug: l.slug,
+          name: l.nomeLoja,
+          handle: `@${l.slug}`,
+          avatar: resolveImageUrl(l.logoUrl) || "/assets/img/img-curta-ayvy.jpeg",
+          products: 0,
+          status: l.status,
+        }));
+        setRecentLojistas(lojaList.slice(0, 6));
+        setMetrics({
+          lojistasAtivos: lojaList.filter((s) => s.status === "aprovado").length,
+          lojistasPendentes: lojaList.filter((s) => s.status === "pendente").length,
+          produtosPublicados: (produtos || []).filter((p) => p.status === "ativo").length,
+          pedidosMes: ADMIN_OVERVIEW.metrics.pedidosMes,
+          clientesCadastrados: (clientes || []).length,
+          receitaMes: ADMIN_OVERVIEW.metrics.receitaMes,
+        });
+        setApiOk(true);
+      } catch {
+        if (!cancelled) setApiOk(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="admin-page">
@@ -54,8 +98,22 @@ export default function AdminHome() {
         <div>
           <h1>Visão geral da plataforma</h1>
           <p>Monitore lojistas, pedidos e a saúde do marketplace AYVY.</p>
+          {!apiOk ? (
+            <p className="admin-crud-hint" style={{ color: "#b45309", marginTop: 8 }}>
+              API offline — métricas de lojistas/clientes em modo mock. Suba o back em :8082.
+            </p>
+          ) : null}
         </div>
         <div className="admin-page-actions">
+          <Link to="/admin/usuarios" className="admin-btn admin-btn--ghost">
+            Usuários
+          </Link>
+          <Link to="/admin/lojistas" className="admin-btn admin-btn--ghost">
+            Lojistas
+          </Link>
+          <Link to="/admin/produtos" className="admin-btn admin-btn--ghost">
+            Produtos
+          </Link>
           <button type="button" className="admin-btn admin-btn--ghost" disabled>
             Ações
           </button>

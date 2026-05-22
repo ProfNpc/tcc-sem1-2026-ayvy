@@ -44,6 +44,7 @@ public class Produto {
     @Column(name = "preco", nullable = false)
     private BigDecimal preco;
 
+    @Builder.Default
     @Column(name = "estoque", nullable = false)
     private Integer estoque = 0;
 
@@ -52,9 +53,11 @@ public class Produto {
     @Column(name = "imagem_principal_url")
     private String imagemPrincipalUrl;
 
+    @Builder.Default
     @Column(name = "visualizacoes_total", nullable = false)
     private Integer visualizacoesTotal = 0;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     @JsonProperty("status")

@@ -63,4 +63,13 @@ public class ProdutoController {
     public ResponseEntity<List<ProdutoImagem>> listarImagens(@PathVariable Integer id) {
         return ResponseEntity.ok(produtoService.listarImagensProduto(id));
     }
+
+    @DeleteMapping("/{produtoId}/imagens/{imagemId}")
+    public ResponseEntity<Void> removerImagem(
+            @PathVariable Integer produtoId,
+            @PathVariable Integer imagemId
+    ) {
+        produtoService.removerImagem(produtoId, imagemId);
+        return ResponseEntity.noContent().build();
+    }
 }
