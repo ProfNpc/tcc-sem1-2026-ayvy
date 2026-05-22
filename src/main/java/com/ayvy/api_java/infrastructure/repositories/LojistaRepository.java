@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LojistaRepository extends JpaRepository<Lojista, Integer> {
 
-    public void setStatusLoja (StatusLoja statusLoja);
+
 
 }

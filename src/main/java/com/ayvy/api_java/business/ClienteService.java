@@ -59,7 +59,7 @@ public class ClienteService {
         return repository.findAll();
     }
 
-    //deletar cliente por email 'DELETE' --> função criada no repository
+    //deletar cliente por Id 'DELETE' --> função ANTERIOR criada no repository
     public void deletarClientePorId (Integer id){
         repository.deleteById(id);
     }

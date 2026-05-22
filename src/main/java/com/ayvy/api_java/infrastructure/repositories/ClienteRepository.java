@@ -12,7 +12,7 @@ public interface ClienteRepository extends JpaRepository<Cliente, Integer> {
 
    //'Transactional' = se der qualquer erro essa função não é executada
    // já que é uma operação sensível
-   @Transactional
-   void deleteByEmail(String email);
+//   @Transactional
+ //  void deleteByEmail(String email);
 
 }

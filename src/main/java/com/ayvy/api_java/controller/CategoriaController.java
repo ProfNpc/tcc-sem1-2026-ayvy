@@ -29,7 +29,7 @@ public class CategoriaController {
 
     @GetMapping
     public ResponseEntity<List<Categoria>> listarCategorias() {
-        return ResponseEntity.ok(categoriaService.listarCategoria);
+        return ResponseEntity.ok(categoriaService.listarCategorias());
     }
 
     @DeleteMapping("/{id}")

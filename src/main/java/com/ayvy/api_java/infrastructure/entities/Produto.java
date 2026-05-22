@@ -29,6 +29,14 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
+    @ManyToOne
+    @JoinColumn(name="lojista_id", nullable = false)
+    private Lojista lojista;
+
+    @ManyToOne
+    @JoinColumn(name="categoria_id")
+    private Categoria categoria;
+
     @Column(name = "nome", nullable = false)
     private String nome;
 
@@ -48,12 +56,12 @@ public class Produto {
     private String imagemPrincipalUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status")
     private StatusProduto statusProduto =  StatusProduto.RASCUNHO;
 
     //Criar de visualizacoes
-    //@Column(name="visualizacoes_total", nullable = false)
-    //private int visualizacoesProduto
+    @Column(name="visualizacoes_total")
+    private Integer visualizacoesTotal = 0;
 
     //Data de criação e atualização da data toda vez que a entity sofre um UPDATE
     @CreationTimestamp

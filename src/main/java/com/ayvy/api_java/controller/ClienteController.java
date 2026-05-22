@@ -47,7 +47,7 @@ public class ClienteController {
 
     //Fazer alterações em TODOS os campos:
     @PutMapping("/{id}")
-    public ResponseEntity<Void> atualizarClientePorId(@PathVariable Integer id,
+    public ResponseEntity<Cliente> atualizarClientePorId(@PathVariable Integer id,
                                                       @RequestBody Cliente cliente){
         //Adicionar para retornar o Cliente Atualizado
 

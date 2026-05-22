@@ -13,6 +13,7 @@ public class ProdutoService {
     //Injetando o Repository manualmente aqui no service
     private final ProdutoRepository repository;
 
+
     public ProdutoService(ProdutoRepository repository) {
         this.repository = repository;
     }
@@ -23,6 +24,8 @@ public class ProdutoService {
     //Update
     //Delete
 
+
+
     //"CREATE"
     public Produto salvarProduto(Produto produto){
         return repository.saveAndFlush(produto);
@@ -31,6 +34,8 @@ public class ProdutoService {
 
     //"READ"
     public Produto buscarProdutoPorId(Integer id){
+
+        repository.incrementarVisualizacao(id);
 
         return repository.findById(id).orElseThrow(
                 () -> new RuntimeException("Produto não encontrado")
@@ -64,6 +69,19 @@ public class ProdutoService {
         if(produto.getImagemPrincipalUrl() != null){
             produtoEntity.setImagemPrincipalUrl(produto.getImagemPrincipalUrl());
         }
+        if(produto.getEstoque() != null){
+            produtoEntity.setEstoque(produto.getEstoque());
+        }
+        if(produto.getSlug() != null){
+            produtoEntity.setSlug(produto.getSlug());
+        }
+        if(produto.getStatusProduto() != null){
+            produtoEntity.setStatusProduto(produto.getStatusProduto());
+        }
+        if(produto.getCategoria() != null){
+            produtoEntity.setCategoria(produto.getCategoria());
+        }
+
 
         return repository.saveAndFlush(produtoEntity);
        // return ("Produto atualizado com sucesso!");
