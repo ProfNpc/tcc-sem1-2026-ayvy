@@ -342,17 +342,6 @@ CREATE TABLE notificacoes (
     ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB COMMENT='Notificações';
 
--- Mensagens (API legada / contato)
-CREATE TABLE mensagens (
-  id                INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  nome              VARCHAR(120) NOT NULL,
-  texto             TEXT NOT NULL,
-  data_envio        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  data_recebimento  DATETIME NULL,
-  data_editado      DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id)
-) ENGINE=InnoDB COMMENT='Mensagens de contato';
-
 -- =============================================================================
 -- VIEWS — consultas prontas para o backend (JOIN centralizado)
 -- =============================================================================

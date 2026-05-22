@@ -1,5 +1,5 @@
 package com.ayvy.api_java.infrastructure.entities;
-//!!!!!!!!!!!!!!!VERIFICAR OS RELACIONAMENTOS NO BD - CONCEITUAL!!!!!!!!!
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -12,27 +12,34 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "pagamento")
+@Table(name = "pagamentos")
 @Entity
-
-
 public class Pagamento {
 
     @Id
-    @GeneratedValue (strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column (name = "status")
-    private String status;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "pedido_id", nullable = false)
+    private Pedido pedido;
 
-    @Column (name = "valor")
+    @Column(name = "valor", nullable = false)
     private BigDecimal valor;
 
-    @CreationTimestamp
-    @Column (name = "data", nullable = false)
-    private LocalDateTime dataPagamento;
+    @Column(name = "status", nullable = false)
+    private String status = "pendente";
 
-    @Column (name = "tipo")
+    @Column(name = "tipo", nullable = false)
     private String tipo;
 
+    @Column(name = "referencia")
+    private String referencia;
+
+    @Column(name = "pago_em")
+    private LocalDateTime pagoEm;
+
+    @CreationTimestamp
+    @Column(name = "criado_em", nullable = false, updatable = false)
+    private LocalDateTime criadoEm;
 }

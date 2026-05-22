@@ -7,54 +7,64 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-
 public class EnderecoService {
 
     private final EnderecoRepository repository;
 
-    public EnderecoService(EnderecoRepository repository) {this.repository = repository;}
-
-    //Criar CRUD
-
-    //create
-    public String salvarEndereco(Endereco endereco) {
-        repository.saveAndFlush(endereco);
-        return ("Endereço salvo!");
+    public EnderecoService(EnderecoRepository repository) {
+        this.repository = repository;
     }
 
-    //read
-    public Endereco buscarEnderecoPorId(Long id) {
+    public Endereco salvarEndereco(Endereco endereco) {
+        return repository.saveAndFlush(endereco);
+    }
 
+    public Endereco buscarEnderecoPorId(Integer id) {
         return repository.findById(id).orElseThrow(
                 () -> new RuntimeException("Endereço não encontrado")
         );
     }
 
-    public List<Endereco> listarEnderecos(){
+    public List<Endereco> listarEnderecos() {
         return repository.findAll();
     }
 
-    //delete - É PERMITIDO DELETAR ENDEREÇO? - ESTARÁ COMO NULLABLE = FALSE
-    public void deletarEnderecoPorId(Long id){
+    public void deletarEnderecoPorId(Integer id) {
         repository.deleteById(id);
     }
 
-    //update
-    public Endereco atualizarEnderecoPorId(Long id, Endereco endereco) {
+    public Endereco atualizarEnderecoPorId(Integer id, Endereco endereco) {
         Endereco enderecoEntity = repository.findById(id)
-                .orElseThrow(
-                        () -> new RuntimeException("Endereço não encontrado")
-                );
+                .orElseThrow(() -> new RuntimeException("Endereço não encontrado"));
 
+        if (endereco.getApelido() != null) {
+            enderecoEntity.setApelido(endereco.getApelido());
+        }
+        if (endereco.getLogradouro() != null) {
+            enderecoEntity.setLogradouro(endereco.getLogradouro());
+        }
+        if (endereco.getNumero() != null) {
+            enderecoEntity.setNumero(endereco.getNumero());
+        }
+        if (endereco.getComplemento() != null) {
+            enderecoEntity.setComplemento(endereco.getComplemento());
+        }
+        if (endereco.getBairro() != null) {
+            enderecoEntity.setBairro(endereco.getBairro());
+        }
+        if (endereco.getCidade() != null) {
+            enderecoEntity.setCidade(endereco.getCidade());
+        }
+        if (endereco.getUf() != null) {
+            enderecoEntity.setUf(endereco.getUf());
+        }
         if (endereco.getCep() != null) {
             enderecoEntity.setCep(endereco.getCep());
         }
-
-        if (endereco.getNumero() != null) {
-            enderecoEntity.setNumero(endereco.getNumero());
+        if (endereco.getPrincipal() != null) {
+            enderecoEntity.setPrincipal(endereco.getPrincipal());
         }
 
         return repository.saveAndFlush(enderecoEntity);
     }
-
 }

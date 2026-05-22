@@ -22,9 +22,9 @@ public class CategoriaController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{nomeCategoria}")
-    public ResponseEntity<Categoria> buscarCateoriaPorNomeCatgoria(@PathVariable String nomeCategoria) {
-        return ResponseEntity.ok(categoriaService.buscarCategoriaPorNomeCategoria(nomeCategoria));
+    @GetMapping("/{nome}")
+    public ResponseEntity<Categoria> buscarCategoriaPorNome(@PathVariable String nome) {
+        return ResponseEntity.ok(categoriaService.buscarCategoriaPorNome(nome));
     }
 
     @GetMapping

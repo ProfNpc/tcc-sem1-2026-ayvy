@@ -1,7 +1,8 @@
 package com.ayvy.api_java.infrastructure.entities;
 
-
 import com.ayvy.api_java.infrastructure.enums.StatusProduto;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,31 +11,25 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-//Pegar e settar informações de algum atributo com Lombok:
 @Getter
 @Setter
-//Para acessar a classe:
 @AllArgsConstructor
 @NoArgsConstructor
-//Para futuros Updates:
 @Builder
-//Indicar que é tabela:
 @Table(name = "produtos")
 @Entity
-
 public class Produto {
 
-    //Cria um valor automáticamente:
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name="lojista_id", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "lojista_id", nullable = false)
     private Lojista lojista;
 
     @ManyToOne
-    @JoinColumn(name="categoria_id")
+    @JoinColumn(name = "categoria_id")
     private Categoria categoria;
 
     @Column(name = "nome", nullable = false)
@@ -43,31 +38,33 @@ public class Produto {
     @Column(name = "slug", nullable = false)
     private String slug;
 
-    @Column(name = "preco")
-    private BigDecimal preco;
-
-    @Column(name="descricao")
+    @Column(name = "descricao", columnDefinition = "TEXT")
     private String descricao;
 
-    @Column(name = "estoque", nullable = false)
-    private Integer estoque;
+    @Column(name = "preco", nullable = false)
+    private BigDecimal preco;
 
+    @Column(name = "estoque", nullable = false)
+    private Integer estoque = 0;
+
+    /** Caminho relativo em back/uploads, ex.: /uploads/produtos/uuid.jpg */
+    @JsonAlias("caminho")
     @Column(name = "imagem_principal_url")
     private String imagemPrincipalUrl;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private StatusProduto statusProduto =  StatusProduto.RASCUNHO;
-
-    //Criar de visualizacoes
-    @Column(name="visualizacoes_total")
+    @Column(name = "visualizacoes_total", nullable = false)
     private Integer visualizacoesTotal = 0;
 
-    //Data de criação e atualização da data toda vez que a entity sofre um UPDATE
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    @JsonProperty("status")
+    private StatusProduto statusProduto = StatusProduto.rascunho;
+
     @CreationTimestamp
-    @Column(name="criado_Em", nullable = false, updatable = false)
+    @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
     @UpdateTimestamp
+    @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
 }

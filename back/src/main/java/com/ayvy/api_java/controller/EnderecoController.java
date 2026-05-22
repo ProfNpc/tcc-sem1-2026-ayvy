@@ -9,21 +9,21 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/enderecos")
-
 public class EnderecoController {
 
-    private final  EnderecoService enderecoService;
+    private final EnderecoService enderecoService;
 
-    public EnderecoController(EnderecoService enderecoService) {this.enderecoService = enderecoService;}
+    public EnderecoController(EnderecoService enderecoService) {
+        this.enderecoService = enderecoService;
+    }
 
     @PostMapping
-    public ResponseEntity<Void> salvarEndereco(@RequestBody Endereco endereco) {
-        enderecoService.salvarEndereco(endereco);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Endereco> salvarEndereco(@RequestBody Endereco endereco) {
+        return ResponseEntity.ok(enderecoService.salvarEndereco(endereco));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Endereco> buscarEnderecoPorId(@PathVariable Long id) {
+    public ResponseEntity<Endereco> buscarEnderecoPorId(@PathVariable Integer id) {
         return ResponseEntity.ok(enderecoService.buscarEnderecoPorId(id));
     }
 
@@ -33,16 +33,16 @@ public class EnderecoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarEnderecoPorId(@PathVariable Long id) {
+    public ResponseEntity<Void> deletarEnderecoPorId(@PathVariable Integer id) {
         enderecoService.deletarEnderecoPorId(id);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> atualizarEnderecoPorId(@PathVariable Long id,
-                                                        @RequestBody Endereco endereco){
-        enderecoService.atualizarEnderecoPorId(id, endereco);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Endereco> atualizarEnderecoPorId(
+            @PathVariable Integer id,
+            @RequestBody Endereco endereco
+    ) {
+        return ResponseEntity.ok(enderecoService.atualizarEnderecoPorId(id, endereco));
     }
-
 }

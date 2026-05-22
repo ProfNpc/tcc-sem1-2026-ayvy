@@ -11,27 +11,25 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name="lojistas")
+@Table(name = "lojistas")
 @Entity
-
 public class Lojista {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "usuario_id")
+    @OneToOne
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;
 
-    @Column(name = "nome_loja")
+    @Column(name = "nome_loja", nullable = false)
     private String nomeLoja;
 
-    //Faz parte da url legível('/loja-ayvy') ao invés de '/id=1'
-    @Column(name = "slug", unique = true)
+    @Column(name = "slug", nullable = false, unique = true)
     private String slug;
 
-    @Column(name = "cnpj", unique = true)
+    @Column(name = "cnpj", nullable = false, unique = true, length = 14)
     private String cnpj;
 
     @Column(name = "banner_url")
@@ -40,15 +38,13 @@ public class Lojista {
     @Column(name = "logo_url")
     private String logoUrl;
 
-    @Column(name = "descricao")
+    @Column(name = "descricao", columnDefinition = "TEXT")
     private String descricao;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_loja", nullable = false)
+    private StatusLoja status = StatusLoja.pendente;
 
     @Column(name = "aprovado_em")
     private LocalDateTime aprovadoEm;
-
-    //Enum
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status_loja")
-    private StatusLoja status = StatusLoja.PENDENTE;
-
 }

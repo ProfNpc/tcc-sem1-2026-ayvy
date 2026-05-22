@@ -8,16 +8,20 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "categoria")
+@Table(name = "categorias")
 @Entity
-
 public class Categoria {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "nome_categoria")
-    private String nomeCategoria;
+    @Column(name = "nome", nullable = false)
+    private String nome;
 
+    @Column(name = "slug", nullable = false, unique = true)
+    private String slug;
+
+    @Column(name = "ativo", nullable = false)
+    private Boolean ativo = true;
 }

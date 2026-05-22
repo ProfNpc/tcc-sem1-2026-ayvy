@@ -2,27 +2,55 @@ package com.ayvy.api_java.infrastructure.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "endereco")
+@Table(name = "enderecos")
 @Entity
-
 public class Endereco {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    //permitir apenas números? a organização, como em telefone o padrão '11 9xxxx-xxxx' -> (CEP: XXXXX-XXX) , é com o front?
-    @Column(name = "cep", nullable = false)
-    private String cep;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
+
+    @Column(name = "apelido")
+    private String apelido;
+
+    @Column(name = "logradouro", nullable = false)
+    private String logradouro;
 
     @Column(name = "numero", nullable = false)
     private String numero;
 
-    //Adicionar complemento?
+    @Column(name = "complemento")
+    private String complemento;
+
+    @Column(name = "bairro", nullable = false)
+    private String bairro;
+
+    @Column(name = "cidade", nullable = false)
+    private String cidade;
+
+    @Column(name = "uf", nullable = false, length = 2)
+    private String uf;
+
+    @Column(name = "cep", nullable = false, length = 8)
+    private String cep;
+
+    @Column(name = "principal", nullable = false)
+    private Boolean principal = false;
+
+    @CreationTimestamp
+    @Column(name = "criado_em", nullable = false, updatable = false)
+    private LocalDateTime criadoEm;
 }

@@ -2,6 +2,7 @@ package com.ayvy.api_java.controller;
 
 import com.ayvy.api_java.business.UsuarioService;
 import com.ayvy.api_java.infrastructure.entities.Usuario;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
-
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -19,9 +19,9 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> salvarUsuario(@RequestBody Usuario usuario) {
-        usuarioService.salvarUsuario(usuario);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Usuario> salvarUsuario(@RequestBody Usuario usuario) {
+        Usuario salvo = usuarioService.salvarUsuario(usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
     @GetMapping("/{id}")
@@ -37,15 +37,14 @@ public class UsuarioController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarUsuario(@PathVariable Integer id) {
         usuarioService.deletarUsuario(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
-    //Adicionar para retornar o Usuario Atualizado
     @PutMapping("/{id}")
-    public ResponseEntity<Void> atualizarUsuarioPorId(@PathVariable Integer id,
-                                                    @RequestBody Usuario usuario) {
-        usuarioService.atualizarUsuarioPorId(id, usuario);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Usuario> atualizarUsuarioPorId(
+            @PathVariable Integer id,
+            @RequestBody Usuario usuario
+    ) {
+        return ResponseEntity.ok(usuarioService.atualizarUsuarioPorId(id, usuario));
     }
-
 }

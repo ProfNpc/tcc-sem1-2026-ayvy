@@ -6,6 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LojistaRepository extends JpaRepository<Lojista, Integer> {
 
-
-
+    java.util.Optional<Lojista> findByUsuario_Id(Integer usuarioId);
 }

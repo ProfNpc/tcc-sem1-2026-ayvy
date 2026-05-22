@@ -1,5 +1,5 @@
 package com.ayvy.api_java.infrastructure.entities;
-//!!!!!!!!!!!!!!!VERIFICAR OS RELACIONAMENTOS NO BD - CONCEITUAL!!!!!!!!!
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -12,33 +12,28 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "mensagem")
+@Table(name = "mensagens")
 @Entity
-
 public class Mensagem {
 
-    // ESSA TABELA É MESMO NECESSÁRIA? OU É POSSÍVEL IMPORTAR UMA API PRONTA?
     @Id
-    @GeneratedValue (strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "nome")
+    @Column(name = "nome", nullable = false)
     private String nome;
 
-    @Column(name = "texto")
+    @Column(name = "texto", nullable = false, columnDefinition = "TEXT")
     private String texto;
 
     @CreationTimestamp
-    @Column(name = "dataEnvio")
+    @Column(name = "data_envio", nullable = false, updatable = false)
     private LocalDateTime dataEnvio;
 
-    //Será necessário? como realizar essa confirmação?
-    @CreationTimestamp
-    @Column(name = "dataRecebimento")
+    @Column(name = "data_recebimento")
     private LocalDateTime dataRecebimento;
 
     @UpdateTimestamp
-    @Column(name = "dataEditado")
+    @Column(name = "data_editado")
     private LocalDateTime dataEditado;
-
 }

@@ -1,0 +1,597 @@
+{
+  "info": {
+    "_postman_id": "ayvy-api-collection",
+    "name": "AYVY API — Backend",
+    "description": "API Spring Boot + MySQL. Imagens em `back/uploads/`; no banco salva o **caminho** (ex.: `/uploads/produtos/uuid.jpg`).\n\n**Imagens:** 1) `POST /upload` (multipart) 2) use `caminho` no JSON do produto/lojista/usuario.\n\n**Cadastro:** POST /usuarios → POST /lojistas ou /clientes com `usuarioId`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8082" },
+    { "key": "usuarioId", "value": "1" },
+    { "key": "clienteId", "value": "1" },
+    { "key": "lojistaId", "value": "1" },
+    { "key": "categoriaId", "value": "1" },
+    { "key": "produtoId", "value": "1" },
+    { "key": "pedidoId", "value": "1" },
+    { "key": "enderecoId", "value": "1" },
+    { "key": "bannerCaminho", "value": "/uploads/lojistas/COLE_APOS_UPLOAD_BANNER.jpg" },
+    { "key": "logoCaminho", "value": "/uploads/lojistas/COLE_APOS_UPLOAD_LOGO.jpg" },
+    { "key": "imagemProdutoCaminho", "value": "/uploads/produtos/COLE_APOS_UPLOAD.jpg" }
+  ],
+  "item": [
+    {
+      "name": "Fluxo — Lojista com imagens",
+      "description": "Execute **na ordem** (1→4). Nos uploads, escolha um arquivo .jpg/.png no campo `file`. Copie `caminho` da resposta ou use os scripts Tests que gravam no ambiente.",
+      "item": [
+        {
+          "name": "1. Criar usuário (papel lojista)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Maria Lojista\",\n  \"email\": \"maria.lojista@ayvy.com\",\n  \"senha\": \"$2b$10$PLACEHOLDER\",\n  \"telefone\": \"11999998888\",\n  \"papel\": \"lojista\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/usuarios"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var u = pm.response.json();",
+                  "  pm.collectionVariables.set('usuarioId', u.id);",
+                  "  if (pm.environment.name) pm.environment.set('usuarioId', u.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Upload banner da loja",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [] },
+                { "key": "pasta", "value": "lojistas", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/upload"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var j = pm.response.json();",
+                  "  pm.collectionVariables.set('bannerCaminho', j.caminho);",
+                  "  if (pm.environment.name) pm.environment.set('bannerCaminho', j.caminho);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Upload logo da loja",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [] },
+                { "key": "pasta", "value": "lojistas", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/upload"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var j = pm.response.json();",
+                  "  pm.collectionVariables.set('logoCaminho', j.caminho);",
+                  "  if (pm.environment.name) pm.environment.set('logoCaminho', j.caminho);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Criar lojista (usa bannerCaminho e logoCaminho)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": {{usuarioId}},\n  \"nomeLoja\": \"ITB Moda\",\n  \"slug\": \"itb-moda\",\n  \"cnpj\": \"12345678000199\",\n  \"bannerUrl\": \"{{bannerCaminho}}\",\n  \"logoUrl\": \"{{logoCaminho}}\",\n  \"descricao\": \"Loja de moda\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/lojistas",
+            "description": "bannerUrl e logoUrl recebem o **caminho** retornado no upload (ex.: /uploads/lojistas/uuid.jpg), NÃO URL externa."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "description": "Salva arquivo em back/uploads/{pasta}/. Resposta: caminho (para o banco) e url (para abrir no navegador).",
+      "item": [
+        {
+          "name": "Upload imagem — produtos",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [] },
+                { "key": "pasta", "value": "produtos", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/upload"
+          }
+        },
+        {
+          "name": "Upload imagem — lojistas",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [] },
+                { "key": "pasta", "value": "lojistas", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/upload"
+          }
+        },
+        {
+          "name": "Upload imagem — usuarios (avatar)",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [] },
+                { "key": "pasta", "value": "usuarios", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/upload"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "description": "Passo 1 — identidade. `papel` obrigatório. `status` opcional (default `ativo`). Senha não retorna no GET.",
+      "item": [
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios"
+          }
+        },
+        {
+          "name": "Buscar usuario por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}"
+          }
+        },
+        {
+          "name": "Criar usuario",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Maria Lojista\",\n  \"email\": \"maria.lojista@ayvy.com\",\n  \"senha\": \"$2b$10$PLACEHOLDER_TROCAR_NO_BACKEND\",\n  \"telefone\": \"11999998888\",\n  \"papel\": \"lojista\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/usuarios"
+          }
+        },
+        {
+          "name": "Atualizar usuario",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Maria Silva Atualizada\",\n  \"email\": \"maria@ayvy.com\",\n  \"telefone\": \"11988887777\",\n  \"papel\": \"lojista\",\n  \"status\": \"ativo\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}"
+          }
+        },
+        {
+          "name": "Deletar usuario",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categorias",
+      "description": "Tabela `categorias`. GET por nome: `/categorias/{nome}` (ex.: Moda feminina).",
+      "item": [
+        {
+          "name": "Listar categorias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/categorias"
+          }
+        },
+        {
+          "name": "Buscar categoria por nome",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/categorias/Moda feminina",
+            "description": "Use o nome exato (seed: Moda feminina, Streetwear, Acessórios, Calçados)."
+          }
+        },
+        {
+          "name": "Criar categoria",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Roupas\",\n  \"slug\": \"roupas\",\n  \"ativo\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/categorias"
+          }
+        },
+        {
+          "name": "Atualizar categoria",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Moda feminina plus\",\n  \"slug\": \"moda-feminina-plus\",\n  \"ativo\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/categorias/{{categoriaId}}"
+          }
+        },
+        {
+          "name": "Deletar categoria",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/categorias/{{categoriaId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clientes",
+      "description": "Passo 2 do cliente: `POST` com `usuarioId` (usuario já criado com papel `cliente`).",
+      "item": [
+        {
+          "name": "Listar clientes",
+          "request": { "method": "GET", "url": "{{baseUrl}}/clientes" }
+        },
+        {
+          "name": "Buscar cliente por ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/clientes/{{clienteId}}" }
+        },
+        {
+          "name": "Criar cliente (usuarioId)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": {{usuarioId}},\n  \"cpf\": \"52998224725\",\n  \"dataNascimento\": \"1995-06-20\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/clientes",
+            "description": "Antes: POST /usuarios com papel `cliente`. Use o id retornado em usuarioId."
+          }
+        },
+        {
+          "name": "Atualizar cliente",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"52998224725\",\n  \"dataNascimento\": \"1995-07-01\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/clientes/{{clienteId}}"
+          }
+        },
+        {
+          "name": "Deletar cliente",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/clientes/{{clienteId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Lojistas",
+      "description": "Com imagens: use a pasta **Fluxo — Lojista com imagens**. `bannerUrl`/`logoUrl` = campo `caminho` do POST /upload (ex.: `/uploads/lojistas/abc.jpg`). Opcionais: omita ou null se não tiver imagem.",
+      "item": [
+        {
+          "name": "Listar lojistas",
+          "request": { "method": "GET", "url": "{{baseUrl}}/lojistas" }
+        },
+        {
+          "name": "Buscar lojista por ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/lojistas/{{lojistaId}}" }
+        },
+        {
+          "name": "Criar lojista (usuarioId)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": {{usuarioId}},\n  \"nomeLoja\": \"ITB Moda\",\n  \"slug\": \"itb-moda\",\n  \"cnpj\": \"12345678000199\",\n  \"bannerUrl\": \"{{bannerCaminho}}\",\n  \"logoUrl\": \"{{logoCaminho}}\",\n  \"descricao\": \"Loja de moda\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/lojistas",
+            "description": "bannerUrl/logoUrl: caminho local do upload, ex. /uploads/lojistas/uuid.jpg. Ver imagem: http://localhost:8082 + caminho."
+          }
+        },
+        {
+          "name": "Atualizar lojista",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeLoja\": \"ITB Moda Atualizada\",\n  \"slug\": \"itb-moda\",\n  \"cnpj\": \"12345678000199\",\n  \"status\": \"aprovado\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/lojistas/{{lojistaId}}"
+          }
+        },
+        {
+          "name": "Deletar lojista",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/lojistas/{{lojistaId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Produtos",
+      "description": "1) Upload em pasta `produtos` 2) POST produto com `imagemPrincipalUrl` ou `caminho` = caminho retornado 3) Galeria: POST /produtos/{id}/imagens",
+      "item": [
+        {
+          "name": "Listar produtos",
+          "request": { "method": "GET", "url": "{{baseUrl}}/produtos" }
+        },
+        {
+          "name": "Buscar produto por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/produtos/{{produtoId}}",
+            "description": "Incrementa contador de visualizações no banco."
+          }
+        },
+        {
+          "name": "Criar produto",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Vestido teste\",\n  \"slug\": \"vestido-teste\",\n  \"preco\": 199.90,\n  \"descricao\": \"Descrição do produto\",\n  \"estoque\": 10,\n  \"caminho\": \"/uploads/produtos/COLE_AQUI_O_ARQUIVO.jpg\",\n  \"status\": \"rascunho\",\n  \"lojista\": { \"id\": {{lojistaId}} },\n  \"categoria\": { \"id\": {{categoriaId}} }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/produtos"
+          }
+        },
+        {
+          "name": "Atualizar produto",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Vestido teste atualizado\",\n  \"slug\": \"vestido-teste\",\n  \"preco\": 179.90,\n  \"descricao\": \"Nova descrição\",\n  \"estoque\": 8,\n  \"status\": \"ativo\",\n  \"lojista\": { \"id\": {{lojistaId}} },\n  \"categoria\": { \"id\": {{categoriaId}} }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/produtos/{{produtoId}}"
+          }
+        },
+        {
+          "name": "Deletar produto",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/produtos/{{produtoId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Enderecos",
+      "description": "Tabela `enderecos` vinculada a `usuario_id`. CEP: 8 dígitos sem hífen.",
+      "item": [
+        {
+          "name": "Listar enderecos",
+          "request": { "method": "GET", "url": "{{baseUrl}}/enderecos" }
+        },
+        {
+          "name": "Buscar endereco por ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/enderecos/{{enderecoId}}" }
+        },
+        {
+          "name": "Criar endereco",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": { \"id\": {{usuarioId}} },\n  \"apelido\": \"Casa\",\n  \"logradouro\": \"Av. Paulista\",\n  \"numero\": \"1000\",\n  \"complemento\": \"Apto 12\",\n  \"bairro\": \"Bela Vista\",\n  \"cidade\": \"São Paulo\",\n  \"uf\": \"SP\",\n  \"cep\": \"01310100\",\n  \"principal\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/enderecos"
+          }
+        },
+        {
+          "name": "Atualizar endereco",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": \"200\",\n  \"complemento\": \"Sala 3\",\n  \"principal\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/enderecos/{{enderecoId}}"
+          }
+        },
+        {
+          "name": "Deletar endereco",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/enderecos/{{enderecoId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Pedidos",
+      "description": "Requer `cliente` existente. PUT não exposto na API. Status: aguardando_pagamento, pago, em_separacao, enviado, entregue, cancelado, reembolsado.",
+      "item": [
+        {
+          "name": "Listar pedidos",
+          "request": { "method": "GET", "url": "{{baseUrl}}/pedidos" }
+        },
+        {
+          "name": "Buscar pedido por ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/pedidos/{{pedidoId}}" }
+        },
+        {
+          "name": "Criar pedido",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cliente\": { \"id\": {{clienteId}} },\n  \"status\": \"aguardando_pagamento\",\n  \"valorSubtotal\": 199.90,\n  \"valorFrete\": 15.00,\n  \"valorTotal\": 214.90,\n  \"observacao\": \"Entregar pela manhã\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/pedidos"
+          }
+        },
+        {
+          "name": "Deletar pedido",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/pedidos/{{pedidoId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Pagamentos",
+      "description": "Requer `pedido` existente. Tipo: pix, cartao_credito, cartao_debito, boleto. Status: pendente, aprovado, recusado, estornado.",
+      "item": [
+        {
+          "name": "Listar pagamentos",
+          "request": { "method": "GET", "url": "{{baseUrl}}/pagamentos" }
+        },
+        {
+          "name": "Buscar pagamento por ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/pagamentos/1" }
+        },
+        {
+          "name": "Criar pagamento",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pedido\": { \"id\": {{pedidoId}} },\n  \"valor\": 214.90,\n  \"status\": \"pendente\",\n  \"tipo\": \"pix\",\n  \"referencia\": \"PIX-TESTE-001\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/pagamentos"
+          }
+        },
+        {
+          "name": "Atualizar pagamento",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"aprovado\",\n  \"tipo\": \"pix\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/pagamentos/1"
+          }
+        },
+        {
+          "name": "Deletar pagamento",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/pagamentos/1" }
+        }
+      ]
+    },
+    {
+      "name": "Mensagens",
+      "description": "Tabela `mensagens`. GET `/{texto}` busca por trecho do texto.",
+      "item": [
+        {
+          "name": "Listar mensagens",
+          "request": { "method": "GET", "url": "{{baseUrl}}/mensagens" }
+        },
+        {
+          "name": "Buscar mensagem por texto (path)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/mensagens/ola",
+            "description": "Busca por texto no path (implementação atual do controller)."
+          }
+        },
+        {
+          "name": "Criar mensagem",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Cliente\",\n  \"texto\": \"Olá, tenho uma dúvida sobre o produto.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/mensagens"
+          }
+        },
+        {
+          "name": "Atualizar mensagem",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Cliente\",\n  \"texto\": \"Mensagem editada.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/mensagens/1"
+          }
+        },
+        {
+          "name": "Deletar mensagem",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/mensagens/1" }
+        }
+      ]
+    }
+  ]
+}

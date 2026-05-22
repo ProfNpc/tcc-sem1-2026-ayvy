@@ -3,36 +3,28 @@ package com.ayvy.api_java.infrastructure.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDate;
 
-//Pegar e settar informações de algum atributo com Lombok:
 @Getter
 @Setter
-//Para acessar a classe:
 @AllArgsConstructor
 @NoArgsConstructor
-//Para futuros Updates:
 @Builder
-//Indicar que é tabela:
 @Table(name = "clientes")
 @Entity
-
 public class Cliente {
 
-    //Cria um valor automáticamente:
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @OneToOne
-    @JoinColumn(name = "usuario_id")
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;
 
-    @Column(name = "data_nascimento")
-    private Date dataNascimento;
-
-    @Column(name = "cpf", unique = true)
+    @Column(name = "cpf", nullable = false, unique = true, length = 11)
     private String cpf;
 
-
+    @Column(name = "data_nascimento")
+    private LocalDate dataNascimento;
 }

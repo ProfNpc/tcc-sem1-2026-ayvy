@@ -1,38 +1,50 @@
 package com.ayvy.api_java.infrastructure.entities;
-//!!!!!!!!!!!!!!!VERIFICAR OS RELACIONAMENTOS NO BD - CONCEITUAL!!!!!!!!!
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-//*********************************************************************
- //   PROVÁVELMENTE NÃO VAMOS UTILIZAR A ENTIDADE ENTREGA!!!
-//    (já que não vamos ficar responsáveis por isso)
- //******************************************************
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "pedido")
+@Table(name = "pedidos")
 @Entity
-
 public class Pedido {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column (name = "status")
-    private String status;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
 
-    @Column (name = "valor")
-    private BigDecimal valor;
+    @Column(name = "status", nullable = false)
+    private String status = "aguardando_pagamento";
+
+    @Column(name = "valor_subtotal", nullable = false)
+    private BigDecimal valorSubtotal = BigDecimal.ZERO;
+
+    @Column(name = "valor_frete", nullable = false)
+    private BigDecimal valorFrete = BigDecimal.ZERO;
+
+    @Column(name = "valor_total", nullable = false)
+    private BigDecimal valorTotal = BigDecimal.ZERO;
+
+    @Column(name = "observacao", length = 500)
+    private String observacao;
 
     @CreationTimestamp
-    @Column (name = "data", nullable = false)
-    private LocalDateTime dataPedido;
+    @Column(name = "criado_em", nullable = false, updatable = false)
+    private LocalDateTime criadoEm;
 
-
+    @UpdateTimestamp
+    @Column(name = "atualizado_em", nullable = false)
+    private LocalDateTime atualizadoEm;
 }

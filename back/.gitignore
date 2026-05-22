@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Uploads (arquivos enviados; mantém estrutura de pastas) ###
+uploads/**
+!uploads/.gitkeep
+!uploads/**/.gitkeep

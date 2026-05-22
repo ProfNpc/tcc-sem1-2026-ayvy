@@ -1,15 +1,14 @@
 package com.ayvy.api_java.infrastructure.entities;
 
+import com.ayvy.api_java.infrastructure.enums.PapelUsuario;
+import com.ayvy.api_java.infrastructure.enums.StatusUsuario;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-
-//Importando Enums:
-import com.ayvy.api_java.infrastructure.enums.PapelUsuario;
-import com.ayvy.api_java.infrastructure.enums.StatusUsuario;
 
 @Getter
 @Setter
@@ -18,45 +17,44 @@ import com.ayvy.api_java.infrastructure.enums.StatusUsuario;
 @Builder
 @Table(name = "usuarios")
 @Entity
-
 public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "nome")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "papel", nullable = false)
+    private PapelUsuario papel;
+
+    @Column(name = "nome", nullable = false)
     private String nome;
 
-    @Column(name = "email", unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "senha_hash")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Column(name = "senha_hash", nullable = false)
     private String senha;
 
-    @Column(name = "telefone", unique = true)
+    @Column(name = "telefone")
     private String telefone;
 
     @Column(name = "avatar_url")
     private String avatarUrl;
 
-    //Enum
     @Enumerated(EnumType.STRING)
-    @Column(name="papel")
-    private PapelUsuario papel;
+    @Column(name = "status", nullable = false)
+    private StatusUsuario status = StatusUsuario.ativo;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name="status")
-    private StatusUsuario status =  StatusUsuario.ATIVO;
+    @Column(name = "ultimo_login_em")
+    private LocalDateTime ultimoLoginEm;
 
     @CreationTimestamp
-    @Column(name="criado_em", nullable = false, updatable = false)
+    @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
     @UpdateTimestamp
+    @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
-
-    //Último login ainda não existe, já que diferente dos outros dois de cima
-    // ele é alterado manualmente == ++trabalho
-
 }
