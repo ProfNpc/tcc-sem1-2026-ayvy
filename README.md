@@ -32,3 +32,6 @@ python3 -m http.server 5500
 ```
 
 Depois acesse `http://localhost:5500/` ou `http://localhost:5500/index.html`.
+
+cd back 
+./mvnw spring-boot:run
