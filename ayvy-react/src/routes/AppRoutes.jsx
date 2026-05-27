@@ -5,6 +5,14 @@ import RequireAuth from "../components/RequireAuth";
 import RequireRole from "../components/RequireRole";
 import { ROLES } from "../utils/mockAuthUsers";
 import AdminHome from "../pages/Adim";
+import AdminClientesList from "../pages/Adim/Clientes";
+import AdminClienteForm from "../pages/Adim/Clientes/Form";
+import AdminLojistasList from "../pages/Adim/Lojistas";
+import AdminLojistaForm from "../pages/Adim/Lojistas/Form";
+import AdminProdutosList from "../pages/Adim/Produtos";
+import AdminProdutoForm from "../pages/Adim/Produtos/Form";
+import AdminUsuariosList from "../pages/Adim/Usuarios";
+import AdminUsuarioForm from "../pages/Adim/Usuarios/Form";
 import Cadastro from "../pages/Cadastro";
 import EsqueciSenha from "../pages/EsqueciSenha";
 import Home from "../pages/Home";
@@ -52,6 +60,18 @@ export default function AppRoutes() {
         }
       >
         <Route index element={<AdminHome />} />
+        <Route path="usuarios" element={<AdminUsuariosList />} />
+        <Route path="usuarios/novo" element={<AdminUsuarioForm />} />
+        <Route path="usuarios/:id/editar" element={<AdminUsuarioForm />} />
+        <Route path="lojistas" element={<AdminLojistasList />} />
+        <Route path="lojistas/novo" element={<AdminLojistaForm />} />
+        <Route path="lojistas/:id/editar" element={<AdminLojistaForm />} />
+        <Route path="clientes" element={<AdminClientesList />} />
+        <Route path="clientes/novo" element={<AdminClienteForm />} />
+        <Route path="clientes/:id/editar" element={<AdminClienteForm />} />
+        <Route path="produtos" element={<AdminProdutosList />} />
+        <Route path="produtos/novo" element={<AdminProdutoForm />} />
+        <Route path="produtos/:id/editar" element={<AdminProdutoForm />} />
       </Route>
 
       <Route path="login" element={<Login />} />
