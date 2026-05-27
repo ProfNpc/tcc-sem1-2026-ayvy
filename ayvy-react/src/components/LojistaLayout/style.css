@@ -1,0 +1,9 @@
+@import "../PanelLayout/panel-layout.css";
+
+.panel-shell--lojista .panel-sidebar {
+  border-right-color: #dfe8f3;
+}
+
+.panel-shell--lojista .panel-logo {
+  color: #4a6fa5;
+}

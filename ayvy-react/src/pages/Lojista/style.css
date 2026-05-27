@@ -1,0 +1,11 @@
+@import "../Adim/style.css";
+
+.panel-page-meta {
+  margin: -0.5rem 0 1rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.panel-page-meta a {
+  color: var(--ayvy-purple, #b06edc);
+}
