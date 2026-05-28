@@ -16,6 +16,9 @@ GO
 CREATE DATABASE ayvy;
 GO
 
+ALTER DATABASE ayvy SET MULTI_USER;
+GO
+
 USE ayvy;
 GO
 
@@ -805,13 +808,8 @@ INSERT INTO categorias (nome, slug)
 VALUES
 ('Moda feminina', 'moda-feminina'),
 ('Streetwear', 'streetwear'),
-<<<<<<< HEAD
 ('Acessórios', 'acessorios'),
 ('Calçados', 'calcados');
-=======
-('Acessï¿½rios', 'acessorios'),
-('Calï¿½ados', 'calcados');
->>>>>>> 7be6cffaaf79d95b63c77bc0de3525b48e3a16b4
 GO
 
 INSERT INTO usuarios (
@@ -831,3 +829,13 @@ VALUES (
 GO
 
 select * from usuarios;
+
+-- DELETANDO O BANCO PARA COREÇÕES:
+--USE master;
+--GO
+--IF DB_ID('ayvy') IS NOT NULL
+--BEGIN
+--ALTER DATABASE ayvy SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+  --  DROP DATABASE ayvy;
+--END
+--GO
