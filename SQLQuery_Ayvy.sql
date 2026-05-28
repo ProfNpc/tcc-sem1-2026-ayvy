@@ -22,7 +22,7 @@ Telefone VARCHAR(16)
 );
 
 
-create table Endereço (
+create table Endereï¿½o (
 Id INT PRIMARY KEY,
 Bairro VARCHAR,
 Logradouro VARCHAR,
@@ -34,7 +34,7 @@ UF VARCHAR(2)
 create table Produto (
 Id INT PRIMARY KEY,
 Nome_Produo VARCHAR,
-Preço DECIMAL (10, 2),
+Preï¿½o DECIMAL (10, 2),
 Categoria VARCHAR,
 );
 

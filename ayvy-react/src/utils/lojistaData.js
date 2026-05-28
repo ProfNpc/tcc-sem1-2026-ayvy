@@ -1,0 +1,499 @@
+export const SHOPS = {
+    rafaele_fashion: {
+      name: "Bella Dama",
+      handle: "@Bella_Dama",
+      avatar: "https://i.pravatar.cc/120?u=1",
+      bio: "Bem-vinda à Bella Dama! Somos especialistas em vestir todos os estilos, oferecendo um mix completo de moda feminina. Do casual ao elegante, do básico ao fashionista, temos o look perfeito para cada momento do seu dia. Vista sua essência com qualidade e conforto.",
+      monthsOnAyvy: 31,
+      reviewCount: 18,
+      followers: "12,4 mil",
+      chatResponseRate: "83%",
+      stats: [
+        { label: "produtos", value: "12" },
+        { label: "seguidores", value: "12,4 mil" },
+        { label: "avaliação", value: "4,9" },
+      ],
+      products: [
+        {
+          id: "rf-1",
+          title: "Leather jacket",
+          price: "R$ 599,90",
+          discountPercent: 15,
+          soldCount: 1200,
+          images: ["/assets/img/Leather_Jacket.jpg",
+          "/assets/img/Leather_Jacket2.jpg", "/assets/img/red_leather.jpg", "/assets/img/Leather_branca.jpg", ],
+          description:
+            "Jaqueta de couro legitimo, ideal para dias frios.",
+        },
+        {
+          id: "rf-2",
+          title: "Tenis Samba",
+          price: "R$ 149,00",
+          pricePix: "R$ 119,",
+          priceOther: "R$ 149,00",
+          images: [
+            "/assets/img/samba.jpg",
+            "/assets/img/samba_vinho.jpg",
+            "/assets/img/samba_preto.jpg",
+          ],
+          colors: ["Branco", "Vinho", "Preto",],
+          sizes: ["34", "35", "36", "38", "40"],
+          rating: 5,
+          reviewCount: 1,
+          soldCount: 3,
+          favoriteCount: 374,
+          categoryPath: ["AYVY", "Roupas Femininas", "tenis", "Vestidos"],
+          originCountry: "Brasil",
+          shipsFrom: "São Paulo",
+          description:
+            "um tênis icônico que combina design clássico, conforto e desempenho, sendo popular tanto no futebol quanto na moda urbana.",
+          reviews: [
+            {
+              id: "rf2-r1",
+              user: "f*****s",
+              avatar: "https://i.pravatar.cc/48?u=rf2r1",
+              rating: 5,
+              date: "2026-04-17 12:56",
+              variation: "Vinho, 34",
+              attributes: [
+                { label: "Qualidade", value: "boa" },
+                { label: "Estilo", value: "festa" },
+                { label: "Conforto", value: "ótimo acabamento" },
+              ],
+              text: "Tenis lindo, perfeito!",
+            },
+          ],
+        },
+        {
+          id: "rf-3",
+          title: "Blazer Alfaiataria",
+          price: "R$ 329,90",
+          images: [
+            "/assets/img/Blazer_feminino.jpg",
+            "/assets/img/blazer_femino_alfaiataria.jpg",
+          ],
+          description: "Corte estruturado, ombreiras leves. Compõe look trabalho ou evento.",
+        },
+        {
+          id: "rf-4",
+          title: "Calça Wide Leg",
+          price: "R$ 179,90",
+          images: [
+            "/assets/img/calca_wide.jpg",
+            "/assets/img/calcawide_cinza.jpg",
+          ],
+          description: "Cintura alta, comprimento alongado. Jeans de alta qualidade.",
+        },
+        {
+          id: "rf-5",
+          title: "Bolsa Tiracolo",
+          price: "R$ 139,90",
+          images: [
+            "/assets/img/bolsaazul.jpg",
+            "/assets/img/bolsabege.jpg",
+            "/assets/img/bolsared.jpg",
+            "/assets/img/bolsabranca.jpg",
+            "/assets/img/bolsapreta.jpg"
+          ],
+          description: "é um acessório desenhado para ser pendurado no ombro, oferecendo praticidade e mantendo as mãos livres. Combina funcionalidade e estilo.",
+        },
+        {
+          id: "rf-6",
+          title: "Top Canelado",
+          price: "R$ 89,90",
+          images: [
+            "/assets/img/top_canelado.jpg",
+            "/assets/img/top_branco.jpg",
+          ],
+          description: "Malha canelada premium, alças ajustáveis.",
+        },
+        {
+          id: "rf-7",
+          title: "Vestido Floral",
+          price: "R$ 199,90",
+          discountPercent: 10,
+          soldCount: 520,
+          images: [
+            "/assets/img/vestido.jpg",
+            "/assets/img/vestidofloral.jpg",
+          ],
+          description: "Estampa floral delicada, mangas bufantes.",
+        },
+        {
+          id: "rf-8",
+          title: "Colete Tricot",
+          price: "R$ 119,90",
+          soldCount: 310,
+          images: [
+            "/assets/img/colete.jpg",
+            "/assets/img/tricot.jpg"
+          ],
+          description: "Tricot macio, ideal para sobreposição.",
+        },
+        {
+          id: "rf-9",
+          title: "Saida De Praia",
+          price: "R$ 59,90",
+          discountPercent: 25,
+          soldCount: 780,
+          images: [
+            "/assets/img/saida_preta.jpg",
+            "/assets/img/saidaAzul.jpg",
+            "/assets/img/saidaMarrom.jpg",
+          ],
+          description: "Couro sintético premium, alça ajustável.",
+        },
+        {
+          id: "rf-10",
+          title: "Camisa Oversized",
+          price: "R$ 89,90",
+          soldCount: 95,
+          images: [
+            "/assets/img/camisaBranca.jpg",
+            "/assets/img/camisapreta.jpg",
+            "/assets/img/camisaOff.jpg"
+          ],
+          description: "Tweed clássico, forro acetinado, botões dourados.",
+        },
+        {
+          id: "rf-11",
+          title: "Meia Estampada",
+          price: "R$ 49,90",
+          discountPercent: 10,
+          soldCount: 445,
+          images: [
+            "/assets/img/meia_estampa.jpg",
+            "/assets/img/meia_preta.jpg",
+            "/assets/img/meiaBorboleta.jpg",
+            "/assets/img/meia.jpg",
+            "/assets/img/meiaFlor.jpg"
+          ],
+          description: "Algodão egípcio, corte ajustado, maciez.",
+        },
+        {
+          id: "rf-12",
+          title: "Cinto Fino",
+          price: "R$ 69,90",
+          soldCount: 620,
+          images: [
+          "/assets/img/cintoFino.jpg",
+          "/assets/img/cintoMarrom.jpg",
+          "/assets/img/cintoBranco.jpg"
+          ],
+          description: "Fivela dourada, couro sintético macio.",
+        },
+      ],
+    },
+    livre_store: {
+      name: "Livre Store",
+      handle: "@livre_store",
+      avatar: "https://i.pravatar.cc/120?u=2",
+      bio: "Streetwear e básicos com atitude. Drops toda sexta.",
+      stats: [
+        { label: "produtos", value: "12" },
+        { label: "seguidores", value: "8,1 mil" },
+        { label: "avaliação", value: "4,8" },
+      ],
+      products: [
+        {
+          id: "ls-1",
+          title: "Jaqueta Track Purple",
+          price: "R$ 700,00",
+          discountPercent: 20,
+          soldCount: 890,
+          images: ["/assets/img/Blusaroxa.png",
+          "/assets/img/Blusaroxav.png",],
+           description: "Capuz duplo, bolso canguru. Interior felpado.",
+        },
+        {
+          id: "ls-2",
+          title: "Tênis New Balance 530 unissex",
+          price: "R$ 749,90",
+          images: ["/assets/img/NBcinza2.png",
+            "/assets/img/NBbranco.png",
+          "/assets/img/NBpreto1.png",],
+          description: "Algodão penteado 180g, gola canelada reforçada.",
+        },
+        {
+          id: "ls-3",
+          title: "Bota Timberland",
+          price: "R$ 890,00",
+          images: ["/assets/img/BotaYellow.png",],
+          description: "Bordado frontal, regulagem de metal.",
+        },
+        {
+          id: "ls-4",
+          title: "Calça Jean",
+          price: "R$ 200,00",
+          images: ["/assets/img/JeansClara.png",
+            "/assets/img/JeanMasc.png",],
+          description: "Bolsos laterais amplos, elástico no tornozelo.",
+        },
+        {
+          id: "ls-5",
+          title: "Boné Aba reta ",
+          price: "R$ 80,00",
+          discountPercent: 18,
+          soldCount: 640,
+          images:  ["/assets/img/BoneAzul.png",
+            "/assets/img/BonePreto.png",
+          "/assets/img/BoneVerm.png",],
+          description: "Tecido impermeável leve, capuz embutido.",
+        },
+        {
+          id: "ls-6",
+          title: "Shorts Nike ",
+          price: "R$ 100,00",
+          soldCount: 420,
+          images: ["/assets/img/ShortsA.png",
+            "/assets/img/ShortsB.png",],
+          description: "Sarja resistente, corte relaxed.",
+        },
+        {
+          id: "ls-7",
+          title: "Jaqueta de couro",
+          price: "R$ 300,90",
+          soldCount: 1100,
+          images:["/assets/img/Couro.png",],
+          description: "Solado robusto, palmilha memory foam.",
+        },
+        {
+          id: "ls-8",
+          title: "Meia Nike cano curto",
+          price: "R$ 59,90",
+          discountPercent: 12,
+          soldCount: 2100,
+          images:["/assets/img/Meia.png",],
+          description: "Tecido respirável, ideal para treino.",
+        },
+        {
+          id: "ls-9",
+          title: "Camiseta Oversized",
+          price: "R$ 149,90",                     
+          soldCount: 380,
+          images: ["/assets/img/CamisaA.png",
+            "/assets/img/CamisaM.png",
+          "/assets/img/CamisaP.png",],
+          description: "Compartimento para notebook até 15 polegadas.",
+        },
+        {
+          id: "ls-10",
+          title: "Óculos de sol retro",
+          price: "R$ 89,90",
+          soldCount: 560,
+          images: [
+            "https://images.unsplash.com/photo-1572635196233-8f9923e94b46?w=600",
+          ],
+          description: "Lentes UV400, armação acetato.",
+        },
+        {
+          id: "ls-11",
+          title: "Puffer jacket nylon",
+          price: "R$ 349,90",
+          discountPercent: 22,
+          soldCount: 290,
+          images: ["https://images.unsplash.com/photo-1548126032-079b996c4bf7?w=600",],
+          description: "Enchimento leve, capuz removível, impermeável.",
+        },
+        {
+          id: "ls-12",
+          title: "Meia cano alto pack 3",
+          price: "R$ 39,90",
+          soldCount: 1800,
+          images: [
+            "https://images.unsplash.com/photo-1586350977771-b3b0a50c4b1c?w=600",
+          ],
+          description: "Algodão com elastano, cores variadas no kit.",
+        },
+      ],
+    },
+    itb_moda: {
+      name: "ITB Moda",
+      handle: "@itb_moda",
+      avatar: "https://i.pravatar.cc/120?u=3",
+      bio: "Curadoria acadêmica + tendências. Projeto integrador AYVY.",
+      stats: [
+        { label: "produtos", value: "12" },
+        { label: "seguidores", value: "3,2 mil" },
+        { label: "avaliação", value: "5,0" },
+      ],
+      products: [
+        {
+          id: "im-1",
+          title: "Vestido jeans vintage",
+          price: "R$ 219,90",
+          images: ["/assets/img/vestidojeans.png"],
+          description: "Lavagem média, modelagem reta. Peça única do acervo.",
+        },
+        {
+          id: "im-2",
+          title: "Macacão utilitário",
+          price: "R$ 289,00",
+          images: [
+            "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600",
+            "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600",
+          ],
+          description: "Tecido encorpado, cinto removível e bolsos funcionais.",
+        },
+        {
+          id: "im-3",
+          title: "Sandália plataforma",
+          price: "R$ 159,90",
+          images: [
+            "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600",
+            "https://images.unsplash.com/photo-1603487742131-4160ec999306?w=600",
+          ],
+          description: "Solado leve, palmilha acolchoada.",
+        },
+        {
+          id: "im-4",
+          title: "Blusa cropped renda",
+          price: "R$ 79,90",
+          discountPercent: 20,
+          soldCount: 430,
+          images: [
+            "https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=600",
+          ],
+          description: "Renda delicada, forro interno.",
+        },
+        {
+          id: "im-5",
+          title: "Calça pantalona",
+          price: "R$ 169,90",
+          soldCount: 290,
+          images: [
+            "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600",
+          ],
+          description: "Cintura alta, pernas amplas, tecido fluido.",
+        },
+        {
+          id: "im-6",
+          title: "Jaqueta jeans oversized",
+          price: "R$ 239,90",
+          soldCount: 180,
+          images: [
+            "https://images.unsplash.com/photo-1541093602413-3bff903b302f?w=600",
+          ],
+          description: "Denim médio, lavagem vintage.",
+        },
+        {
+          id: "im-7",
+          title: "Tênis casual canvas",
+          price: "R$ 129,90",
+          discountPercent: 15,
+          soldCount: 920,
+          images: [
+            "https://images.unsplash.com/photo-1460353589841-61b2bc694979?w=600",
+          ],
+          description: "Canvas respirável, solado de borracha.",
+        },
+        {
+          id: "im-8",
+          title: "Bolsa tote acadêmica",
+          price: "R$ 99,90",
+          soldCount: 510,
+          images: [
+            "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600",
+          ],
+          description: "Espaçosa para cadernos e notebook.",
+        },
+        {
+          id: "im-9",
+          title: "Lenço estampado",
+          price: "R$ 49,90",
+          soldCount: 150,
+          images: [
+            "https://images.unsplash.com/photo-1584917865442-89aaaabddaab?w=600",
+          ],
+          description: "Seda sintética, estampa geométrica.",
+        },
+        {
+          id: "im-10",
+          title: "Conjunto moletom college",
+          price: "R$ 199,90",
+          soldCount: 670,
+          images: [
+            "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600",
+          ],
+          description: "Moletom + calça, bordado ITB.",
+        },
+        {
+          id: "im-11",
+          title: "Vestido midi acetinado",
+          price: "R$ 219,90",
+          discountPercent: 12,
+          soldCount: 340,
+          images: [
+            "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600",
+          ],
+          description: "Tecido acetinado com brilho suave, ideal para eventos.",
+        },
+        {
+          id: "im-12",
+          title: "Cardigan tricô oversize",
+          price: "R$ 149,90",
+          soldCount: 410,
+          images: [
+            "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600",
+          ],
+          description: "Tricot confortável, botões frontais, caimento amplo.",
+        },
+      ],
+    },
+};
+
+export const DEFAULT_SLUG = "rafaele_fashion";
+
+/** Métricas simuladas para o Painel profissional (dono da loja) */
+const SHOP_ANALYTICS = {
+    livre_store: {
+      views7d: [1200, 1350, 1280, 1420, 1510, 1480, 1620],
+      reachAccounts: [8100, 8200, 8050, 8300, 8400, 8350, 8480],
+      salesByDay: [420, 380, 510, 490, 620, 580, 640],
+      salesMonthTotal: 18420,
+      salesPrevMonthTotal: 16200,
+    },
+    rafaele_fashion: {
+      views7d: [2100, 2050, 2180, 2300, 2280, 2400, 2520],
+      reachAccounts: [12400, 12350, 12480, 12520, 12600, 12580, 12700],
+      salesByDay: [890, 920, 780, 950, 910, 880, 1020],
+      salesMonthTotal: 25680,
+      salesPrevMonthTotal: 24100,
+    },
+    itb_moda: {
+      views7d: [600, 580, 620, 640, 610, 650, 680],
+      reachAccounts: [3100, 3080, 3150, 3200, 3180, 3220, 3250],
+      salesByDay: [210, 190, 230, 220, 250, 240, 260],
+      salesMonthTotal: 8920,
+      salesPrevMonthTotal: 9100,
+    },
+};
+
+export function getShopAnalytics(slug) {
+  const key = normalizeSlugParam(slug);
+  return SHOP_ANALYTICS[key] || SHOP_ANALYTICS.livre_store;
+}
+
+export function normalizeSlugParam(value) {
+  let s = String(value || "")
+    .trim()
+    .toLowerCase();
+  s = s.replace(/^[./?#]+/, "").replace(/[.\s,;:!?]+$/g, "");
+  return s;
+}
+
+export function getSlugFromSearchParams(searchParams) {
+  const raw = normalizeSlugParam(
+    searchParams.get("loja") || searchParams.get("shop") || "",
+  );
+  if (raw && SHOPS[raw]) return raw;
+  if (raw) return null;
+  return DEFAULT_SLUG;
+}
+
+export function findProduct(slug, productId) {
+  const shop = SHOPS[slug];
+  if (!shop || !productId) return null;
+  const product = shop.products.find((x) => x.id === productId);
+  return product ? { shop, product } : null;
+}

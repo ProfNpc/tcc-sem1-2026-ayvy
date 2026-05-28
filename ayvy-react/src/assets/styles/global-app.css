@@ -1,0 +1,110 @@
+/* Ajustes globais da SPA (complementam /assets/css/geral.css) */
+
+button.nav-link-top {
+  font: inherit;
+  margin-right: 20px;
+}
+
+.nav-links a.nav-link-like,
+.nav-links button.nav-link-like {
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+}
+
+.page-loja-extra .loja-hero {
+  max-width: 1200px;
+  margin: 1.5rem auto 0;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  background: #fff;
+  border-radius: 4px;
+}
+
+@media (max-width: 640px) {
+  .page-loja-extra .loja-hero {
+    flex-wrap: wrap;
+  }
+}
+
+.page-loja-extra .loja-hero-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.page-loja-extra .loja-hero img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.page-loja-extra .loja-stats {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.page-loja-extra .loja-stats span {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.page-loja-extra {
+  background: #f5f5f5;
+}
+
+.page-produto-extra .produto-detalhe {
+  max-width: 960px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .page-produto-extra .produto-detalhe {
+    grid-template-columns: 1fr;
+  }
+}
+
+.page-produto-extra .produto-detalhe img {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.page-produto-extra .produto-acoes {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+body.page-home a.btn-visit {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+button.btn-round {
+  font: inherit;
+}
