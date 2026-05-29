@@ -38,7 +38,7 @@ public class UsuarioController {
 
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Usuario>> buscarUsuarioPorStatus(@PathVariable StatusUsuario status) {
-        return ResponseEntity.ok(usuarioService.buscarPorStatus(status));
+        return ResponseEntity.ok(usuarioService.buscarUsuarioPorStatus(status));
     }
 
     @DeleteMapping("/{id}")
