@@ -826,3 +826,5 @@ GO
 SELECT * FROM usuarios;
 SELECT * FROM clientes;
 SELECT * FROM lojistas;
+
+--Correções

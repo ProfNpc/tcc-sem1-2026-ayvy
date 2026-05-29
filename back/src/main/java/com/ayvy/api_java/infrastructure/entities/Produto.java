@@ -38,10 +38,10 @@ public class Produto {
     @Column(name = "slug", nullable = false)
     private String slug;
 
-    @Column(name = "descricao", columnDefinition = "TEXT")
+    @Column(name = "descricao", columnDefinition = "NVARCHAR(MAX)")
     private String descricao;
 
-    @Column(name = "preco", nullable = false)
+    @Column(name = "preco", nullable = false, precision = 12, scale = 2)
     private BigDecimal preco;
 
     @Builder.Default

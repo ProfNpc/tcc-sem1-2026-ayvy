@@ -22,7 +22,7 @@ public class Cliente {
     @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;
 
-    @Column(name = "cpf", nullable = false, unique = true, length = 11)
+    @Column(name = "cpf", nullable = false, unique = true, columnDefinition = "CHAR(11)")
     private String cpf;
 
     @Column(name = "data_nascimento")

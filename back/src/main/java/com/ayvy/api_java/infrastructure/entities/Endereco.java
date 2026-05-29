@@ -41,10 +41,10 @@ public class Endereco {
     @Column(name = "cidade", nullable = false)
     private String cidade;
 
-    @Column(name = "uf", nullable = false, length = 2)
+    @Column(name = "uf", nullable = false, columnDefinition = "CHAR(2)")
     private String uf;
 
-    @Column(name = "cep", nullable = false, length = 8)
+    @Column(name = "cep", nullable = false, columnDefinition = "CHAR(8)")
     private String cep;
 
     @Column(name = "principal", nullable = false)

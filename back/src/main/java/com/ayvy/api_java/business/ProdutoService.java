@@ -52,10 +52,13 @@ public class ProdutoService {
     }
 
     public Produto buscarProdutoPorId(Integer id) {
-        repository.incrementarVisualizacao(id);
-        return repository.findById(id).orElseThrow(
+
+        Produto produto = repository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto não encontrado")
         );
+        repository.incrementarVisualizacao(id);
+
+        return produto;
     }
 
     public List<Produto> listarProdutos() {
@@ -111,7 +114,7 @@ public class ProdutoService {
         ProdutoImagem imagem = ProdutoImagem.builder()
                 .produto(produto)
                 .caminho(request.getCaminho())
-                .ordem(request.getOrdem() != null ? request.getOrdem() : 0)
+                .ordem(request.getOrdem() != null ? (short) request.getOrdem() : 0)
                 .build();
 
         return produtoImagemRepository.saveAndFlush(imagem);

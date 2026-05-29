@@ -24,8 +24,7 @@ public class UsuarioService {
             UsuarioRepository repository,
             ClienteRepository clienteRepository,
             LojistaRepository lojistaRepository,
-            UploadService uploadService
-    ) {
+            UploadService uploadService) {
         this.repository = repository;
         this.clienteRepository = clienteRepository;
         this.lojistaRepository = lojistaRepository;
@@ -33,8 +32,10 @@ public class UsuarioService {
     }
 
     /**
-     * Cadastro de identidade (login). Perfil de negócio é criado depois em /clientes ou /lojistas.
-     * Todo usuário novo entra como {@link StatusUsuario#ATIVO} se status não for enviado.
+     * Cadastro de identidade (login). Perfil de negócio é criado depois em
+     * /clientes ou /lojistas.
+     * Todo usuário novo entra como {@link StatusUsuario#ativo} se status não for
+     * enviado.
      */
     public Usuario salvarUsuario(Usuario usuario) {
         aplicarDefaultsCadastro(usuario);
@@ -45,11 +46,10 @@ public class UsuarioService {
 
     public Usuario buscarUsuarioPorId(Integer id) {
         return repository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado")
-        );
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
     }
 
-    //buscar por Status
+    // buscar por Status
     public List<Usuario> buscarUsuarioPorStatus(StatusUsuario status) {
         return repository.findByStatus(status);
     }
@@ -63,10 +63,11 @@ public class UsuarioService {
         repository.delete(usuario);
     }
 
-    //EXCLUSÃO LÓGICA - STATUS = INATIVO (Status=Bloqueado é uma 'punição' dos admin)
+    // EXCLUSÃO LÓGICA - STATUS = inativo (Status=Bloqueado é uma 'punição' dos
+    // admin)
     public void desativarUsuario(Integer id) {
         Usuario usuario = buscarUsuarioPorId(id);
-        usuario.setStatus(StatusUsuario.INATIVO);
+        usuario.setStatus(StatusUsuario.inativo);
         repository.save(usuario);
     }
 
@@ -103,15 +104,13 @@ public class UsuarioService {
         if (usuario.getPapel() != papelEsperado) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Usuário deve ter papel '" + papelEsperado + "'. Papel atual: " + usuario.getPapel()
-            );
+                    "Usuário deve ter papel '" + papelEsperado + "'. Papel atual: " + usuario.getPapel());
         }
 
-        if (usuario.getStatus() != StatusUsuario.ATIVO) {
+        if (usuario.getStatus() != StatusUsuario.ativo) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Usuário deve estar com status 'ativo' para vincular perfil"
-            );
+                    "Usuário deve estar com status 'ativo' para vincular perfil");
         }
 
         if (papelEsperado == PapelUsuario.cliente && clienteRepository.findByUsuario_Id(usuarioId).isPresent()) {
@@ -125,14 +124,13 @@ public class UsuarioService {
         if (papelEsperado == PapelUsuario.admin) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Administrador não possui perfil separado; use apenas POST /usuarios com papel admin"
-            );
+                    "Administrador não possui perfil separado; use apenas POST /usuarios com papel admin");
         }
     }
 
     private void aplicarDefaultsCadastro(Usuario usuario) {
         if (usuario.getStatus() == null) {
-            usuario.setStatus(StatusUsuario.ATIVO);
+            usuario.setStatus(StatusUsuario.ativo);
         }
     }
 
@@ -144,8 +142,7 @@ public class UsuarioService {
         if (!java.nio.file.Files.exists(fisico)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Arquivo de avatar não encontrado: " + caminho
-            );
+                    "Arquivo de avatar não encontrado: " + caminho);
         }
     }
 
@@ -153,8 +150,7 @@ public class UsuarioService {
         if (usuario.getPapel() == null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Campo 'papel' é obrigatório: admin, cliente ou lojista"
-            );
+                    "Campo 'papel' é obrigatório: admin, cliente ou lojista");
         }
         if (usuario.getNome() == null || usuario.getNome().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Campo 'nome' é obrigatório");

@@ -26,6 +26,7 @@ public class ProdutoImagem {
     @Column(name = "url", nullable = false, length = 500)
     private String caminho;
 
-    @Column(name = "ordem", nullable = false, columnDefinition = "SMALLINT UNSIGNED")
-    private Integer ordem = 0;
+    @Column(name = "ordem", nullable = false)
+    @Builder.Default
+    private Short ordem = 0;
 }
