@@ -35,3 +35,13 @@ Depois acesse `http://localhost:5500/` ou `http://localhost:5500/index.html`.
 
 cd back 
 ./mvnw spring-boot:run
+
+para trocar de branch 
+git switch corrigido
+
+e para puxar o commit de uma para outra
+git switch main <caso não esteja no main, voltar para ele>
+git log --oneline <para ver o endereço do ultimo commit>
+git switch corrigido  
+git cherry-pick d23adc5 <coloca aqui o endereço do ultimo commit>
+git push
