@@ -20,7 +20,7 @@ export const ADMIN_OVERVIEW = {
   metrics: {
     lojistasAtivos: shopList.filter((s) => s.status === "aprovado").length,
     lojistasPendentes: shopList.filter((s) => s.status === "pendente").length,
-    produtosPublicados: shopList.reduce((acc, s) => acc + s.products, 0),
+    produtosCadastrados: shopList.reduce((acc, s) => acc + s.products, 0),
     pedidosMes: 128,
     clientesCadastrados: 842,
     receitaMes: "R$ 24.380,00",

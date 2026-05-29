@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteCliente, listClientes } from "../../../services/adminApi";
+import { notifyAdminMetricsChanged } from "../../../utils/adminMetrics";
 import "../admin-crud.css";
 
 export default function AdminClientesList() {
@@ -30,6 +31,7 @@ export default function AdminClientesList() {
     if (!window.confirm(`Excluir perfil de cliente "${nome}"?`)) return;
     try {
       await deleteCliente(row.id);
+      notifyAdminMetricsChanged();
       await load();
     } catch (err) {
       setError(err.message || "Erro ao excluir");
