@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteLojista, listLojistas } from "../../../services/adminApi";
+import { notifyAdminMetricsChanged } from "../../../utils/adminMetrics";
 import { resolveImageUrl } from "../../../utils/imageUrl";
 import "../admin-crud.css";
 
@@ -30,6 +31,7 @@ export default function AdminLojistasList() {
     if (!window.confirm(`Excluir loja "${row.nomeLoja}"?`)) return;
     try {
       await deleteLojista(row.id);
+      notifyAdminMetricsChanged();
       await load();
     } catch (err) {
       setError(err.message || "Erro ao excluir");

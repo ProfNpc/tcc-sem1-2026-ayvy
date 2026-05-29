@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteProduto, listProdutos } from "../../../services/adminApi";
+import { notifyAdminMetricsChanged } from "../../../utils/adminMetrics";
 import { resolveImageUrl } from "../../../utils/imageUrl";
 import "../admin-crud.css";
 
@@ -36,6 +37,7 @@ export default function AdminProdutosList() {
     if (!window.confirm(`Excluir produto "${row.nome}"?`)) return;
     try {
       await deleteProduto(row.id);
+      notifyAdminMetricsChanged();
       await load();
     } catch (err) {
       setError(err.message || "Erro ao excluir");

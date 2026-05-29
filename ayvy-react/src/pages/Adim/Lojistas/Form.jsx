@@ -11,6 +11,7 @@ import {
   listUsuarios,
   updateLojista,
 } from "../../../services/adminApi";
+import { notifyAdminMetricsChanged } from "../../../utils/adminMetrics";
 import "../admin-crud.css";
 
 const STATUS_LOJA = [
@@ -118,6 +119,7 @@ export default function AdminLojistaForm() {
           descricao: form.descricao.trim() || null,
         });
       }
+      notifyAdminMetricsChanged();
       navigate("/admin/lojistas");
     } catch (err) {
       setError(err.message || "Erro ao salvar");

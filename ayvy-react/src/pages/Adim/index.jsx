@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { listClientes, listLojistas, listProdutos, listUsuarios } from "../../services/adminApi";
-import { resolveImageUrl } from "../../utils/imageUrl";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  ADMIN_METRICS_CHANGED,
+  EMPTY_METRICS,
+  fetchAdminMetrics,
+} from "../../utils/adminMetrics";
 import { ADMIN_OVERVIEW } from "../../utils/adminDashboardMock";
 import "./style.css";
 import "./admin-crud.css";
@@ -49,55 +52,46 @@ function MiniChart({ values }) {
 }
 
 export default function AdminHome() {
+  const location = useLocation();
   const { platform, moderation, performance, recentOrders } = ADMIN_OVERVIEW;
-  const [metrics, setMetrics] = useState(ADMIN_OVERVIEW.metrics);
-  const [recentLojistas, setRecentLojistas] = useState(ADMIN_OVERVIEW.recentLojistas);
+  const [metrics, setMetrics] = useState(EMPTY_METRICS);
+  const [recentLojistas, setRecentLojistas] = useState([]);
   const [apiOk, setApiOk] = useState(true);
+  const [loadingMetrics, setLoadingMetrics] = useState(true);
+
+  const refreshMetrics = useCallback(async () => {
+    setLoadingMetrics(true);
+    try {
+      const data = await fetchAdminMetrics();
+      setMetrics(data.metrics);
+      setRecentLojistas(data.recentLojistas);
+      setApiOk(true);
+    } catch {
+      setMetrics(EMPTY_METRICS);
+      setRecentLojistas(ADMIN_OVERVIEW.recentLojistas);
+      setApiOk(false);
+    } finally {
+      setLoadingMetrics(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [, clientes, lojistas, produtos] = await Promise.all([
-          listUsuarios(),
-          listClientes(),
-          listLojistas(),
-          listProdutos(),
-        ]);
-        if (cancelled) return;
-        const lojaList = (lojistas || []).map((l) => ({
-          slug: l.slug,
-          name: l.nomeLoja,
-          handle: `@${l.slug}`,
-          avatar: resolveImageUrl(l.logoUrl) || "/assets/img/img-curta-ayvy.jpeg",
-          products: 0,
-          status: l.status,
-        }));
-        setRecentLojistas(lojaList.slice(0, 6));
-        setMetrics({
-          lojistasAtivos: lojaList.filter((s) => s.status === "aprovado").length,
-          lojistasPendentes: lojaList.filter((s) => s.status === "pendente").length,
-          produtosPublicados: (produtos || []).filter((p) => p.status === "ativo").length,
-          pedidosMes: ADMIN_OVERVIEW.metrics.pedidosMes,
-          clientesCadastrados: (clientes || []).length,
-          receitaMes: ADMIN_OVERVIEW.metrics.receitaMes,
-        });
-        setApiOk(true);
-      } catch {
-        if (!cancelled) setApiOk(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    if (location.pathname !== "/admin") return;
+    refreshMetrics();
+  }, [location.pathname, location.key, refreshMetrics]);
+
+  useEffect(() => {
+    const onChanged = () => refreshMetrics();
+    window.addEventListener(ADMIN_METRICS_CHANGED, onChanged);
+    return () => window.removeEventListener(ADMIN_METRICS_CHANGED, onChanged);
+  }, [refreshMetrics]);
 
   return (
     <div className="admin-page">
       <header className="admin-page-header">
         <div>
-          <h1>Visão geral da plataforma</h1>
-          <p>Monitore lojistas, pedidos e a saúde do marketplace AYVY.</p>
+          <h1>Visão geral</h1>
+          <p>Resumo do marketplace AYVY — lojistas, clientes e produtos em tempo real.</p>
           {!apiOk ? (
             <p className="admin-crud-hint" style={{ color: "#b45309", marginTop: 8 }}>
               API offline — métricas de lojistas/clientes em modo mock. Suba o back em :8082.
@@ -154,34 +148,50 @@ export default function AdminHome() {
         </div>
       </section>
 
-      <section className="admin-metrics-row">
+      <section className="admin-metrics-row" aria-busy={loadingMetrics}>
         <article className="admin-stat-card">
-          <span className="admin-stat-label">Lojistas ativos</span>
-          <strong className="admin-stat-value">{metrics.lojistasAtivos}</strong>
+          <span className="admin-stat-label">Lojistas cadastrados</span>
+          <strong className="admin-stat-value">
+            {loadingMetrics ? "…" : metrics.lojistasCadastrados}
+          </strong>
         </article>
         <article className="admin-stat-card">
           <span className="admin-stat-label">Aguardando aprovação</span>
           <strong className="admin-stat-value admin-stat-value--warn">
-            {metrics.lojistasPendentes}
+            {loadingMetrics ? "…" : metrics.lojistasPendentes}
           </strong>
         </article>
         <article className="admin-stat-card">
-          <span className="admin-stat-label">Produtos publicados</span>
-          <strong className="admin-stat-value">{metrics.produtosPublicados}</strong>
+          <span className="admin-stat-label">Produtos cadastrados</span>
+          <strong className="admin-stat-value">
+            {loadingMetrics ? "…" : metrics.produtosCadastrados}
+          </strong>
         </article>
         <article className="admin-stat-card">
+          <span className="admin-stat-label">Clientes cadastrados</span>
+          <strong className="admin-stat-value">
+            {loadingMetrics ? "…" : metrics.clientesCadastrados}
+          </strong>
+        </article>
+        <article className="admin-stat-card admin-stat-card--soon" title="Módulo de pedidos ainda não integrado">
           <span className="admin-stat-label">Pedidos (mês)</span>
-          <strong className="admin-stat-value">{metrics.pedidosMes}</strong>
+          <strong className="admin-stat-value admin-stat-value--muted">Em breve</strong>
         </article>
-        <article className="admin-stat-card">
-          <span className="admin-stat-label">Clientes</span>
-          <strong className="admin-stat-value">{metrics.clientesCadastrados}</strong>
-        </article>
-        <article className="admin-stat-card admin-stat-card--highlight">
-          <span className="admin-stat-label">Receita estimada (mês)</span>
-          <strong className="admin-stat-value">{metrics.receitaMes}</strong>
+        <article
+          className="admin-stat-card admin-stat-card--soon"
+          title="Soma dos pedidos pagos no mês — depende do módulo de pedidos"
+        >
+          <span className="admin-stat-label">Receita (mês)</span>
+          <strong className="admin-stat-value admin-stat-value--muted">Em breve</strong>
         </article>
       </section>
+      {apiOk ? (
+        <p className="admin-metrics-hint">
+          Números vêm da API. Perfil de cliente ou loja é criado em{" "}
+          <Link to="/admin/clientes">Clientes</Link> / <Link to="/admin/lojistas">Lojistas</Link>{" "}
+          (não basta só cadastrar usuário).
+        </p>
+      ) : null}
 
       <section className="admin-card admin-card--moderation">
         <div className="admin-card-head">

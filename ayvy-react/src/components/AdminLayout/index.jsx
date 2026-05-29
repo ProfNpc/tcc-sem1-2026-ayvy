@@ -28,9 +28,6 @@ export default function AdminLayout() {
             <span className="admin-brand-logo">AYVY</span>
             <span className="admin-brand-sub">Painel Admin</span>
           </Link>
-          <button type="button" className="admin-quick-add" disabled title="Em breve">
-            <i className="fas fa-plus" aria-hidden /> Cadastro rápido
-          </button>
         </div>
 
         <p className="admin-user">

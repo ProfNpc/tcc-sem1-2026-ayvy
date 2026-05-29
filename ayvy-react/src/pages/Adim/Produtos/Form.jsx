@@ -12,6 +12,7 @@ import {
   listProdutoImagens,
   updateProduto,
 } from "../../../services/adminApi";
+import { notifyAdminMetricsChanged } from "../../../utils/adminMetrics";
 import "../admin-crud.css";
 
 const STATUS_PRODUTO = [
@@ -156,6 +157,7 @@ export default function AdminProdutoForm() {
         const created = await createProduto(payload);
         await syncGaleriaPendentes(created.id);
       }
+      notifyAdminMetricsChanged();
       navigate("/admin/produtos");
     } catch (err) {
       setError(err.message || "Erro ao salvar");
@@ -174,7 +176,7 @@ export default function AdminProdutoForm() {
 
   return (
     <AdminFormShell
-      title={isEdit ? "Editar produto" : "Novo produto"}
+      title={isEdit ? "Editar" : "Novo produto"}
       subtitle={
         isEdit
           ? `Loja: ${lojaNome || "—"}`

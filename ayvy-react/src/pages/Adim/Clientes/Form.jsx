@@ -10,6 +10,7 @@ import {
   listUsuarios,
   updateCliente,
 } from "../../../services/adminApi";
+import { notifyAdminMetricsChanged } from "../../../utils/adminMetrics";
 import "../admin-crud.css";
 
 const EMPTY = {
@@ -89,6 +90,7 @@ export default function AdminClienteForm() {
           dataNascimento: form.dataNascimento || null,
         });
       }
+      notifyAdminMetricsChanged();
       navigate("/admin/clientes");
     } catch (err) {
       setError(err.message || "Erro ao salvar");

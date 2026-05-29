@@ -6,7 +6,7 @@ import { createUsuario, getUsuario, updateUsuario } from "../../../services/admi
 import "../admin-crud.css";
 
 const PAPEIS = ["admin", "cliente", "lojista"];
-const STATUS_LIST = ["ativo", "inativo", "bloqueado"];
+const STATUS_LIST = ["ativo"];
 
 const EMPTY = {
   nome: "",
