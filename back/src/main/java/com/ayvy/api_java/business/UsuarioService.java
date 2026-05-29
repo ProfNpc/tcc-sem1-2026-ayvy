@@ -34,7 +34,7 @@ public class UsuarioService {
 
     /**
      * Cadastro de identidade (login). Perfil de negócio é criado depois em /clientes ou /lojistas.
-     * Todo usuário novo entra como {@link StatusUsuario#ativo} se status não for enviado.
+     * Todo usuário novo entra como {@link StatusUsuario#ATIVO} se status não for enviado.
      */
     public Usuario salvarUsuario(Usuario usuario) {
         aplicarDefaultsCadastro(usuario);
@@ -49,6 +49,11 @@ public class UsuarioService {
         );
     }
 
+    //buscar por Status
+    public List<Usuario> buscarUsuarioPorStatus(StatusUsuario status) {
+        return repository.findByStatus(status);
+    }
+
     public List<Usuario> listarUsuarios() {
         return repository.findAll();
     }
@@ -56,6 +61,13 @@ public class UsuarioService {
     public void deletarUsuario(Integer id) {
         Usuario usuario = buscarUsuarioPorId(id);
         repository.delete(usuario);
+    }
+
+    //EXCLUSÃO LÓGICA - STATUS = INATIVO (Status=Bloqueado é uma 'punição' dos admin)
+    public void desativarUsuario(Integer id) {
+        Usuario usuario = buscarUsuarioPorId(id);
+        usuario.setStatus(StatusUsuario.INATIVO);
+        repository.save(usuario);
     }
 
     public Usuario atualizarUsuarioPorId(Integer id, Usuario usuario) {
@@ -95,7 +107,7 @@ public class UsuarioService {
             );
         }
 
-        if (usuario.getStatus() != StatusUsuario.ativo) {
+        if (usuario.getStatus() != StatusUsuario.ATIVO) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Usuário deve estar com status 'ativo' para vincular perfil"
@@ -120,7 +132,7 @@ public class UsuarioService {
 
     private void aplicarDefaultsCadastro(Usuario usuario) {
         if (usuario.getStatus() == null) {
-            usuario.setStatus(StatusUsuario.ativo);
+            usuario.setStatus(StatusUsuario.ATIVO);
         }
     }
 

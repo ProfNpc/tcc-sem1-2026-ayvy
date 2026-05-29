@@ -823,4 +823,6 @@ VALUES (
 );
 GO
 
-select * from usuarios;
+SELECT * FROM usuarios;
+SELECT * FROM clientes;
+SELECT * FROM lojistas;

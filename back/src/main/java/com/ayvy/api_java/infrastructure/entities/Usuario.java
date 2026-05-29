@@ -45,7 +45,7 @@ public class Usuario {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private StatusUsuario status = StatusUsuario.ativo;
+    private StatusUsuario status = StatusUsuario.ATIVO;
 
     @Column(name = "ultimo_login_em")
     private LocalDateTime ultimoLoginEm;
@@ -57,4 +57,5 @@ public class Usuario {
     @UpdateTimestamp
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
+
 }
