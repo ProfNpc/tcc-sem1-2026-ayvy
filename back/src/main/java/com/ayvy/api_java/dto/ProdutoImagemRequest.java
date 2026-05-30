@@ -8,5 +8,5 @@ import lombok.Setter;
 public class ProdutoImagemRequest {
 
     private String caminho;
-    private Integer ordem;
+    private Short ordem;
 }

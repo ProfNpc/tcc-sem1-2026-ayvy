@@ -114,7 +114,11 @@ public class ProdutoService {
         ProdutoImagem imagem = ProdutoImagem.builder()
                 .produto(produto)
                 .caminho(request.getCaminho())
-                .ordem(request.getOrdem() != null ? (short) request.getOrdem() : 0)
+                .ordem(
+                        request.getOrdem() != null
+                                ? request.getOrdem().shortValue()
+                                : (short) 0
+                )
                 .build();
 
         return produtoImagemRepository.saveAndFlush(imagem);
