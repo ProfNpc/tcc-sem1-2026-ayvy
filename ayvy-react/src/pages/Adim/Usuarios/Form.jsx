@@ -7,6 +7,8 @@ import "../admin-crud.css";
 
 const PAPEIS = ["admin", "cliente", "lojista"];
 const STATUS_LIST = ["ativo"];
+const STATUS_LIST_INATIVO = ["inativo"];
+const STATUS_LIST_BLOQUEADO = ["bloqueado"];
 
 const EMPTY = {
   nome: "",

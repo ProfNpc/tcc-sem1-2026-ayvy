@@ -18,7 +18,6 @@ import "../admin-crud.css";
 const STATUS_PRODUTO = [
   { value: "rascunho", label: "Rascunho" },
   { value: "ativo", label: "Ativo" },
-  { value: "inativo", label: "Inativo" },
   { value: "esgotado", label: "Esgotado" },
 ];
 
