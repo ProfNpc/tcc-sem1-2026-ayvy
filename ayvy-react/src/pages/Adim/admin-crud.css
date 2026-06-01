@@ -36,6 +36,10 @@
   overflow-x: auto;
 }
 
+.admin-crud-table-wrap--menu-open {
+  overflow: visible;
+}
+
 .admin-crud-table {
   width: 100%;
   border-collapse: collapse;
@@ -55,6 +59,73 @@
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+.admin-crud-buscar-cell {
+  position: relative;
+  width: 1%;
+  white-space: nowrap;
+}
+
+.admin-crud-buscar {
+  position: relative;
+  display: inline-block;
+}
+
+.admin-crud-buscar__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.admin-crud-buscar__arrow {
+  font-size: 0.55rem;
+  color: #888;
+  line-height: 1;
+}
+
+.admin-crud-buscar__menu {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  margin: 0;
+  padding: 0.2rem 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 20;
+  width: max-content;
+}
+
+.admin-crud-buscar__menu li button {
+  display: block;
+  width: 100%;
+  padding: 0.3rem 0.55rem;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.82rem;
+  text-align: left;
+  text-transform: capitalize;
+  color: #333;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-crud-buscar__menu li button:hover {
+  background: #f5f0fa;
 }
 
 .admin-crud-actions {
@@ -270,6 +341,11 @@
 .admin-badge--status.rascunho {
   background: #f0f0f5;
   color: #555;
+}
+
+.admin-badge--status.bloqueado {
+  background: #fdecea;
+  color: #b42318;
 }
 
 .admin-badge--status.inativo,
