@@ -10,16 +10,18 @@ import {
   listLojistas,
   listUsuarios,
   updateLojista,
+  updateUsuario,
 } from "../../../services/adminApi";
 import { notifyAdminMetricsChanged } from "../../../utils/adminMetrics";
 import "../admin-crud.css";
 
-const STATUS_LOJA = [
-  { value: "pendente", label: "Pendente" },
-  { value: "aprovado", label: "Aprovado" },
-  { value: "rejeitado", label: "Rejeitado" },
-  { value: "suspenso", label: "Suspenso" },
-];
+const STATUS_USUARIO_NOVO = ["ativo"];
+const STATUS_USUARIO_EDITAR = ["ativo", "inativo", "bloqueado"];
+
+function normalizarStatusUsuario(valor) {
+  const s = String(valor ?? "").toLowerCase();
+  return STATUS_USUARIO_EDITAR.includes(s) ? s : "ativo";
+}
 
 const EMPTY = {
   usuarioId: "",
@@ -29,7 +31,7 @@ const EMPTY = {
   bannerUrl: "",
   logoUrl: "",
   descricao: "",
-  status: "aprovado",
+  usuarioStatus: "ativo",
 };
 
 export default function AdminLojistaForm() {
@@ -63,13 +65,13 @@ export default function AdminLojistaForm() {
           if (cancelled) return;
           setForm({
             usuarioId: String(data.usuario?.id ?? ""),
+            usuarioStatus: normalizarStatusUsuario(data.usuario?.status),
             nomeLoja: data.nomeLoja || "",
             slug: data.slug || "",
             cnpj: data.cnpj || "",
             bannerUrl: data.bannerUrl || "",
             logoUrl: data.logoUrl || "",
             descricao: data.descricao || "",
-            status: data.status || "aprovado",
           });
         }
       } catch (e) {
@@ -101,8 +103,10 @@ export default function AdminLojistaForm() {
           bannerUrl: form.bannerUrl || null,
           logoUrl: form.logoUrl || null,
           descricao: form.descricao.trim() || null,
-          status: form.status,
         });
+        if (form.usuarioId) {
+          await updateUsuario(Number(form.usuarioId), { status: form.usuarioStatus });
+        }
       } else {
         if (!form.usuarioId) {
           setError("Selecione ou crie o usuário responsável pela loja");
@@ -222,22 +226,21 @@ export default function AdminLojistaForm() {
           />
         </div>
 
-        {isEdit ? (
-          <div className="admin-crud-field">
-            <label htmlFor="l-status">Status da loja</label>
-            <select
-              id="l-status"
-              value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value })}
-            >
-              {STATUS_LOJA.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        ) : null}
+        <div className="admin-crud-field">
+          <label htmlFor="l-usuario-status">Status do usuário</label>
+          <select
+            id="l-usuario-status"
+            value={isEdit ? form.usuarioStatus : "ativo"}
+            disabled={!isEdit}
+            onChange={(e) => setForm({ ...form, usuarioStatus: e.target.value })}
+          >
+            {(isEdit ? STATUS_USUARIO_EDITAR : STATUS_USUARIO_NOVO).map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="admin-form-footer">
           <Link to="/admin/lojistas" className="admin-btn admin-btn--ghost">

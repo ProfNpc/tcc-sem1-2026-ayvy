@@ -44,7 +44,7 @@ export default function UsuarioQuickModal({ open, onClose, onCreated, papel, tit
         telefone: form.telefone.trim() || null,
         avatarUrl: form.avatarUrl || null,
         papel,
-        status: form.status,
+        status: "ativo",
       });
       setForm(EMPTY);
       onCreated(created);

@@ -15,11 +15,13 @@ import {
 import { notifyAdminMetricsChanged } from "../../../utils/adminMetrics";
 import "../admin-crud.css";
 
-const STATUS_PRODUTO = [
-  { value: "rascunho", label: "Rascunho" },
-  { value: "ativo", label: "Ativo" },
-  { value: "esgotado", label: "Esgotado" },
-];
+const STATUS_PRODUTO_NOVO = ["ativo", "rascunho"];
+const STATUS_PRODUTO_EDITAR = ["ativo", "rascunho", "inativo", "esgotado"];
+
+function normalizarStatusProduto(valor) {
+  const s = String(valor ?? "").toLowerCase();
+  return STATUS_PRODUTO_EDITAR.includes(s) ? s : "ativo";
+}
 
 const EMPTY = {
   lojistaId: "",
@@ -99,7 +101,7 @@ export default function AdminProdutoForm() {
             preco: data.preco != null ? String(data.preco) : "",
             estoque: data.estoque != null ? String(data.estoque) : "0",
             imagemPrincipalUrl: data.imagemPrincipalUrl || "",
-            status: data.status || "ativo",
+            status: normalizarStatusProduto(data.status),
           });
           setLojaNome(data.lojista?.nomeLoja ?? "");
           setGaleria(Array.isArray(imgs) ? imgs : []);
@@ -303,9 +305,9 @@ export default function AdminProdutoForm() {
             value={form.status}
             onChange={(e) => setForm({ ...form, status: e.target.value })}
           >
-            {STATUS_PRODUTO.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
+            {(isEdit ? STATUS_PRODUTO_EDITAR : STATUS_PRODUTO_NOVO).map((s) => (
+              <option key={s} value={s}>
+                {s}
               </option>
             ))}
           </select>

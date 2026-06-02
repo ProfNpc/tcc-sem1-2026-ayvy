@@ -61,7 +61,7 @@ export default function AdminLojistasList() {
 
   const filteredItems = useMemo(() => {
     if (!statusFilter) return items;
-    return items.filter((row) => row.status === statusFilter);
+    return items.filter((row) => row.usuario?.status === statusFilter);
   }, [items, statusFilter]);
 
   return (
@@ -147,7 +147,9 @@ export default function AdminLojistasList() {
                     <td>{row.slug}</td>
                     <td>{row.usuario?.nome ?? "—"}</td>
                     <td>
-                      <span className={`admin-badge--status ${row.status}`}>{row.status}</span>
+                      <span className={`admin-badge--status ${row.usuario?.status ?? ""}`}>
+                        {row.usuario?.status ?? "—"}
+                      </span>
                     </td>
                     <td>
                       <div className="admin-crud-actions">

@@ -6,9 +6,13 @@ import { createUsuario, getUsuario, updateUsuario } from "../../../services/admi
 import "../admin-crud.css";
 
 const PAPEIS = ["admin", "cliente", "lojista"];
-const STATUS_LIST = ["ativo"];
-const STATUS_LIST_INATIVO = ["inativo"];
-const STATUS_LIST_BLOQUEADO = ["bloqueado"];
+const STATUS_NOVO = ["ativo"];
+const STATUS_EDITAR = ["ativo", "inativo", "bloqueado"];
+
+function normalizarStatus(valor) {
+  const s = String(valor ?? "").toLowerCase();
+  return STATUS_EDITAR.includes(s) ? s : "ativo";
+}
 
 const EMPTY = {
   nome: "",
@@ -44,7 +48,7 @@ export default function AdminUsuarioForm() {
           telefone: data.telefone || "",
           avatarUrl: data.avatarUrl || "",
           papel: data.papel || "cliente",
-          status: data.status || "ativo",
+          status: normalizarStatus(data.status),
         });
       } catch (e) {
         if (!cancelled) setError(e.message || "Usuário não encontrado");
@@ -68,7 +72,7 @@ export default function AdminUsuarioForm() {
         telefone: form.telefone.trim() || null,
         avatarUrl: form.avatarUrl || null,
         papel: form.papel,
-        status: form.status,
+        status: isEdit ? form.status : "ativo",
       };
       if (form.senha.trim()) payload.senha = form.senha.trim();
 
@@ -162,10 +166,11 @@ export default function AdminUsuarioForm() {
           <label htmlFor="u-status">Status</label>
           <select
             id="u-status"
-            value={form.status}
+            value={isEdit ? form.status : "ativo"}
+            disabled={!isEdit}
             onChange={(e) => setForm({ ...form, status: e.target.value })}
           >
-            {STATUS_LIST.map((s) => (
+            {(isEdit ? STATUS_EDITAR : STATUS_NOVO).map((s) => (
               <option key={s} value={s}>
                 {s}
               </option>

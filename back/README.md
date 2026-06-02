@@ -31,7 +31,15 @@ docker exec -i ayvy_mysql mysql -uroot -proot < database/ayvy_schema.sql
 ```bash
 cd back
 ./mvnw spring-boot:run
-```
+
+### para trocar de branch git switch corrigido
+
+!!!!!!!!!!!!!!!! e para puxar o commit de uma para outra !!!!!!!!!!!!!!!! 
+git switch main <caso não esteja no main, voltar para ele> 
+git log --oneline <para ver o endereço do ultimo commit> 
+git switch corrigido
+git cherry-pick d23adc5 <coloca aqui o endereço do ultimo commit> 
+git push
 
 Base: http://localhost:8082
 
