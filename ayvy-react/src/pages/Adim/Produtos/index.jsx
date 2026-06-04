@@ -25,6 +25,7 @@ export default function AdminProdutosList() {
     setLoading(true);
     setError("");
     try {
+      // GET /produtos — lista catalogo (campo status: ativo, rascunho, inativo, esgotado)
       const data = await listProdutos();
       setItems(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -52,6 +53,7 @@ export default function AdminProdutosList() {
   async function handleDelete(row) {
     if (!window.confirm(`Excluir produto "${row.nome}"?`)) return;
     try {
+      // DELETE /produtos/:id
       await deleteProduto(row.id);
       notifyAdminMetricsChanged();
       await load();
@@ -67,6 +69,7 @@ export default function AdminProdutosList() {
 
   const filteredItems = useMemo(() => {
     if (!statusFilter) return items;
+    // Menu Buscar: ativo, rascunho, esgotado (inativo so no form de edicao)
     return items.filter((row) => row.status === statusFilter);
   }, [items, statusFilter]);
 
@@ -78,6 +81,7 @@ export default function AdminProdutosList() {
           <p>Catálogo das lojas na plataforma.</p>
         </div>
         <div className="admin-page-actions">
+          {/* Produtos/Form.jsx — Salvar → POST /produtos */}
           <Link to="/admin/produtos/novo" className="admin-btn admin-btn--primary">
             + Novo produto
           </Link>
@@ -166,6 +170,7 @@ export default function AdminProdutosList() {
                     </td>
                     <td>
                       <div className="admin-crud-actions">
+                        {/* Form — GET /produtos/:id — Salvar → PUT /produtos/:id */}
                         <Link to={`/admin/produtos/${row.id}/editar`} className="admin-crud-btn-sm">
                           Editar
                         </Link>
@@ -182,6 +187,7 @@ export default function AdminProdutosList() {
                         <button
                           type="button"
                           className="admin-crud-btn-sm admin-crud-btn-sm--danger"
+                          // DELETE /produtos/:id
                           onClick={() => handleDelete(row)}
                         >
                           Excluir

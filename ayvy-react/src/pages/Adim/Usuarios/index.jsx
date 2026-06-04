@@ -18,6 +18,7 @@ export default function AdminUsuariosList() {
     setLoading(true);
     setError("");
     try {
+      // GET /usuarios — busca todos os usuários para preencher a tabela
       const data = await listUsuarios();
       setItems(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -27,6 +28,7 @@ export default function AdminUsuariosList() {
     }
   }, []);
 
+  // Ao abrir a página, carrega a lista uma vez
   useEffect(() => {
     load();
   }, [load]);
@@ -34,6 +36,7 @@ export default function AdminUsuariosList() {
   useEffect(() => {
     if (!filterOpen) return;
     function handleClickOutside(e) {
+      // Fecha o menu Buscar se o clique foi fora do botão/menu
       if (filterRef.current && !filterRef.current.contains(e.target)) {
         setFilterOpen(false);
       }
@@ -45,7 +48,9 @@ export default function AdminUsuariosList() {
   async function handleDelete(row) {
     if (!window.confirm(`Excluir usuário "${row.nome}"?`)) return;
     try {
+      // DELETE /usuarios/:id — remove o usuário no back
       await deleteUsuario(row.id);
+      // Recarrega a tabela após excluir
       await load();
     } catch (err) {
       setError(err.message || "Erro ao excluir");
@@ -53,12 +58,15 @@ export default function AdminUsuariosList() {
   }
 
   function handleFilterSelect(status) {
+    // Guarda o status escolhido no Buscar ("" = Todos)
     setStatusFilter(status);
     setFilterOpen(false);
   }
 
   const filteredItems = useMemo(() => {
+    // Sem filtro: mostra todos os itens que vieram da API
     if (!statusFilter) return items;
+    // Com filtro: mantém só quem tem o mesmo status no banco
     return items.filter((row) => row.status === statusFilter);
   }, [items, statusFilter]);
 
@@ -70,6 +78,7 @@ export default function AdminUsuariosList() {
           <p>Identidade da plataforma (login, papel e status).</p>
         </div>
         <div className="admin-page-actions">
+          {/* Abre Form.jsx — Salvar lá chama POST /usuarios */}
           <Link to="/admin/usuarios/novo" className="admin-btn admin-btn--primary">
             + Novo usuário
           </Link>
@@ -81,6 +90,7 @@ export default function AdminUsuariosList() {
       <section className="admin-card">
         <div className="admin-crud-toolbar">
           <span>{filteredItems.length} registro(s)</span>
+          {/* Botão Atualizar chama load() de novo (GET /usuarios) */}
           <button type="button" className="admin-crud-btn-sm" onClick={load} disabled={loading}>
             Atualizar
           </button>
@@ -104,6 +114,7 @@ export default function AdminUsuariosList() {
                       <button
                         type="button"
                         className="admin-crud-buscar__trigger"
+                        // Abre ou fecha o menu de filtro por status
                         onClick={() => setFilterOpen((open) => !open)}
                         aria-expanded={filterOpen}
                         aria-haspopup="listbox"
@@ -116,12 +127,14 @@ export default function AdminUsuariosList() {
                       {filterOpen ? (
                         <ul className="admin-crud-buscar__menu" role="listbox">
                           <li role="option" aria-selected={statusFilter === ""}>
+                            {/* Limpa o filtro e mostra todos */}
                             <button type="button" onClick={() => handleFilterSelect("")}>
                               Todos
                             </button>
                           </li>
                           {STATUS_FILTERS.map((status) => (
                             <li key={status} role="option" aria-selected={statusFilter === status}>
+                              {/* Aplica filtro local por status */}
                               <button type="button" onClick={() => handleFilterSelect(status)}>
                                 {status}
                               </button>
@@ -134,6 +147,7 @@ export default function AdminUsuariosList() {
                 </tr>
               </thead>
               <tbody>
+                {/* Só renderiza linhas que passaram no filtro do Buscar */}
                 {filteredItems.map((row) => (
                   <tr key={row.id}>
                     <td>{row.id}</td>
@@ -156,12 +170,14 @@ export default function AdminUsuariosList() {
                     </td>
                     <td>
                       <div className="admin-crud-actions">
+                        {/* Abre Form.jsx — GET /usuarios/:id e Salvar → PUT /usuarios/:id */}
                         <Link to={`/admin/usuarios/${row.id}/editar`} className="admin-crud-btn-sm">
                           Editar
                         </Link>
                         <button
                           type="button"
                           className="admin-crud-btn-sm admin-crud-btn-sm--danger"
+                          // onClick → handleDelete → DELETE /usuarios/:id
                           onClick={() => handleDelete(row)}
                         >
                           Excluir

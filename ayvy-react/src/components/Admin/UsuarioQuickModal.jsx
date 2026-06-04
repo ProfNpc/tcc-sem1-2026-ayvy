@@ -1,3 +1,7 @@
+/**
+ * Modal usado em Clientes/Form e Lojistas/Form (+ Novo usuário).
+ * Botão "Criar e selecionar" → POST /usuarios (papel lojista ou cliente, status ativo).
+ */
 import { useState } from "react";
 import { createUsuario } from "../../services/adminApi";
 import ImageUploadField from "./ImageUploadField";
@@ -28,6 +32,7 @@ export default function UsuarioQuickModal({ open, onClose, onCreated, papel, tit
     onClose();
   }
 
+  // Botão "Criar e selecionar"
   async function handleSubmit(e) {
     e.preventDefault();
     if (!form.senha.trim()) {
@@ -37,6 +42,7 @@ export default function UsuarioQuickModal({ open, onClose, onCreated, papel, tit
     setSaving(true);
     setError("");
     try {
+      // POST /usuarios — cria usuario lojista/cliente; status sempre ativo
       const created = await createUsuario({
         nome: form.nome.trim(),
         email: form.email.trim(),
@@ -58,6 +64,7 @@ export default function UsuarioQuickModal({ open, onClose, onCreated, papel, tit
 
   return (
     <div className="admin-crud-overlay" role="dialog" aria-modal="true">
+      {/* submit → handleSubmit → POST /usuarios */}
       <form className="admin-crud-modal admin-crud-form" onSubmit={handleSubmit}>
         <h2>{title}</h2>
         <p className="admin-crud-hint">
@@ -106,6 +113,7 @@ export default function UsuarioQuickModal({ open, onClose, onCreated, papel, tit
         <ImageUploadField
           label="Avatar"
           value={form.avatarUrl}
+          // POST /upload (pasta usuarios)
           onChange={(caminho) => setForm({ ...form, avatarUrl: caminho })}
           pasta="usuarios"
         />
@@ -114,6 +122,7 @@ export default function UsuarioQuickModal({ open, onClose, onCreated, papel, tit
           <button type="button" className="admin-btn admin-btn--ghost" onClick={handleClose}>
             Cancelar
           </button>
+          {/* Criar usuário: POST /usuarios — depois onCreated preenche o select do form pai */}
           <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}>
             {saving ? "Criando…" : "Criar e selecionar"}
           </button>

@@ -18,6 +18,7 @@ export default function AdminClientesList() {
     setLoading(true);
     setError("");
     try {
+      // GET /clientes — lista perfis de cliente (cada um traz usuario aninhado)
       const data = await listClientes();
       setItems(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -46,6 +47,7 @@ export default function AdminClientesList() {
     const nome = row.usuario?.nome || row.id;
     if (!window.confirm(`Excluir perfil de cliente "${nome}"?`)) return;
     try {
+      // DELETE /clientes/:id — remove o perfil de cliente
       await deleteCliente(row.id);
       notifyAdminMetricsChanged();
       await load();
@@ -61,6 +63,7 @@ export default function AdminClientesList() {
 
   const filteredItems = useMemo(() => {
     if (!statusFilter) return items;
+    // Filtra pelo status do USUÁRIO vinculado, não pelo id do perfil cliente
     return items.filter((row) => row.usuario?.status === statusFilter);
   }, [items, statusFilter]);
 
@@ -72,6 +75,7 @@ export default function AdminClientesList() {
           <p>Perfis de comprador vinculados a usuários com papel cliente.</p>
         </div>
         <div className="admin-page-actions">
+          {/* Form Clientes/Form.jsx — Salvar → POST /clientes */}
           <Link to="/admin/clientes/novo" className="admin-btn admin-btn--primary">
             + Novo cliente
           </Link>
@@ -99,6 +103,7 @@ export default function AdminClientesList() {
                       <button
                         type="button"
                         className="admin-crud-buscar__trigger"
+                        // Abre/fecha menu Buscar (filtro por status do usuario)
                         onClick={() => setFilterOpen((open) => !open)}
                         aria-expanded={filterOpen}
                         aria-haspopup="listbox"
@@ -111,12 +116,14 @@ export default function AdminClientesList() {
                       {filterOpen ? (
                         <ul className="admin-crud-buscar__menu" role="listbox">
                           <li role="option" aria-selected={statusFilter === ""}>
+                            {/* "" = mostrar todos os clientes */}
                             <button type="button" onClick={() => handleFilterSelect("")}>
                               Todos
                             </button>
                           </li>
                           {STATUS_FILTERS.map((status) => (
                             <li key={status} role="option" aria-selected={statusFilter === status}>
+                              {/* Filtra por row.usuario.status (ativo, inativo, bloqueado) */}
                               <button type="button" onClick={() => handleFilterSelect(status)}>
                                 {status}
                               </button>
@@ -138,12 +145,14 @@ export default function AdminClientesList() {
                     <td>{row.dataNascimento || "—"}</td>
                     <td>
                       <div className="admin-crud-actions">
+                        {/* GET /clientes/:id no form — Salvar → PUT /clientes/:id */}
                         <Link to={`/admin/clientes/${row.id}/editar`} className="admin-crud-btn-sm">
                           Editar
                         </Link>
                         <button
                           type="button"
                           className="admin-crud-btn-sm admin-crud-btn-sm--danger"
+                          // DELETE /clientes/:id
                           onClick={() => handleDelete(row)}
                         >
                           Excluir

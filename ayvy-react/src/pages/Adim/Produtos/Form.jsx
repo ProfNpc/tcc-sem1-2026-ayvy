@@ -1,3 +1,16 @@
+/**
+ * Form.jsx — Produtos
+ * Rotas: /admin/produtos/novo | /admin/produtos/:id/editar
+ *
+ * APIs deste arquivo:
+ *   Carregar        → GET /lojistas, GET /categorias
+ *   Edição          → GET /produtos/:id, GET /produtos/:id/imagens
+ *   Salvar novo     → POST /produtos (+ POST /produtos/:id/imagens na galeria)
+ *   Salvar editar   → PUT /produtos/:id (+ POST imagens pendentes)
+ *   Imagem principal → POST /upload (pasta produtos)
+ *
+ * Excluir / Editar na lista → index.jsx (DELETE /produtos/:id)
+ */
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AdminFormShell from "../../../components/Admin/AdminFormShell";
@@ -84,12 +97,14 @@ export default function AdminProdutoForm() {
     let cancelled = false;
     (async () => {
       try {
+        // GET /lojistas e GET /categorias — preenche selects do formulario
         const [lojistaList, catList] = await Promise.all([listLojistas(), listCategorias()]);
         if (cancelled) return;
         setLojistas(Array.isArray(lojistaList) ? lojistaList : []);
         setCategorias(Array.isArray(catList) ? catList : []);
 
         if (isEdit) {
+          // GET /produtos/:id + GET /produtos/:id/imagens
           const [data, imgs] = await Promise.all([getProduto(id), listProdutoImagens(id)]);
           if (cancelled) return;
           setForm({
@@ -101,6 +116,7 @@ export default function AdminProdutoForm() {
             preco: data.preco != null ? String(data.preco) : "",
             estoque: data.estoque != null ? String(data.estoque) : "0",
             imagemPrincipalUrl: data.imagemPrincipalUrl || "",
+            // Status real do produto na API (ex.: esgotado, inativo)
             status: normalizarStatusProduto(data.status),
           });
           setLojaNome(data.lojista?.nomeLoja ?? "");
@@ -126,6 +142,7 @@ export default function AdminProdutoForm() {
   async function syncGaleriaPendentes(produtoId) {
     const pendentes = galeria.filter((img) => !img.id);
     for (const img of pendentes) {
+      // POST /produtos/:id/imagens — envia cada foto nova da galeria
       await addProdutoImagem(produtoId, {
         caminho: img.caminho,
         ordem: img.ordem ?? 0,
@@ -133,6 +150,7 @@ export default function AdminProdutoForm() {
     }
   }
 
+  // Botão "Salvar"
   async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
@@ -152,9 +170,11 @@ export default function AdminProdutoForm() {
       const payload = buildPayload(form, isEdit);
 
       if (isEdit) {
+        // PUT /produtos/:id — salva alteracoes (status pode ser inativo, esgotado...)
         await updateProduto(id, payload);
         await syncGaleriaPendentes(Number(id));
       } else {
+        // POST /produtos — cadastro (status so ativo ou rascunho no select)
         const created = await createProduto(payload);
         await syncGaleriaPendentes(created.id);
       }
@@ -186,6 +206,7 @@ export default function AdminProdutoForm() {
       backTo="/admin/produtos"
       error={error}
     >
+      {/* Salvar → POST /produtos (novo) ou PUT /produtos/:id (editar) */}
       <form className="admin-crud-form admin-form-page--wide" onSubmit={handleSubmit}>
         {!isEdit ? (
           <div className="admin-crud-field">
@@ -288,10 +309,12 @@ export default function AdminProdutoForm() {
         <ImageUploadField
           label="Imagem principal"
           value={form.imagemPrincipalUrl}
+          // POST /upload — URL salva no PUT/POST /produtos
           onChange={(caminho) => setForm({ ...form, imagemPrincipalUrl: caminho })}
           pasta="produtos"
         />
 
+        {/* Galeria: após Salvar chama POST /produtos/:id/imagens (syncGaleriaPendentes) */}
         <ProdutoGaleriaField
           produtoId={isEdit ? Number(id) : undefined}
           imagens={galeria}
@@ -305,6 +328,7 @@ export default function AdminProdutoForm() {
             value={form.status}
             onChange={(e) => setForm({ ...form, status: e.target.value })}
           >
+            {/* Novo: ativo|rascunho | Editar: + inativo + esgotado */}
             {(isEdit ? STATUS_PRODUTO_EDITAR : STATUS_PRODUTO_NOVO).map((s) => (
               <option key={s} value={s}>
                 {s}
@@ -317,6 +341,7 @@ export default function AdminProdutoForm() {
           <Link to="/admin/produtos" className="admin-btn admin-btn--ghost">
             Cancelar
           </Link>
+          {/* Salvar: POST /produtos ou PUT /produtos/:id */}
           <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}>
             {saving ? "Salvando…" : "Salvar"}
           </button>

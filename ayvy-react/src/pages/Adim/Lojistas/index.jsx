@@ -19,6 +19,7 @@ export default function AdminLojistasList() {
     setLoading(true);
     setError("");
     try {
+      // GET /lojistas — lista lojas (cada item inclui usuario responsavel)
       const data = await listLojistas();
       setItems(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -46,6 +47,7 @@ export default function AdminLojistasList() {
   async function handleDelete(row) {
     if (!window.confirm(`Excluir loja "${row.nomeLoja}"?`)) return;
     try {
+      // DELETE /lojistas/:id — exclui a loja
       await deleteLojista(row.id);
       notifyAdminMetricsChanged();
       await load();
@@ -61,6 +63,7 @@ export default function AdminLojistasList() {
 
   const filteredItems = useMemo(() => {
     if (!statusFilter) return items;
+    // Buscar filtra pelo status do usuario da loja (nao status_loja pendente/aprovado)
     return items.filter((row) => row.usuario?.status === statusFilter);
   }, [items, statusFilter]);
 
@@ -72,6 +75,7 @@ export default function AdminLojistasList() {
           <p>Lojas vinculadas a usuários com papel lojista.</p>
         </div>
         <div className="admin-page-actions">
+          {/* Lojistas/Form.jsx — Salvar → POST /lojistas */}
           <Link to="/admin/lojistas/novo" className="admin-btn admin-btn--primary">
             + Nova loja
           </Link>
@@ -153,6 +157,7 @@ export default function AdminLojistasList() {
                     </td>
                     <td>
                       <div className="admin-crud-actions">
+                        {/* Form — PUT /lojistas/:id + PUT /usuarios/:id (status) */}
                         <Link to={`/admin/lojistas/${row.id}/editar`} className="admin-crud-btn-sm">
                           Editar
                         </Link>
@@ -162,6 +167,7 @@ export default function AdminLojistasList() {
                         <button
                           type="button"
                           className="admin-crud-btn-sm admin-crud-btn-sm--danger"
+                          // DELETE /lojistas/:id
                           onClick={() => handleDelete(row)}
                         >
                           Excluir

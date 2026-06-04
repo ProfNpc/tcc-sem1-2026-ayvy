@@ -1,3 +1,17 @@
+/**
+ * Form.jsx — Lojistas
+ * Rotas: /admin/lojistas/novo | /admin/lojistas/:id/editar
+ *
+ * APIs deste arquivo:
+ *   Carregar tela      → GET /usuarios + GET /lojistas (+ GET /lojistas/:id na edição)
+ *   Salvar nova loja   → POST /lojistas
+ *   Salvar edição loja → PUT /lojistas/:id
+ *   Salvar status user → PUT /usuarios/:id (só na edição)
+ *   "+ Novo usuário"   → POST /usuarios (UsuarioQuickModal)
+ *   Banner/logo        → POST /upload (pasta lojistas)
+ *
+ * Excluir / Editar na lista → index.jsx (DELETE /lojistas/:id)
+ */
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AdminFormShell from "../../../components/Admin/AdminFormShell";
@@ -51,6 +65,7 @@ export default function AdminLojistaForm() {
     let cancelled = false;
     (async () => {
       try {
+        // GET /usuarios + GET /lojistas — monta lista de lojistas sem loja ainda
         const [users, lojistaList] = await Promise.all([listUsuarios(), listLojistas()]);
         if (cancelled) return;
         const lojistasArr = Array.isArray(lojistaList) ? lojistaList : [];
@@ -61,10 +76,12 @@ export default function AdminLojistaForm() {
         setUsuariosLojista(semPerfil);
 
         if (isEdit) {
+          // GET /lojistas/:id — carrega loja e status real do usuario responsavel
           const data = await getLojista(id);
           if (cancelled) return;
           setForm({
             usuarioId: String(data.usuario?.id ?? ""),
+            // Status exibido no select vem de data.usuario.status (API)
             usuarioStatus: normalizarStatusUsuario(data.usuario?.status),
             nomeLoja: data.nomeLoja || "",
             slug: data.slug || "",
@@ -86,16 +103,19 @@ export default function AdminLojistaForm() {
   }, [id, isEdit]);
 
   function handleUsuarioCriado(usuario) {
+    // Apos POST /usuarios no modal, seleciona o usuario criado no form
     setUsuariosLojista((prev) => [...prev, usuario]);
     setForm((f) => ({ ...f, usuarioId: String(usuario.id) }));
   }
 
+  // Botão "Salvar" do formulário
   async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
     setError("");
     try {
       if (isEdit) {
+        // PUT /lojistas/:id — atualiza dados da loja (nome, slug, imagens...)
         await updateLojista(id, {
           nomeLoja: form.nomeLoja.trim(),
           slug: form.slug.trim(),
@@ -105,6 +125,7 @@ export default function AdminLojistaForm() {
           descricao: form.descricao.trim() || null,
         });
         if (form.usuarioId) {
+          // PUT /usuarios/:id — grava ativo / inativo / bloqueado do responsavel
           await updateUsuario(Number(form.usuarioId), { status: form.usuarioStatus });
         }
       } else {
@@ -113,6 +134,7 @@ export default function AdminLojistaForm() {
           setSaving(false);
           return;
         }
+        // POST /lojistas — cria loja (usuario ja deve estar ativo)
         await createLojista({
           usuarioId: Number(form.usuarioId),
           nomeLoja: form.nomeLoja.trim(),
@@ -153,6 +175,7 @@ export default function AdminLojistaForm() {
       backTo="/admin/lojistas"
       error={error}
     >
+      {/* Salvar → POST /lojistas (novo) ou PUT /lojistas/:id + PUT /usuarios/:id (editar) */}
       <form className="admin-crud-form" onSubmit={handleSubmit}>
         {!isEdit ? (
           <UsuarioSelector
@@ -160,6 +183,7 @@ export default function AdminLojistaForm() {
             usuarios={usuariosLojista}
             value={form.usuarioId}
             onChange={(v) => setForm({ ...form, usuarioId: v })}
+            // Abre modal; "Criar e selecionar" lá chama POST /usuarios
             onCreateNew={() => setUserModalOpen(true)}
             emptyHint='Clique em "+ Novo usuário" para cadastrar com papel lojista.'
           />
@@ -207,12 +231,14 @@ export default function AdminLojistaForm() {
         <ImageUploadField
           label="Banner da loja"
           value={form.bannerUrl}
+          // POST /upload — caminho vai no body do POST/PUT /lojistas ao Salvar
           onChange={(caminho) => setForm({ ...form, bannerUrl: caminho })}
           pasta="lojistas"
         />
         <ImageUploadField
           label="Logo da loja"
           value={form.logoUrl}
+          // POST /upload (pasta lojistas)
           onChange={(caminho) => setForm({ ...form, logoUrl: caminho })}
           pasta="lojistas"
         />
@@ -231,6 +257,7 @@ export default function AdminLojistaForm() {
           <select
             id="l-usuario-status"
             value={isEdit ? form.usuarioStatus : "ativo"}
+            // Nova loja: status fixo ativo | Editar: pode mudar para inativo/bloqueado
             disabled={!isEdit}
             onChange={(e) => setForm({ ...form, usuarioStatus: e.target.value })}
           >
@@ -246,12 +273,14 @@ export default function AdminLojistaForm() {
           <Link to="/admin/lojistas" className="admin-btn admin-btn--ghost">
             Cancelar
           </Link>
+          {/* Salvar: POST /lojistas ou PUT /lojistas/:id + PUT /usuarios/:id */}
           <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}>
             {saving ? "Salvando…" : "Salvar"}
           </button>
         </div>
       </form>
 
+      {/* Modal: submit interno → POST /usuarios (papel lojista, status ativo) */}
       <UsuarioQuickModal
         open={userModalOpen}
         onClose={() => setUserModalOpen(false)}
