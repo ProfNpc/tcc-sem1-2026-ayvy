@@ -271,6 +271,11 @@ ayvy-react/src/
 
 ---
 
+////// * DICA!!!!! * //////////////
+
+Para achar mais rapido o que o proferssoar pedir entra em `ayvy-react/src/routes/AppRoutes.jsx` olha a rota que vc quer, segura o command ou ctrl e clica em cima do element, exemplo ( <Route path="usuarios/novo" element={<AdminUsuarioForm /> /> ) aqui vc clicaria em AdminUsuarioForm caso quisesse mudar elguma coisa la, o atalho te leva direto para lá
+
+
 ## Subir o back
 
 Na pasta `back`:

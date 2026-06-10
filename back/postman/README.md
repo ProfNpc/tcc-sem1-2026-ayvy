@@ -6,11 +6,10 @@
 2. Arquivos:
    - `AYVY-API.postman_collection.json`
    - `AYVY-Local.postman_environment.json`
-3. Ative o ambiente **AYVY — Local (MySQL)**
-4. Suba MySQL e API:
+3. Ative o ambiente **AYVY — Local**
+4. Suba **SQL Server** + API:
 
 ```bash
-docker compose up -d          # raiz do repo
 cd back && ./mvnw spring-boot:run
 ```
 
@@ -21,21 +20,19 @@ cd back && ./mvnw spring-boot:run
 | `baseUrl` | http://localhost:8082 |
 | `usuarioId`, `clienteId`, `lojistaId`, … | IDs nos paths e bodies — ajuste após criar registros |
 
-A collection também define as mesmas variáveis; o ambiente sobrescreve ao estar ativo.
-
-## Banco (MySQL)
+## Banco (SQL Server)
 
 | Campo | Valor |
 |-------|--------|
-| Host | localhost:3306 |
+| Servidor | localhost:1433 |
 | Database | ayvy |
-| User / Password | root / root |
+| User / Password | ver `back/src/main/resources/application.properties` |
 
-Config: `back/src/main/resources/application.properties`
+Script das tabelas: `database/ayvySQLEscola.sql` (SSMS)
 
 ## Imagens
 
-1. **POST /upload** — Body `form-data`: `file` (arquivo) + `pasta` (`produtos`, `lojistas`, `usuarios`)
+1. **POST /upload** — Body `form-data`: `file` + `pasta` (`produtos`, `lojistas`, `usuarios`)
 2. Copie `caminho` da resposta para o JSON do produto/loja/usuário
 3. Abra `url` no navegador para ver a imagem
 
@@ -43,13 +40,12 @@ Config: `back/src/main/resources/application.properties`
 
 1. **POST /usuarios** — `nome`, `email`, `senha`, `papel` (`admin` | `cliente` | `lojista`). Status opcional (default `ativo`).
 2. Copie o `id` retornado para a variável `usuarioId`.
-3. **POST /clientes** ou **POST /lojistas** — apenas `usuarioId` + dados do perfil (sem objeto `usuario` aninhado).
+3. **POST /clientes** ou **POST /lojistas** — `usuarioId` + dados do perfil.
 
 ## JSON — convenções
 
 - Enums em **minúsculo**
 - Lojista: `{ "usuarioId": 2, "nomeLoja": "...", "slug": "...", "cnpj": "..." }`
 - Cliente: `{ "usuarioId": 2, "cpf": "..." }`
-- Pedido / pagamento / produto / endereço: ver pastas na collection
 
-**Seed:** admin `usuarioId=1`, categorias ids 1–4.
+Guia completo do back: [../README-GUIA.md](../README-GUIA.md)
