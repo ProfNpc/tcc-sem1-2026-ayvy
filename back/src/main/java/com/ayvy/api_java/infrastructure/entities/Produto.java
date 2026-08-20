@@ -32,6 +32,10 @@ public class Produto {
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
 
+    @OneToOne
+    @JoinColumn(name = "favoritos_id", nullable = false, unique = true)
+    private Favoritos favoritos;
+
     @Column(name = "nome", nullable = false)
     private String nome;
 
