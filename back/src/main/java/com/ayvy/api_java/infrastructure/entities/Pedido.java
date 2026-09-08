@@ -21,8 +21,8 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne
-    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false, unique = false)
     private Usuario usuario;
 
     @Column(name = "status", nullable = false)

@@ -16,11 +16,11 @@ public class PedidoProdutos {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne
-    @JoinColumn(name = "pedido_id", nullable = false, unique = true)
+    @ManyToOne
+    @JoinColumn(name = "pedido_id", nullable = false, unique = false)
     private Pedido pedido;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "produto_id", nullable = false, unique = true)
     private Produto produto;
 

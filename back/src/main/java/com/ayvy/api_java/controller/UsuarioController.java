@@ -25,6 +25,12 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<Usuario> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(usuarioService.autenticar(request.getEmail(), request.getSenha()));
+    }
+
+
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable Integer id) {
         return ResponseEntity.ok(usuarioService.buscarUsuarioPorId(id));

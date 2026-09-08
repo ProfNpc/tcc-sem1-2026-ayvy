@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "visualizacoesProduto")
+@Table(name = "visualizacoes_produtos")
 @Entity
 
 public class VisualizacoesProduto {
@@ -18,12 +18,12 @@ public class VisualizacoesProduto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne
-    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @OneToOne
-    @JoinColumn(name = "produto_id", nullable = false, unique = true)
+    @ManyToOne
+    @JoinColumn(name = "produto_id", nullable = false)
     private Produto produto;
 
     @Column(name = "visualizado_em", nullable = false, updatable = false)
