@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name="pedidoProduto")
+@Table(name="pedido_produtos")
 @Entity
 
 public class PedidoProdutos {
@@ -17,15 +17,15 @@ public class PedidoProdutos {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "pedido_id", nullable = false, unique = false)
+    @JoinColumn(name = "pedido_id", nullable = false)
     private Pedido pedido;
 
     @ManyToOne
-    @JoinColumn(name = "produto_id", nullable = false, unique = true)
+    @JoinColumn(name = "produto_id", nullable = false)
     private Produto produto;
 
-    @OneToOne
-    @JoinColumn(name = "lojista_id", nullable = false, unique = true)
+    @ManyToOne
+    @JoinColumn(name = "lojista_id", nullable = false)
     private Lojista lojista;
 
     @Column(name = "quantidade")

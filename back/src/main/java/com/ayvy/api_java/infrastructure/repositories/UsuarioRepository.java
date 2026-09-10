@@ -10,5 +10,5 @@ import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     List<Usuario> findByStatus(StatusUsuario status);
-   // Optional<Usuario> findByNome (String nome);
+   Optional<Usuario> findByEmail (String email);
 }

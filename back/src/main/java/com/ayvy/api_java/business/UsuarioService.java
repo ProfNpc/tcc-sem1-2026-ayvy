@@ -19,19 +19,19 @@ public class UsuarioService {
     private final ClienteRepository clienteRepository;
     private final LojistaRepository lojistaRepository;
     private final UploadService uploadService;
-    private final PasswordEncoder passwordEncoder;
+    //private final PasswordEncoder passwordEncoder; ESTÁ COM ERROS
 
     public UsuarioService(
             UsuarioRepository repository,
             ClienteRepository clienteRepository,
             LojistaRepository lojistaRepository,
-            UploadService uploadService,
-            PasswordEncoder passwordEncoder) {
+            UploadService uploadService
+       /*     PasswordEncoder passwordEncoder*/) {
         this.repository = repository;
         this.clienteRepository = clienteRepository;
         this.lojistaRepository = lojistaRepository;
         this.uploadService = uploadService;
-        this.passwordEncoder = passwordEncoder;
+        /*this.passwordEncoder = passwordEncoder*/;
     }
 
     /**
@@ -44,7 +44,7 @@ public class UsuarioService {
         aplicarDefaultsCadastro(usuario);
         validarCadastroUsuario(usuario);
         validarAvatar(usuario.getAvatarUrl());
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+       /* usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));*/
         return repository.saveAndFlush(usuario);
     }
 
@@ -87,9 +87,9 @@ public class UsuarioService {
         if (usuario.getTelefone() != null) {
             usuarioEntity.setTelefone(usuario.getTelefone());
         }
-        if (usuario.getSenha() != null) {
+      /*  if (usuario.getSenha() != null) {
             usuarioEntity.setSenha(passwordEncoder.encode(usuario.getSenha())); // <-- hash aqui também
-        }
+        }*/
         if (usuario.getAvatarUrl() != null) {
             validarAvatar(usuario.getAvatarUrl());
             usuarioEntity.setAvatarUrl(usuario.getAvatarUrl());
@@ -156,6 +156,9 @@ public class UsuarioService {
                     HttpStatus.BAD_REQUEST,
                     "Campo 'papel' é obrigatório: admin, cliente ou lojista");
         }
+        if (usuario.getPapel() == PapelUsuario.admin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Não é permitido criar usuário com papel 'admin' por esse endpoint");
+        }
         if (usuario.getNome() == null || usuario.getNome().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Campo 'nome' é obrigatório");
         }
@@ -167,12 +170,13 @@ public class UsuarioService {
         }
     }
 }
-    public Usuario autenticar(String email, String senhaDigitada) {
-    Usuario usuario = repository.findByEmail(email)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos"));
-
-    if (!passwordEncoder.matches(senhaDigitada, usuario.getSenha())) {
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos");
-    }
-    return usuario;
-}
+//erros a serem corrigidos:
+   // public Usuario autenticar(String email, String senhaDigitada) {
+    //Usuario usuario = repository.findByEmail(email)
+     //       .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos"));
+//
+   //  if (!passwordEncoder.matches(senhaDigitada, usuario.getSenha())) {
+     //   throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos");
+    //}
+    //return usuario;
+//}

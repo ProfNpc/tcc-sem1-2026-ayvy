@@ -33,7 +33,7 @@ public class Notificacoes {
     @Column(name = "tipo", nullable = false)
     private String tipo;
 
-    @Column(name = "lida_em", nullable = false, updatable = false)
+    @Column(name = "lida_em", updatable = false)
     private LocalDateTime lidaEm;
 
     @Column(name = "lida")

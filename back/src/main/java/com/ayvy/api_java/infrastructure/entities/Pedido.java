@@ -1,5 +1,6 @@
 package com.ayvy.api_java.infrastructure.entities;
 
+import com.ayvy.api_java.infrastructure.enums.StatusPedido;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -25,8 +26,10 @@ public class Pedido {
     @JoinColumn(name = "usuario_id", nullable = false, unique = false)
     private Usuario usuario;
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status = "aguardando_pagamento";
+    private StatusPedido status = StatusPedido.aguardando_pagamento;
 
     @Column(name = "valor_subtotal", nullable = false)
     private BigDecimal valorSubtotal = BigDecimal.ZERO;
