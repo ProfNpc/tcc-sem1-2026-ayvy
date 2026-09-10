@@ -18,8 +18,12 @@ import java.util.List;
 public class PedidoService {
 
     private final PedidoRepository repository;
+    private final PedidoProdutosRepository pedidoProdutosRepository;
 
-    public PedidoService(PedidoRepository repository) {this.repository = repository;}
+    public PedidoService(PedidoRepository repository) {this.repository = repository;
+        this.pedidoProdutosRepository = pedidoProdutosRepository;
+    }
+
 
     //CREATE
     public String salvarPedido(Pedido pedido){
@@ -38,6 +42,21 @@ public class PedidoService {
     public List<Pedido> listarPedidos(){
         return repository.findAll();
     }
+
+    public PedidoEnderecoEntrega buscarEnderecoPorPedidoId(Integer pedidoId){
+    return PedidoEnderecoEntregaRepository.findById(pedidoId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Endereço de entrega não encontrado para o pedido " + pedidoId));
+}
+
+    public List<Pedido> listarPedidosPorUsuario(Integer usuarioId){
+    return repository.findByUsuarioId(usuarioId);}
+}
+
+public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
+    buscarPedidoPorId(pedidoId);
+    return pedidoProdutoRepository.findByPedidoId(pedidoId);
+}
 
     //DELETE
     public String deletarPedidoPorId(Integer id){
