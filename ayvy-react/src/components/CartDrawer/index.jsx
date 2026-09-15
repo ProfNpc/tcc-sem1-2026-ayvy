@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { formatCep } from "../../utils/cartHelpers";
 import "./style.css";
 
 export default function CartDrawer() {
+  const navigate = useNavigate();
   const {
     cart,
     drawerOpen,
@@ -15,11 +17,11 @@ export default function CartDrawer() {
     calculateFreight,
     selectFreightOption,
     startEditCep,
-    finalizePurchase,
     updateQuantity,
     removeLine,
     formatBRL,
     lineSubtotal,
+    setDrawerOpen,
   } = useCart();
 
   const [cepInput, setCepInput] = useState("");
@@ -32,6 +34,15 @@ export default function CartDrawer() {
   function handleCalculateCep(e) {
     e.preventDefault();
     calculateFreight(cepInput);
+  }
+
+  function handleIniciarCompra() {
+    if (cart.length === 0) {
+      alert("O carrinho de compras está vazio!");
+      return;
+    }
+    setDrawerOpen(false);
+    navigate("/carrinho");
   }
 
   return (
@@ -137,7 +148,9 @@ export default function CartDrawer() {
 
               {freight.error && <p className="cart-freight-error">{freight.error}</p>}
 
-              {freight.cepConfirmed && shippingOptions.length > 0 && (
+              {!freight.editingCep &&
+                freight.cepConfirmed &&
+                shippingOptions.length > 0 && (
                 <div className="cart-shipping-options">
                   <p className="cart-shipping-label">Envio a domicílio</p>
                   <ul>
@@ -179,7 +192,7 @@ export default function CartDrawer() {
               )}
             </div>
 
-            <button type="button" className="cart-btn-checkout" onClick={finalizePurchase}>
+            <button type="button" className="cart-btn-checkout" onClick={handleIniciarCompra}>
               INICIAR COMPRA
             </button>
           </footer>

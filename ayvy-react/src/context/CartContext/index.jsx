@@ -145,7 +145,8 @@ export default function CartProvider({ children }) {
     );
   }, [shippingOptions, freight.selectedOptionId]);
 
-  const freightValue = selectedFreight?.price ?? 0;
+  const freightValue =
+    freight.cepConfirmed && selectedFreight ? selectedFreight.price : 0;
   const total = subtotal + freightValue;
 
   const clear = useCallback(() => {
@@ -157,6 +158,8 @@ export default function CartProvider({ children }) {
     setFreight((f) => ({
       ...f,
       editingCep: true,
+      cepConfirmed: false,
+      selectedOptionId: null,
       error: "",
     }));
   }, []);
@@ -165,11 +168,23 @@ export default function CartProvider({ children }) {
     async (cepRaw) => {
       const cep = String(cepRaw || "").replace(/\D/g, "");
       if (cep.length !== 8) {
-        setFreight((f) => ({ ...f, error: "CEP inválido. Digite 8 números." }));
+        setFreight((f) => ({
+          ...f,
+          error: "CEP inválido. Digite 8 números.",
+          cepConfirmed: false,
+          selectedOptionId: null,
+          loading: false,
+        }));
         return;
       }
 
-      setFreight((f) => ({ ...f, loading: true, error: "" }));
+      setFreight((f) => ({
+        ...f,
+        loading: true,
+        error: "",
+        cepConfirmed: false,
+        selectedOptionId: null,
+      }));
 
       const result = await fetchAddressByCep(cep);
       if (!result.ok) {
@@ -179,7 +194,13 @@ export default function CartProvider({ children }) {
             : result.error === "invalid"
               ? "CEP inválido."
               : "Erro ao consultar CEP. Tente novamente.";
-        setFreight((f) => ({ ...f, loading: false, error: msg }));
+        setFreight((f) => ({
+          ...f,
+          loading: false,
+          error: msg,
+          cepConfirmed: false,
+          selectedOptionId: null,
+        }));
         return;
       }
 
@@ -202,21 +223,16 @@ export default function CartProvider({ children }) {
     setFreight((f) => ({ ...f, selectedOptionId: optionId }));
   }, []);
 
-  const finalizePurchase = useCallback(() => {
+  const goToCartPage = useCallback(() => {
     if (cart.length === 0) {
       alert("O carrinho de compras está vazio!");
       return;
     }
-    if (!freight.cepConfirmed || !selectedFreight) {
-      alert("Calcule e selecione uma opção de frete.");
-      return;
-    }
-    alert(
-      `Compra finalizada!\nTotal: ${formatBRL(total)}\nFrete: ${selectedFreight.name} — ${selectedFreight.priceLabel}`,
-    );
-    clear();
     setDrawerOpen(false);
-  }, [cart.length, clear, freight.cepConfirmed, selectedFreight, total]);
+    // navegação fica no CartDrawer (precisa do useNavigate)
+  }, [cart.length]);
+
+  const finalizePurchase = goToCartPage;
 
   const value = useMemo(
     () => ({
@@ -237,6 +253,7 @@ export default function CartProvider({ children }) {
       selectFreightOption,
       startEditCep,
       finalizePurchase,
+      goToCartPage,
       setDrawerOpen,
       formatBRL,
       lineSubtotal,
@@ -260,6 +277,7 @@ export default function CartProvider({ children }) {
       selectFreightOption,
       startEditCep,
       finalizePurchase,
+      goToCartPage,
     ],
   );
 

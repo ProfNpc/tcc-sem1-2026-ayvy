@@ -105,3 +105,5 @@ Detalhes: [README-GUIA §10 — ligação com o React](./README-GUIA.md#10-liga�
 ## Deu erro?
 
 Detalhes: [README-GUIA §12 — problemas comuns](./README-GUIA.md#12-problemas-comuns) · [Índice “eu quero encontrar…”](./README-GUIA.md#índice-eu-quero-encontrar)
+
+

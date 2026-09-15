@@ -55,10 +55,10 @@ export default function Perfil() {
               <a href="#">Preferências de cookies</a>
               <a href="#">Configurações de privacidade</a>
             </div>
-            <a href="#" className="menu-link">
+            <Link to="/meus-pedidos" className="menu-link">
               <i className="fa-regular fa-clipboard" />
               Minhas compras
-            </a>
+            </Link>
             <a href="#" className="menu-link">
               <i className="fa-regular fa-bell" />
               Notificações

@@ -5,7 +5,7 @@ import FloatingChat from "../../components/FloatingChat";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { findProduct, normalizeSlugParam } from "../../utils/lojistaData";
-import { enrichProduct, enrichShop, renderStars } from "../../utils/productHelpers";
+import { enrichProduct, enrichShop, getColorImageIndex, getImageForColor, renderStars } from "../../utils/productHelpers";
 import "./style.css";
 
 const FAV_KEY = "ayvy.favorites.v1";
@@ -133,7 +133,7 @@ function ProdutoDetail({ slug, shop, product }) {
       alert("Produto sem estoque no momento.");
       return;
     }
-    const img = product.images[activeImage] || product.images[0];
+    const img = getImageForColor(product, color);
     addItem({
       name: product.title,
       image: img,
@@ -143,8 +143,14 @@ function ProdutoDetail({ slug, shop, product }) {
       quantity,
       productId: product.id,
       shopSlug: slug,
+      shopName: shop?.name || slug,
     });
     toggle();
+  }
+
+  function handleSelectColor(c) {
+    setColor(c);
+    setActiveImage(getColorImageIndex(product, c));
   }
 
   return (
@@ -234,7 +240,7 @@ function ProdutoDetail({ slug, shop, product }) {
                   key={c}
                   type="button"
                   className={`produto-chip ${color === c ? "is-selected" : ""}`}
-                  onClick={() => setColor(c)}
+                  onClick={() => handleSelectColor(c)}
                 >
                   {c}
                 </button>

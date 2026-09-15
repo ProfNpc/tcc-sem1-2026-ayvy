@@ -36,7 +36,12 @@ export const SHOPS = {
             "/assets/img/samba_vinho.jpg",
             "/assets/img/samba_preto.jpg",
           ],
-          colors: ["Branco", "Vinho", "Preto",],
+          colors: ["Branco", "Vinho", "Preto"],
+          colorImages: {
+            Branco: "/assets/img/samba.jpg",
+            Vinho: "/assets/img/samba_vinho.jpg",
+            Preto: "/assets/img/samba_preto.jpg",
+          },
           sizes: ["34", "35", "36", "38", "40"],
           rating: 5,
           reviewCount: 1,
@@ -338,20 +343,30 @@ export const SHOPS = {
           id: "im-2",
           title: "Macacão utilitário",
           price: "R$ 289,00",
+          colors: ["Bege", "Cinza"],
           images: [
             "/assets/img/macacao.jpg",
             "/assets/img/macacaoCinza.jpg",
           ],
+          colorImages: {
+            Bege: "/assets/img/macacao.jpg",
+            Cinza: "/assets/img/macacaoCinza.jpg",
+          },
           description: "Tecido encorpado, cinto removível e bolsos funcionais.",
         },
         {
           id: "im-3",
           title: "Sandália plataforma",
           price: "R$ 159,90",
-          images: ["/assets/img/sandalia.jpg",
-            "/assets/img/sandaliabege.jpg"
+          colors: ["Preto", "Bege"],
+          images: [
+            "/assets/img/sandalia.jpg",
+            "/assets/img/sandaliabege.jpg",
           ],
-
+          colorImages: {
+            Preto: "/assets/img/sandalia.jpg",
+            Bege: "/assets/img/sandaliabege.jpg",
+          },
           description: "Solado leve, palmilha acolchoada.",
         },
         {
@@ -360,10 +375,15 @@ export const SHOPS = {
           price: "R$ 79,90",
           discountPercent: 20,
           soldCount: 430,
+          colors: ["Branco", "Preto"],
           images: [
             "/assets/img/cropped.jpg",
-            "/assets/img/croppedrenda.jpg"
+            "/assets/img/croppedrenda.jpg",
           ],
+          colorImages: {
+            Branco: "/assets/img/cropped.jpg",
+            Preto: "/assets/img/croppedrenda.jpg",
+          },
           description: "Renda delicada, forro interno.",
         },
         {
