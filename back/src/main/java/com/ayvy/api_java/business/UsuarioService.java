@@ -170,14 +170,15 @@ public class UsuarioService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Campo 'senha' é obrigatório");
         }
     }
-}
-//erros a serem corrigidos:
-public Usuario autenticar(String email, String senhaDigitada) {
-    Usuario usuario = repository.findByEmail(email)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos"));
 
-    if (!passwordEncoder.matches(senhaDigitada, usuario.getSenha())) {
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos");
+    //erros a serem corrigidos:
+    public Usuario autenticar(String email, String senhaDigitada) {
+        Usuario usuario = repository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos"));
+
+        if (!passwordEncoder.matches(senhaDigitada, usuario.getSenha())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos");
+        }
+        return usuario;
     }
-    return usuario;
 }
