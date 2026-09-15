@@ -7,6 +7,7 @@ import com.ayvy.api_java.infrastructure.repositories.ClienteRepository;
 import com.ayvy.api_java.infrastructure.repositories.LojistaRepository;
 import com.ayvy.api_java.infrastructure.repositories.UsuarioRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,19 +20,19 @@ public class UsuarioService {
     private final ClienteRepository clienteRepository;
     private final LojistaRepository lojistaRepository;
     private final UploadService uploadService;
-    //private final PasswordEncoder passwordEncoder; ESTÁ COM ERROS
+    private final PasswordEncoder passwordEncoder;
 
     public UsuarioService(
             UsuarioRepository repository,
             ClienteRepository clienteRepository,
             LojistaRepository lojistaRepository,
-            UploadService uploadService
-       /*     PasswordEncoder passwordEncoder*/) {
+            UploadService uploadService,
+            PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.clienteRepository = clienteRepository;
         this.lojistaRepository = lojistaRepository;
         this.uploadService = uploadService;
-        /*this.passwordEncoder = passwordEncoder*/;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -44,7 +45,7 @@ public class UsuarioService {
         aplicarDefaultsCadastro(usuario);
         validarCadastroUsuario(usuario);
         validarAvatar(usuario.getAvatarUrl());
-       /* usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));*/
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         return repository.saveAndFlush(usuario);
     }
 
@@ -87,9 +88,9 @@ public class UsuarioService {
         if (usuario.getTelefone() != null) {
             usuarioEntity.setTelefone(usuario.getTelefone());
         }
-      /*  if (usuario.getSenha() != null) {
+        if (usuario.getSenha() != null) {
             usuarioEntity.setSenha(passwordEncoder.encode(usuario.getSenha())); // <-- hash aqui também
-        }*/
+        }
         if (usuario.getAvatarUrl() != null) {
             validarAvatar(usuario.getAvatarUrl());
             usuarioEntity.setAvatarUrl(usuario.getAvatarUrl());
@@ -171,12 +172,12 @@ public class UsuarioService {
     }
 }
 //erros a serem corrigidos:
-   // public Usuario autenticar(String email, String senhaDigitada) {
-    //Usuario usuario = repository.findByEmail(email)
-     //       .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos"));
-//
-   //  if (!passwordEncoder.matches(senhaDigitada, usuario.getSenha())) {
-     //   throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos");
-    //}
-    //return usuario;
-//}
+public Usuario autenticar(String email, String senhaDigitada) {
+    Usuario usuario = repository.findByEmail(email)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos"));
+
+    if (!passwordEncoder.matches(senhaDigitada, usuario.getSenha())) {
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos");
+    }
+    return usuario;
+}

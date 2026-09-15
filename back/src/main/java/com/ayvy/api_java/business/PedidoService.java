@@ -19,10 +19,18 @@ public class PedidoService {
 
     private final PedidoRepository repository;
     private final PedidoProdutosRepository pedidoProdutosRepository;
+    private final ProdutoRepository produtoRepository;
+    private final PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public PedidoService(PedidoRepository repository) {this.repository = repository;
+    public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository) {
+        this.repository = repository;
         this.pedidoProdutosRepository = pedidoProdutosRepository;
+        this.produtoRepository = produtoRepository;
+        this.pedidoEnderecoEntregaRepository = pedidoEnderecoEntregaRepository;
+        this.usuarioRepository = usuarioRepository;
     }
+
 
 
     //CREATE
@@ -44,18 +52,18 @@ public class PedidoService {
     }
 
     public PedidoEnderecoEntrega buscarEnderecoPorPedidoId(Integer pedidoId){
-    return PedidoEnderecoEntregaRepository.findById(pedidoId)
+    return pedidoEnderecoEntregaRepository.findById(pedidoId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Endereço de entrega não encontrado para o pedido " + pedidoId));
 }
 
     public List<Pedido> listarPedidosPorUsuario(Integer usuarioId){
     return repository.findByUsuarioId(usuarioId);}
-}
+
 
 public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
     buscarPedidoPorId(pedidoId);
-    return pedidoProdutoRepository.findByPedidoId(pedidoId);
+    return pedidoProdutosRepository.findByPedidoId(pedidoId);
 }
 
     //DELETE
@@ -73,14 +81,14 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
 
     @Transactional
     public Pedido finalizarCheckout(CheckoutRequest request) {
-        Usuario usuario = UsuarioRepository.findById(request.getUsuarioId())
+        Usuario usuario = usuarioRepository.findById(request.getUsuarioId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario não encontrado"));
 
         BigDecimal subtotal = BigDecimal.ZERO;
         List<PedidoProdutos> itens = new ArrayList<>();
 
         for (var itemReq : request.getItens()) {
-            Produto produto = ProdutoRepository.findById(itemReq.getProdutoId())
+            Produto produto = produtoRepository.findById(itemReq.getProdutoId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                             "Produto " + itemReq.getProdutoId() + " não encontrado"));
 
@@ -90,9 +98,9 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
             }
 
             produto.setEstoque(produto.getEstoque() - itemReq.getQuantidade());
-            ProdutoRepository.save(produto);
+            produtoRepository.save(produto);
 
-            BigDecimal  precoUnit = produto.getPreco();
+            BigDecimal precoUnit = produto.getPreco();
             subtotal = subtotal.add(precoUnit.multiply(BigDecimal.valueOf(itemReq.getQuantidade())));
 
             itens.add(PedidoProdutos.builder()
@@ -103,20 +111,20 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
                     .build()
             );
         }
-    Pedido pedido = Pedido.builder()
-            .usuario(usuario)
-            .observacao(request.getObservacao())
-            .valorSubtotal(subtotal)
-            .valorFrete(BigDecimal.ZERO) //ajustar quando tiver cálculo de frete!!!
-            .valorTotal(subtotal)
-            .status(StatusPedido.aguardando_pagamento)
-            .build();
+        Pedido pedido = Pedido.builder()
+                .usuario(usuario)
+                .observacao(request.getObservacao())
+                .valorSubtotal(subtotal)
+                .valorFrete(BigDecimal.ZERO) //ajustar quando tiver cálculo de frete!!!
+                .valorTotal(subtotal)
+                .status(StatusPedido.aguardando_pagamento)
+                .build();
 
         pedido = repository.saveAndFlush(pedido);
 
         for (var item : itens) {
             item.setPedido(pedido);
-            PedidoProdutosRepository.save(item);
+            pedidoProdutosRepository.save(item);
         }
 
         var endereco = request.getEnderecoEntrega();
@@ -128,14 +136,15 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
                 .bairro(endereco.getBairro())
                 .uf(endereco.getUf())
                 .cep(endereco.getCep())
-                .buld();
-        PedidoEnderecoEntregaRepository.save(entrega);
+                .cidade(endereco.getCidade())
+                .build();
+        pedidoEnderecoEntregaRepository.save(entrega);
 
-    return pedido;
+        return pedido;
 
-    //UPDATE
-    // !!! Não será possível atualizar o Pedido uma vez feito
-    // !!! Pórem PedidoAtualizado está aqui caso seja necessário no futuro
+        //UPDATE
+        // !!! Não será possível atualizar o Pedido uma vez feito
+        // !!! Pórem PedidoAtualizado está aqui caso seja necessário no futuro
     /*
     public void atualizarPedidoPorId(Integer id, Pedido pedido){
         Pedido pedidoEntity = buscarPedidoPorId(id);
@@ -151,4 +160,4 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
     }*/
 
 
-}
+    }}

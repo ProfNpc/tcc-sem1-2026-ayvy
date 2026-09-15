@@ -1,13 +1,11 @@
 package com.ayvy.api_java.infrastructure.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "pedido_endereco_entrega")
@@ -15,7 +13,7 @@ import lombok.Setter;
 public class PedidoEnderecoEntrega {
 
     @Id
-    private Long id;
+    private Integer id;
 
     @ManyToOne(optional = false)
     @MapsId

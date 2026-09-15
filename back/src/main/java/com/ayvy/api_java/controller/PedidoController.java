@@ -4,6 +4,7 @@ import com.ayvy.api_java.business.PedidoService;
 import com.ayvy.api_java.dto.CheckoutRequest;
 import com.ayvy.api_java.infrastructure.entities.Pedido;
 import com.ayvy.api_java.infrastructure.entities.PedidoEnderecoEntrega;
+import com.ayvy.api_java.infrastructure.entities.PedidoProdutos;
 import com.ayvy.api_java.infrastructure.enums.StatusPedido;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class PedidoController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping
+    @PostMapping("/checkout")
     public ResponseEntity<Pedido> checkout(@RequestBody CheckoutRequest request){
         return ResponseEntity.status(HttpStatus.CREATED).body(pedidoService.finalizarCheckout(request));
     }
@@ -38,7 +39,7 @@ public class PedidoController {
 
     @GetMapping("/{id}/endereco-entrega")
     public ResponseEntity<PedidoEnderecoEntrega> buscarPedidosPorId(@PathVariable Integer id){
-        PedidoEnderecoEntrega endereco = pedidoService.bucarEnderecoPorPedidoId(id);
+        PedidoEnderecoEntrega endereco = pedidoService.buscarEnderecoPorPedidoId(id);
         return ResponseEntity.ok(endereco);
     }
 
@@ -50,13 +51,13 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.listarPedidos());
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<Pedido>> listarPedidos(){
         return ResponseEntity.ok(pedidoService.listarPedidos());
     }
 
     @GetMapping("/{id}/itens")
-    public ResponseEntity<List<PedidoProdutos>> listarPedidosDoPedido(@PathVariable Integer id){
+    public ResponseEntity<List<PedidoProdutos>> listarItensDoPedido(@PathVariable Integer id){
      return ResponseEntity.ok(pedidoService.listarItensPorPedidoId(id));
     }
 
