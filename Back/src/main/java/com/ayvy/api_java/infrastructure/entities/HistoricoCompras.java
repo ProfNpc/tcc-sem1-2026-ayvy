@@ -16,38 +16,26 @@ import java.time.LocalDateTime;
 @Table(name = "historico_compras")
 @Entity
 public class HistoricoCompras {
-@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
     private Integer id;
 
-
     @ManyToOne(optional = false)
-    @MapsId
-    @JoinColumn (name = "pedido_id")
+    @JoinColumn(name = "pedido_id", nullable = false)
     private Pedido pedido;
 
+    @Column(name = "evento", nullable = false, length = 80)
+    private String evento; // ex: "PEDIDO_CRIADO", "PAGAMENTO_CONFIRMADO"
+
+    @Column(name = "statusPedido", length = 50)
+    private String statusPedido; // snapshot do status no momento do evento
+
+    @Column(name = "descricao", length = 500)
+    private String descricao;
 
     @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false, unique = false)
-    private Usuario usuario;
-
-    @Builder.Default
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private StatusPedido status = StatusPedido.entregue;
-
-    @Column(name = "valor_subtotal", nullable = false)
-    private BigDecimal valorSubtotal = BigDecimal.ZERO;
-
-    @Column(name = "valor_frete", nullable = false)
-    private BigDecimal valorFrete = BigDecimal.ZERO;
-
-    @Column(name = "valor_total", nullable = false)
-    private BigDecimal valorTotal = BigDecimal.ZERO;
-
-    @Column(name = "observacao", length = 500)
-    private String observacao;
+    @JoinColumn(name = "actor_usuario_id")
+    private Usuario actorUsuario; // pode ser ação automática do sistema
 
     @CreationTimestamp
     @Column(name = "criado_em", nullable = false, updatable = false)

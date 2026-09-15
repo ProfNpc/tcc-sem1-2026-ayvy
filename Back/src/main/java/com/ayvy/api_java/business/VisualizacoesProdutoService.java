@@ -47,7 +47,7 @@ public class VisualizacoesProdutoService {
     }
 
         public long contarPorProduto(Integer produtoId){
-            return repository.countBuProdutoId(produtoId);
+            return repository.countByProdutoId(produtoId);
         }
 
 }
