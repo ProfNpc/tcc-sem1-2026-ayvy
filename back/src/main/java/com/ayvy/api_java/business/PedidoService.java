@@ -22,13 +22,15 @@ public class PedidoService {
     private final ProdutoRepository produtoRepository;
     private final PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final HistoricoComprasRepository historicoComprasRepository;
 
-    public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository) {
+    public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository, HistoricoComprasRepository historicoComprasRepository) {
         this.repository = repository;
         this.pedidoProdutosRepository = pedidoProdutosRepository;
         this.produtoRepository = produtoRepository;
         this.pedidoEnderecoEntregaRepository = pedidoEnderecoEntregaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.historicoComprasRepository = historicoComprasRepository;
     }
 
 
@@ -73,10 +75,15 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
     }
 
     // UPDATE DE STATUS
-    public Pedido atualizarStatus(Integer id, StatusPedido novoStatus) {
+    public Pedido atualizarStatus(Integer id, StatusPedido novoStatus, Integer actorUsuarioId) {
         Pedido pedido = buscarPedidoPorId(id);
         pedido.setStatus(novoStatus);
-        return repository.saveAndFlush(pedido);
+        pedido = repository.save(pedido);
+
+        registrarHistorico(pedido, "STATUS_ALTERADO",
+                        "Status alterado para " + novoStatus.name(), actorUsuarioId);
+
+        return pedido;
     }
 
     @Transactional
@@ -140,8 +147,10 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
                 .build();
         pedidoEnderecoEntregaRepository.save(entrega);
 
-        return pedido;
+        registrarHistorico(pedido, "PEDIDO_CRIADO", "Pedido criado pelo cliente", usuario.getId());
 
+        return pedido;
+    }
         //UPDATE
         // !!! Não será possível atualizar o Pedido uma vez feito
         // !!! Pórem PedidoAtualizado está aqui caso seja necessário no futuro
@@ -159,5 +168,26 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
         repository.saveAndFlush(pedidoAtualizado);
     }*/
 
+        private void registrarHistorico(Pedido pedido, String evento, String descricao, Integer actorUsuarioId){
+            Usuario actor = null;
+            if (actorUsuarioId != null) {
+                actor = usuarioRepository.findById(actorUsuarioId).orElse(null);
+            }
 
-    }}
+
+            HistoricoCompras registro = HistoricoCompras.builder()
+                    .pedido(pedido)
+                    .evento(evento)
+                    .statusPedido(pedido.getStatus().name())
+                    .descricao(descricao)
+                    .actorUsuario(actor)
+                    .build();
+
+            historicoComprasRepository.saveAndFlush(registro);
+        }
+
+        public List<HistoricoCompras> listarHistoricoPorPedidoId(Integer pedidoId){
+            buscarPedidoPorId(pedidoId);
+            return historicoComprasRepository.findByPedidoIdOrderByCriadoEmAsc(pedidoId);
+        }
+    }

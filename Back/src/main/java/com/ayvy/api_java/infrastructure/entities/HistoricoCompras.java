@@ -27,7 +27,7 @@ public class HistoricoCompras {
     @Column(name = "evento", nullable = false, length = 80)
     private String evento; // ex: "PEDIDO_CRIADO", "PAGAMENTO_CONFIRMADO"
 
-    @Column(name = "statusPedido", length = 50)
+    @Column(name = "status_pedido", length = 50)
     private String statusPedido; // snapshot do status no momento do evento
 
     @Column(name = "descricao", length = 500)

@@ -2,6 +2,7 @@ package com.ayvy.api_java.controller;
 
 import com.ayvy.api_java.business.PedidoService;
 import com.ayvy.api_java.dto.CheckoutRequest;
+import com.ayvy.api_java.infrastructure.entities.HistoricoCompras;
 import com.ayvy.api_java.infrastructure.entities.Pedido;
 import com.ayvy.api_java.infrastructure.entities.PedidoEnderecoEntrega;
 import com.ayvy.api_java.infrastructure.entities.PedidoProdutos;
@@ -68,8 +69,15 @@ public class PedidoController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<Pedido> atualizarStatus(@PathVariable Integer id, @RequestParam StatusPedido novoStatus) {
-        return ResponseEntity.ok(pedidoService.atualizarStatus(id, novoStatus));
+    public ResponseEntity<Pedido> atualizarStatus(@PathVariable Integer id,
+                                                  @RequestParam StatusPedido novoStatus,
+                                                  @RequestParam(required = false) Integer actorUsuarioId) {
+        return ResponseEntity.ok(pedidoService.atualizarStatus(id, novoStatus, actorUsuarioId));
+    }
+
+    @GetMapping("/{id}/historico")
+    public ResponseEntity<List<HistoricoCompras>> listarHistoricoDoPedido(@PathVariable Integer id){
+        return ResponseEntity.ok(pedidoService.listarHistoricoPorPedidoId(id));
     }
 
     /* !!! EXPLICAÇÃO NA SERVICE =================================
