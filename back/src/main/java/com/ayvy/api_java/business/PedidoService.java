@@ -126,7 +126,7 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
                 .usuario(usuario)
                 .observacao(request.getObservacao())
                 .valorSubtotal(subtotal)
-                .valorFrete(freteService.calcularFreteTotal(itens, request.getEnderecoEntrega().getCep()))
+                .valorFrete(valorFrete)
                 .valorTotal(subtotal.add(valorFrete))
                 .status(StatusPedido.aguardando_pagamento)
                 .build();

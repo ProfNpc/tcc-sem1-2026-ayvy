@@ -2,7 +2,9 @@ package com.ayvy.api_java.business;
 
 import com.ayvy.api_java.infrastructure.entities.Notificacoes;
 import com.ayvy.api_java.infrastructure.repositories.NotificacoesRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -24,7 +26,7 @@ public class NotificacoesService {
     //READ
     public Notificacoes buscarNotificacoesPorTituloouMensagem(String titulo, String mensagem){
         return repository.findByTituloOrMensagem(titulo, mensagem).orElseThrow(
-                () -> new RuntimeException("notificação não encontrada")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "notificação não encontrada")
         );
     }
 
@@ -41,7 +43,7 @@ public class NotificacoesService {
     //UPDATE - como funcionará esse esquema? apenas lojistas enviam notificações
     public String atualizarNotificacoesPorId(Integer id, Notificacoes notificacoes){
         Notificacoes notificacoesEntity = repository.findById(id).orElseThrow(
-                () -> new RuntimeException("Notificacoes não encontrada")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND ,"Notificação não encontrada")
         );
 
         if(notificacoes.getMensagem() != null){
