@@ -23,14 +23,16 @@ public class PedidoService {
     private final PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository;
     private final UsuarioRepository usuarioRepository;
     private final HistoricoComprasRepository historicoComprasRepository;
+    private final FreteService freteService;
 
-    public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository, HistoricoComprasRepository historicoComprasRepository) {
+    public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository, HistoricoComprasRepository historicoComprasRepository, FreteService freteService) {
         this.repository = repository;
         this.pedidoProdutosRepository = pedidoProdutosRepository;
         this.produtoRepository = produtoRepository;
         this.pedidoEnderecoEntregaRepository = pedidoEnderecoEntregaRepository;
         this.usuarioRepository = usuarioRepository;
         this.historicoComprasRepository = historicoComprasRepository;
+        this.freteService = freteService;
     }
 
 
@@ -118,12 +120,14 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
                     .build()
             );
         }
+        //variavél local de cálculo para implementação no builder
+        BigDecimal valorFrete = freteService.calcularFreteTotal(itens, request.getEnderecoEntrega().getCep());
         Pedido pedido = Pedido.builder()
                 .usuario(usuario)
                 .observacao(request.getObservacao())
                 .valorSubtotal(subtotal)
-                .valorFrete(BigDecimal.ZERO) //ajustar quando tiver cálculo de frete!!!
-                .valorTotal(subtotal)
+                .valorFrete(freteService.calcularFreteTotal(itens, request.getEnderecoEntrega().getCep()))
+                .valorTotal(subtotal.add(valorFrete))
                 .status(StatusPedido.aguardando_pagamento)
                 .build();
 
