@@ -7,6 +7,7 @@ import com.ayvy.api_java.infrastructure.repositories.ClienteRepository;
 import com.ayvy.api_java.infrastructure.repositories.LojistaRepository;
 import com.ayvy.api_java.infrastructure.repositories.UsuarioRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,34 +20,43 @@ public class UsuarioService {
     private final ClienteRepository clienteRepository;
     private final LojistaRepository lojistaRepository;
     private final UploadService uploadService;
+    private final PasswordEncoder passwordEncoder;
 
     public UsuarioService(
             UsuarioRepository repository,
             ClienteRepository clienteRepository,
             LojistaRepository lojistaRepository,
-            UploadService uploadService
-    ) {
+            UploadService uploadService,
+            PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.clienteRepository = clienteRepository;
         this.lojistaRepository = lojistaRepository;
         this.uploadService = uploadService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
-     * Cadastro de identidade (login). Perfil de negócio é criado depois em /clientes ou /lojistas.
-     * Todo usuário novo entra como {@link StatusUsuario#ativo} se status não for enviado.
+     * Cadastro de identidade (login). Perfil de negócio é criado depois em
+     * /clientes ou /lojistas.
+     * Todo usuário novo entra como {@link StatusUsuario#ativo} se status não for
+     * enviado.
      */
     public Usuario salvarUsuario(Usuario usuario) {
         aplicarDefaultsCadastro(usuario);
         validarCadastroUsuario(usuario);
         validarAvatar(usuario.getAvatarUrl());
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         return repository.saveAndFlush(usuario);
     }
 
     public Usuario buscarUsuarioPorId(Integer id) {
         return repository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado")
-        );
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+    }
+
+    // buscar por Status
+    public List<Usuario> buscarUsuarioPorStatus(StatusUsuario status) {
+        return repository.findByStatus(status);
     }
 
     public List<Usuario> listarUsuarios() {
@@ -56,6 +66,14 @@ public class UsuarioService {
     public void deletarUsuario(Integer id) {
         Usuario usuario = buscarUsuarioPorId(id);
         repository.delete(usuario);
+    }
+
+    // EXCLUSÃO LÓGICA - STATUS = inativo (Status=Bloqueado é uma 'punição' dos
+    // admin)
+    public void desativarUsuario(Integer id) {
+        Usuario usuario = buscarUsuarioPorId(id);
+        usuario.setStatus(StatusUsuario.inativo);
+        repository.save(usuario);
     }
 
     public Usuario atualizarUsuarioPorId(Integer id, Usuario usuario) {
@@ -71,7 +89,7 @@ public class UsuarioService {
             usuarioEntity.setTelefone(usuario.getTelefone());
         }
         if (usuario.getSenha() != null) {
-            usuarioEntity.setSenha(usuario.getSenha());
+            usuarioEntity.setSenha(passwordEncoder.encode(usuario.getSenha())); // <-- hash aqui também
         }
         if (usuario.getAvatarUrl() != null) {
             validarAvatar(usuario.getAvatarUrl());
@@ -91,15 +109,13 @@ public class UsuarioService {
         if (usuario.getPapel() != papelEsperado) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Usuário deve ter papel '" + papelEsperado + "'. Papel atual: " + usuario.getPapel()
-            );
+                    "Usuário deve ter papel '" + papelEsperado + "'. Papel atual: " + usuario.getPapel());
         }
 
         if (usuario.getStatus() != StatusUsuario.ativo) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Usuário deve estar com status 'ativo' para vincular perfil"
-            );
+                    "Usuário deve estar com status 'ativo' para vincular perfil");
         }
 
         if (papelEsperado == PapelUsuario.cliente && clienteRepository.findByUsuario_Id(usuarioId).isPresent()) {
@@ -113,8 +129,7 @@ public class UsuarioService {
         if (papelEsperado == PapelUsuario.admin) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Administrador não possui perfil separado; use apenas POST /usuarios com papel admin"
-            );
+                    "Administrador não possui perfil separado; use apenas POST /usuarios com papel admin");
         }
     }
 
@@ -132,8 +147,7 @@ public class UsuarioService {
         if (!java.nio.file.Files.exists(fisico)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Arquivo de avatar não encontrado: " + caminho
-            );
+                    "Arquivo de avatar não encontrado: " + caminho);
         }
     }
 
@@ -141,8 +155,10 @@ public class UsuarioService {
         if (usuario.getPapel() == null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Campo 'papel' é obrigatório: admin, cliente ou lojista"
-            );
+                    "Campo 'papel' é obrigatório: admin, cliente ou lojista");
+        }
+        if (usuario.getPapel() == PapelUsuario.admin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Não é permitido criar usuário com papel 'admin' por esse endpoint");
         }
         if (usuario.getNome() == null || usuario.getNome().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Campo 'nome' é obrigatório");
@@ -153,5 +169,16 @@ public class UsuarioService {
         if (usuario.getSenha() == null || usuario.getSenha().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Campo 'senha' é obrigatório");
         }
+    }
+
+    //erros a serem corrigidos:
+    public Usuario autenticar(String email, String senhaDigitada) {
+        Usuario usuario = repository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos"));
+
+        if (!passwordEncoder.matches(senhaDigitada, usuario.getSenha())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos");
+        }
+        return usuario;
     }
 }

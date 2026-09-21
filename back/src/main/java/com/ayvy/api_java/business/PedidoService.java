@@ -1,9 +1,16 @@
 package com.ayvy.api_java.business;
 
-import com.ayvy.api_java.infrastructure.entities.Pedido;
-import com.ayvy.api_java.infrastructure.repositories.PedidoRepository;
+import com.ayvy.api_java.dto.CheckoutRequest;
+import com.ayvy.api_java.infrastructure.entities.*;
+import com.ayvy.api_java.infrastructure.enums.StatusPedido;
+import com.ayvy.api_java.infrastructure.repositories.*;
+import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -11,8 +18,24 @@ import java.util.List;
 public class PedidoService {
 
     private final PedidoRepository repository;
+    private final PedidoProdutosRepository pedidoProdutosRepository;
+    private final ProdutoRepository produtoRepository;
+    private final PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final HistoricoComprasRepository historicoComprasRepository;
+    private final FreteService freteService;
 
-    public PedidoService(PedidoRepository repository) {this.repository = repository;}
+    public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository, HistoricoComprasRepository historicoComprasRepository, FreteService freteService) {
+        this.repository = repository;
+        this.pedidoProdutosRepository = pedidoProdutosRepository;
+        this.produtoRepository = produtoRepository;
+        this.pedidoEnderecoEntregaRepository = pedidoEnderecoEntregaRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.historicoComprasRepository = historicoComprasRepository;
+        this.freteService = freteService;
+    }
+
+
 
     //CREATE
     public String salvarPedido(Pedido pedido){
@@ -24,7 +47,7 @@ public class PedidoService {
     public Pedido buscarPedidoPorId(Integer id){
 
         return repository.findById(id).orElseThrow(
-                () -> new RuntimeException("Pedido não encontrado")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido não encontrado")
         );
     }
 
@@ -32,15 +55,109 @@ public class PedidoService {
         return repository.findAll();
     }
 
+    public PedidoEnderecoEntrega buscarEnderecoPorPedidoId(Integer pedidoId){
+    return pedidoEnderecoEntregaRepository.findById(pedidoId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Endereço de entrega não encontrado para o pedido " + pedidoId));
+}
+
+    public List<Pedido> listarPedidosPorUsuario(Integer usuarioId){
+    return repository.findByUsuarioId(usuarioId);}
+
+
+public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
+    buscarPedidoPorId(pedidoId);
+    return pedidoProdutosRepository.findByPedidoId(pedidoId);
+}
+
     //DELETE
     public String deletarPedidoPorId(Integer id){
         repository.deleteById(id);
         return ("pedido cancelado!");
     }
 
-    //UPDATE
-    // !!! Não será possível atualizar o Pedido uma vez feito
-    // !!! Pórem PedidoAtualizado está aqui caso seja necessário no futuro
+    // UPDATE DE STATUS
+    public Pedido atualizarStatus(Integer id, StatusPedido novoStatus, Integer actorUsuarioId) {
+        Pedido pedido = buscarPedidoPorId(id);
+        pedido.setStatus(novoStatus);
+        pedido = repository.save(pedido);
+
+        registrarHistorico(pedido, "STATUS_ALTERADO",
+                        "Status alterado para " + novoStatus.name(), actorUsuarioId);
+
+        return pedido;
+    }
+
+    @Transactional
+    public Pedido finalizarCheckout(CheckoutRequest request) {
+        Usuario usuario = usuarioRepository.findById(request.getUsuarioId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario não encontrado"));
+
+        BigDecimal subtotal = BigDecimal.ZERO;
+        List<PedidoProdutos> itens = new ArrayList<>();
+
+        for (var itemReq : request.getItens()) {
+            Produto produto = produtoRepository.findById(itemReq.getProdutoId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                            "Produto " + itemReq.getProdutoId() + " não encontrado"));
+
+            if (produto.getEstoque() < itemReq.getQuantidade()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Estoque insuficiente para " + produto.getNome());
+            }
+
+            produto.setEstoque(produto.getEstoque() - itemReq.getQuantidade());
+            produtoRepository.save(produto);
+
+            BigDecimal precoUnit = produto.getPreco();
+            subtotal = subtotal.add(precoUnit.multiply(BigDecimal.valueOf(itemReq.getQuantidade())));
+
+            itens.add(PedidoProdutos.builder()
+                    .produto(produto)
+                    .lojista(produto.getLojista())
+                    .quantidade(itemReq.getQuantidade())
+                    .precoUnitario(precoUnit.doubleValue())
+                    .build()
+            );
+        }
+        //variavél local de cálculo para implementação no builder
+        BigDecimal valorFrete = freteService.calcularFreteTotal(itens, request.getEnderecoEntrega().getCep());
+        Pedido pedido = Pedido.builder()
+                .usuario(usuario)
+                .observacao(request.getObservacao())
+                .valorSubtotal(subtotal)
+                .valorFrete(valorFrete)
+                .valorTotal(subtotal.add(valorFrete))
+                .status(StatusPedido.aguardando_pagamento)
+                .build();
+
+        pedido = repository.saveAndFlush(pedido);
+
+        for (var item : itens) {
+            item.setPedido(pedido);
+            pedidoProdutosRepository.save(item);
+        }
+
+        var endereco = request.getEnderecoEntrega();
+        PedidoEnderecoEntrega entrega = PedidoEnderecoEntrega.builder()
+                .pedido(pedido)
+                .logradouro(endereco.getLogradouro())
+                .numero(endereco.getNumero())
+                .complemento(endereco.getComplemento())
+                .bairro(endereco.getBairro())
+                .uf(endereco.getUf())
+                .cep(endereco.getCep())
+                .cidade(endereco.getCidade())
+                .build();
+        pedidoEnderecoEntregaRepository.save(entrega);
+
+        registrarHistorico(pedido, "PEDIDO_CRIADO", "Pedido criado pelo cliente", usuario.getId());
+
+        return pedido;
+    }
+        //UPDATE
+        // !!! Não será possível atualizar o Pedido uma vez feito
+        // !!! Pórem PedidoAtualizado está aqui caso seja necessário no futuro
     /*
     public void atualizarPedidoPorId(Integer id, Pedido pedido){
         Pedido pedidoEntity = buscarPedidoPorId(id);
@@ -55,5 +172,26 @@ public class PedidoService {
         repository.saveAndFlush(pedidoAtualizado);
     }*/
 
+        private void registrarHistorico(Pedido pedido, String evento, String descricao, Integer actorUsuarioId){
+            Usuario actor = null;
+            if (actorUsuarioId != null) {
+                actor = usuarioRepository.findById(actorUsuarioId).orElse(null);
+            }
 
-}
+
+            HistoricoCompras registro = HistoricoCompras.builder()
+                    .pedido(pedido)
+                    .evento(evento)
+                    .statusPedido(pedido.getStatus().name())
+                    .descricao(descricao)
+                    .actorUsuario(actor)
+                    .build();
+
+            historicoComprasRepository.saveAndFlush(registro);
+        }
+
+        public List<HistoricoCompras> listarHistoricoPorPedidoId(Integer pedidoId){
+            buscarPedidoPorId(pedidoId);
+            return historicoComprasRepository.findByPedidoIdOrderByCriadoEmAsc(pedidoId);
+        }
+    }

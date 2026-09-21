@@ -1,5 +1,5 @@
 package com.ayvy.api_java.config;
-
+//---------- ESSA É A CONFIGURAÇÃO DO CORS --------------------
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

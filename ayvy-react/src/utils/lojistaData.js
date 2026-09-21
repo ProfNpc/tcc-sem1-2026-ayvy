@@ -36,7 +36,12 @@ export const SHOPS = {
             "/assets/img/samba_vinho.jpg",
             "/assets/img/samba_preto.jpg",
           ],
-          colors: ["Branco", "Vinho", "Preto",],
+          colors: ["Branco", "Vinho", "Preto"],
+          colorImages: {
+            Branco: "/assets/img/samba.jpg",
+            Vinho: "/assets/img/samba_vinho.jpg",
+            Preto: "/assets/img/samba_preto.jpg",
+          },
           sizes: ["34", "35", "36", "38", "40"],
           rating: 5,
           reviewCount: 1,
@@ -329,20 +334,30 @@ export const SHOPS = {
           id: "im-2",
           title: "Macacão utilitário",
           price: "R$ 289,00",
+          colors: ["Bege", "Cinza"],
           images: [
-            "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600",
-            "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600",
+            "/assets/img/macacao.jpg",
+            "/assets/img/macacaoCinza.jpg",
           ],
+          colorImages: {
+            Bege: "/assets/img/macacao.jpg",
+            Cinza: "/assets/img/macacaoCinza.jpg",
+          },
           description: "Tecido encorpado, cinto removível e bolsos funcionais.",
         },
         {
           id: "im-3",
           title: "Sandália plataforma",
           price: "R$ 159,90",
+          colors: ["Preto", "Bege"],
           images: [
-            "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600",
-            "https://images.unsplash.com/photo-1603487742131-4160ec999306?w=600",
+            "/assets/img/sandalia.jpg",
+            "/assets/img/sandaliabege.jpg",
           ],
+          colorImages: {
+            Preto: "/assets/img/sandalia.jpg",
+            Bege: "/assets/img/sandaliabege.jpg",
+          },
           description: "Solado leve, palmilha acolchoada.",
         },
         {
@@ -351,9 +366,15 @@ export const SHOPS = {
           price: "R$ 79,90",
           discountPercent: 20,
           soldCount: 430,
+          colors: ["Branco", "Preto"],
           images: [
-            "https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=600",
+            "/assets/img/cropped.jpg",
+            "/assets/img/croppedrenda.jpg",
           ],
+          colorImages: {
+            Branco: "/assets/img/cropped.jpg",
+            Preto: "/assets/img/croppedrenda.jpg",
+          },
           description: "Renda delicada, forro interno.",
         },
         {
@@ -362,7 +383,7 @@ export const SHOPS = {
           price: "R$ 169,90",
           soldCount: 290,
           images: [
-            "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600",
+            "/assets/img/calcapanta.webp",
           ],
           description: "Cintura alta, pernas amplas, tecido fluido.",
         },
@@ -372,29 +393,27 @@ export const SHOPS = {
           price: "R$ 239,90",
           soldCount: 180,
           images: [
-            "https://images.unsplash.com/photo-1541093602413-3bff903b302f?w=600",
+            "/assets/img/jaquetajeans.jpg",
           ],
           description: "Denim médio, lavagem vintage.",
         },
         {
           id: "im-7",
-          title: "Tênis casual canvas",
+          title: "Tênis vans",
           price: "R$ 129,90",
           discountPercent: 15,
           soldCount: 920,
           images: [
-            "https://images.unsplash.com/photo-1460353589841-61b2bc694979?w=600",
+            "/assets/img/vans.jpg",
           ],
-          description: "Canvas respirável, solado de borracha.",
+          description: "vans respirável, solado de borracha.",
         },
         {
           id: "im-8",
           title: "Bolsa tote acadêmica",
           price: "R$ 99,90",
           soldCount: 510,
-          images: [
-            "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600",
-          ],
+          images: ["/assets/img/bolsatote.jpg"],
           description: "Espaçosa para cadernos e notebook.",
         },
         {

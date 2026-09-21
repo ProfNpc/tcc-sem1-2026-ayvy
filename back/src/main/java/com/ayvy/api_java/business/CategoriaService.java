@@ -2,7 +2,9 @@ package com.ayvy.api_java.business;
 
 import com.ayvy.api_java.infrastructure.entities.Categoria;
 import com.ayvy.api_java.infrastructure.repositories.CategoriaRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.text.Normalizer;
 import java.util.List;
@@ -29,7 +31,7 @@ public class CategoriaService {
 
     public Categoria buscarCategoriaPorNome(String nome) {
         return repository.findByNome(nome).orElseThrow(
-                () -> new RuntimeException("Categoria não encontrada")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND ,"Categoria não encontrada")
         );
     }
 
@@ -43,7 +45,7 @@ public class CategoriaService {
 
     public Categoria atualizarCategoriaPorId(Integer id, Categoria categoria) {
         Categoria categoriaEntity = repository.findById(id).orElseThrow(
-                () -> new RuntimeException("Categoria não encontrada")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND ,"Categoria não encontrada")
         );
 
         if (categoria.getNome() != null) {

@@ -56,6 +56,6 @@ export const ADMIN_NAV = [
   { to: "/admin/lojistas", icon: "fa-store", label: "Lojistas" },
   { to: "/admin/clientes", icon: "fa-users", label: "Clientes" },
   { to: "/admin/produtos", icon: "fa-box", label: "Produtos" },
-  { to: "/admin/pedidos", icon: "fa-shopping-bag", label: "Pedidos", soon: true },
-  { to: "/admin/relatorios", icon: "fa-chart-line", label: "Relatórios", soon: true },
+  { to: "/admin/pedidos", icon: "fa-shopping-bag", label: "Pedidos" },
+  { to: "/admin/relatorios", icon: "fa-chart-line", label: "Relatórios" },
 ];

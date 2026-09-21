@@ -29,7 +29,7 @@ public class Lojista {
     @Column(name = "slug", nullable = false, unique = true)
     private String slug;
 
-    @Column(name = "cnpj", nullable = false, unique = true, length = 14)
+    @Column(name = "cnpj", nullable = false, unique = true, columnDefinition = "CHAR(14)")
     private String cnpj;
 
     @Column(name = "banner_url")

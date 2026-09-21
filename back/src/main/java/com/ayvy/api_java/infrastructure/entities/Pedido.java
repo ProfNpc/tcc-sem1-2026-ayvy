@@ -1,5 +1,6 @@
 package com.ayvy.api_java.infrastructure.entities;
 
+import com.ayvy.api_java.infrastructure.enums.StatusPedido;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,12 +22,14 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "cliente_id", nullable = false)
-    private Cliente cliente;
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false, unique = false)
+    private Usuario usuario;
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status = "aguardando_pagamento";
+    private StatusPedido status = StatusPedido.aguardando_pagamento;
 
     @Column(name = "valor_subtotal", nullable = false)
     private BigDecimal valorSubtotal = BigDecimal.ZERO;
@@ -44,6 +47,7 @@ public class Pedido {
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
+    //Conferir se utilizaremos o dado de atualização
     @UpdateTimestamp
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;

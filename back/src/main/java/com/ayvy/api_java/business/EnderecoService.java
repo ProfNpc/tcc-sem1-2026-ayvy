@@ -2,7 +2,9 @@ package com.ayvy.api_java.business;
 
 import com.ayvy.api_java.infrastructure.entities.Endereco;
 import com.ayvy.api_java.infrastructure.repositories.EnderecoRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -21,7 +23,7 @@ public class EnderecoService {
 
     public Endereco buscarEnderecoPorId(Integer id) {
         return repository.findById(id).orElseThrow(
-                () -> new RuntimeException("Endereço não encontrado")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Endereço não encontrado")
         );
     }
 
@@ -35,7 +37,7 @@ public class EnderecoService {
 
     public Endereco atualizarEnderecoPorId(Integer id, Endereco endereco) {
         Endereco enderecoEntity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Endereço não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Endereço não encontrado"));
 
         if (endereco.getApelido() != null) {
             enderecoEntity.setApelido(endereco.getApelido());

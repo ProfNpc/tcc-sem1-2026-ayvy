@@ -55,11 +55,12 @@ export default function Sobre() {
           </p>
         </TeamMemberRow>
 
-        <TeamMemberRow imageSrc="/assets/img/leticia1.jpeg" imageAlt="Designer" name="Leticia -Gerente de Documentação">
+        <TeamMemberRow imageSrc="/assets/img/leticia1.jpeg" imageAlt="Designer" name="Leticia -Gerente de Documentação e Processos do Mobile">
           <p>
             Responsável pela organização, elaboração e revisão da documentação do projeto, garantindo clareza e
             padronização das informações. Atuou também no apoio ao desenvolvimento do Front-End do aplicativo mobile,
-            contribuindo na criação de interfaces e na melhoria da experiência do usuário.
+            contribuindo na criação de interfaces e na melhoria da experiência do usuário. Também é responsável pela organização e melhoria 
+            dos processos do aplicativo mobile, contribuindo para o desempenho e a eficiência do sistema.
           </p>
         </TeamMemberRow>
 
@@ -76,15 +77,6 @@ export default function Sobre() {
           </p>
         </TeamMemberRow>
 
-        <TeamMemberRow imageSrc="/assets/img/graciele1.jpeg" imageAlt="QA" name="Graciele - Subgerente de Front-end">
-          <p>
-            Responsável por apoiar o desenvolvimento e a implementação do Front-End da tela de perfil do cliente,
-            contribuindo para a organização das informações, melhoria da usabilidade e aprimoramento da experiência do
-            usuário. Atuou também na padronização dos elementos visuais, na adaptação da interface para diferentes
-            dispositivos e na validação de funcionalidades, visando garantir uma navegação intuitiva, acessível e alinhada
-            às necessidades do sistema.”
-          </p>
-        </TeamMemberRow>
       </section>
 
       <div className="foto-grupo-destaque">

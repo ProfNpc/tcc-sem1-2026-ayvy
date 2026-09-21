@@ -23,6 +23,7 @@ public class Cliente {
     private Usuario usuario;
 
     @Column(name = "cpf", nullable = false, unique = true, length = 11, columnDefinition = "CHAR(11)")
+
     private String cpf;
 
     @Column(name = "data_nascimento")

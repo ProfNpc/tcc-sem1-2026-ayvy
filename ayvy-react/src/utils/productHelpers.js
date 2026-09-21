@@ -45,6 +45,65 @@ export function enrichShop(shop, slug) {
   };
 }
 
+/**
+ * Imagem da variante de cor (qualquer loja).
+ * Ordem: colorImages explícito → índice da cor em colors[] → palavra da cor no nome do arquivo → 1ª foto.
+ */
+export function getImageForColor(product, colorName) {
+  const images = product?.images ?? [];
+  if (!images.length) return "/assets/img/ayvy-media-a.png";
+  if (!colorName) return images[0];
+
+  const color = String(colorName).trim();
+  if (product.colorImages?.[color]) return product.colorImages[color];
+
+  const colors = product.colors ?? [];
+  const idx = colors.findIndex(
+    (c) => String(c).toLowerCase() === color.toLowerCase(),
+  );
+  if (idx >= 0 && images[idx]) return images[idx];
+
+  const tokens = colorTokens(color);
+  const byFile = images.find((src) => {
+    const file = String(src).toLowerCase();
+    return tokens.some((t) => file.includes(t));
+  });
+  if (byFile) return byFile;
+
+  if (idx >= 0) return images[Math.min(idx, images.length - 1)];
+  return images[0];
+}
+
+/** Índice da imagem da cor na galeria (para sincronizar o carrossel). */
+export function getColorImageIndex(product, colorName) {
+  const images = product?.images ?? [];
+  if (!images.length) return 0;
+  const src = getImageForColor(product, colorName);
+  const i = images.indexOf(src);
+  return i >= 0 ? i : 0;
+}
+
+function colorTokens(color) {
+  const c = String(color).toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
+  const map = {
+    preto: ["preto", "black", "blk"],
+    branco: ["branco", "white", "wht"],
+    bege: ["bege", "beige"],
+    vermelho: ["vermelho", "red", "vinho"],
+    azul: ["azul", "blue", "jeans"],
+    verde: ["verde", "green"],
+    rosa: ["rosa", "pink"],
+    cinza: ["cinza", "grey", "gray"],
+    marrom: ["marrom", "brown", "cafe"],
+    amarelo: ["amarelo", "yellow"],
+    roxo: ["roxo", "purple", "lilas"],
+  };
+  for (const [key, aliases] of Object.entries(map)) {
+    if (c.includes(key) || aliases.some((a) => c.includes(a))) return aliases;
+  }
+  return [c.split(/\s+/)[0]].filter(Boolean);
+}
+
 export function enrichProduct(product, shop) {
   const categoryPath = product.categoryPath ?? [
     "AYVY",
@@ -54,10 +113,16 @@ export function enrichProduct(product, shop) {
   const images =
     product.images ??
     (product.href ? [product.href.replace(/^public\//, "/")] : []);
+  const colors =
+    product.colors ??
+    (images.length >= 2 && images.length <= 5
+      ? DEFAULT_COLORS.slice(0, images.length)
+      : DEFAULT_COLORS.slice(0, 5));
   return {
     ...product,
     images,
-    colors: product.colors ?? DEFAULT_COLORS.slice(0, 5),
+    colors,
+    colorImages: product.colorImages,
     sizes: product.sizes ?? DEFAULT_SIZES,
     rating: product.rating ?? 4.9,
     reviewCount: product.reviewCount ?? (product.reviews?.length ?? 12),

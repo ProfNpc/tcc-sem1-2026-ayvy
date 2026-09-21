@@ -2,9 +2,11 @@ package com.ayvy.api_java.controller;
 
 import com.ayvy.api_java.business.UsuarioService;
 import com.ayvy.api_java.infrastructure.entities.Usuario;
+import com.ayvy.api_java.infrastructure.enums.StatusUsuario;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.ayvy.api_java.dto.LoginRequest;
 
 import java.util.List;
 
@@ -24,6 +26,12 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<Usuario> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(usuarioService.autenticar(request.getEmail(), request.getSenha()));
+    }
+
+
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable Integer id) {
         return ResponseEntity.ok(usuarioService.buscarUsuarioPorId(id));
@@ -31,12 +39,25 @@ public class UsuarioController {
 
     @GetMapping
     public ResponseEntity<List<Usuario>> listarUsuarios() {
+
         return ResponseEntity.ok(usuarioService.listarUsuarios());
+    }
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<Usuario>> buscarUsuarioPorStatus(@PathVariable StatusUsuario status) {
+        return ResponseEntity.ok(usuarioService.buscarUsuarioPorStatus(status));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarUsuario(@PathVariable Integer id) {
         usuarioService.deletarUsuario(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    //EXCLUSÃO LÓGICA
+    @PutMapping("/{id}/desativar")
+    public ResponseEntity<Usuario> desativarUsuario(@PathVariable Integer id) {
+        usuarioService.desativarUsuario(id);
         return ResponseEntity.noContent().build();
     }
 

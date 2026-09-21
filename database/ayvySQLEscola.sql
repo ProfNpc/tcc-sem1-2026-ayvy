@@ -828,14 +828,17 @@ VALUES (
 );
 GO
 
-select * from usuarios;
+SELECT * FROM usuarios;
+SELECT * FROM clientes;
+SELECT * FROM lojistas;
 
--- DELETANDO O BANCO PARA COREÇÕES:
+-- DELETANDO O BANCO PARA CORRECOES:
 --USE master;
 --GO
 --IF DB_ID('ayvy') IS NOT NULL
 --BEGIN
 --ALTER DATABASE ayvy SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-  --  DROP DATABASE ayvy;
+--    DROP DATABASE ayvy;
 --END
 --GO
+

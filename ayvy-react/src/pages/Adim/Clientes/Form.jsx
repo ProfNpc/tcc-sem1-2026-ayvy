@@ -1,3 +1,15 @@
+/**
+ * Form.jsx — Clientes (/admin/clientes/novo e /admin/clientes/:id/editar)
+ *
+ * APIs:
+ *   Carregar selects   → GET /usuarios + GET /clientes
+ *   Abrir edição       → GET /clientes/:id
+ *   Salvar novo        → POST /clientes (body: usuarioId, cpf, dataNascimento)
+ *   Salvar editar      → PUT /clientes/:id
+ *   "+ Novo usuário" no modal → POST /usuarios (UsuarioQuickModal, papel cliente)
+ *
+ * Lista (index.jsx): + Novo cliente (link) | Editar (link) | Excluir → DELETE /clientes/:id
+ */
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AdminFormShell from "../../../components/Admin/AdminFormShell";
@@ -35,6 +47,7 @@ export default function AdminClienteForm() {
     let cancelled = false;
     (async () => {
       try {
+        // GET /usuarios e GET /clientes — quem já tem perfil cliente some do select
         const [users, clientes] = await Promise.all([listUsuarios(), listClientes()]);
         if (cancelled) return;
         const clientesArr = Array.isArray(clientes) ? clientes : [];
@@ -44,6 +57,7 @@ export default function AdminClienteForm() {
         setUsuariosCliente(semPerfil);
 
         if (isEdit) {
+          // GET /clientes/:id — preenche CPF e data de nascimento
           const data = await getCliente(id);
           if (cancelled) return;
           setForm({
@@ -64,16 +78,19 @@ export default function AdminClienteForm() {
   }, [id, isEdit]);
 
   function handleUsuarioCriado(usuario) {
+    // Retorno do POST /usuarios (modal) — preenche usuarioId para o POST /clientes
     setUsuariosCliente((prev) => [...prev, usuario]);
     setForm((f) => ({ ...f, usuarioId: String(usuario.id) }));
   }
 
+  // Disparado pelo botão "Salvar" (submit do form)
   async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
     setError("");
     try {
       if (isEdit) {
+        // PUT /clientes/:id
         await updateCliente(id, {
           cpf: form.cpf.replace(/\D/g, ""),
           dataNascimento: form.dataNascimento || null,
@@ -84,6 +101,7 @@ export default function AdminClienteForm() {
           setSaving(false);
           return;
         }
+        // POST /clientes — vincula usuarioId (usuário com papel cliente)
         await createCliente({
           usuarioId: Number(form.usuarioId),
           cpf: form.cpf.replace(/\D/g, ""),
@@ -118,6 +136,7 @@ export default function AdminClienteForm() {
       backTo="/admin/clientes"
       error={error}
     >
+      {/* Salvar → POST /clientes (novo) ou PUT /clientes/:id (editar) */}
       <form className="admin-crud-form" onSubmit={handleSubmit}>
         {!isEdit ? (
           <UsuarioSelector
@@ -125,6 +144,7 @@ export default function AdminClienteForm() {
             usuarios={usuariosCliente}
             value={form.usuarioId}
             onChange={(v) => setForm({ ...form, usuarioId: v })}
+            // Abre modal → botão "Criar e selecionar" chama POST /usuarios
             onCreateNew={() => setUserModalOpen(true)}
             emptyHint='Use "+ Novo usuário" para cadastrar com papel cliente.'
           />
@@ -154,12 +174,14 @@ export default function AdminClienteForm() {
           <Link to="/admin/clientes" className="admin-btn admin-btn--ghost">
             Cancelar
           </Link>
+          {/* Salvar → POST /clientes ou PUT /clientes/:id */}
           <button type="submit" className="admin-btn admin-btn--primary" disabled={saving}>
             {saving ? "Salvando…" : "Salvar"}
           </button>
         </div>
       </form>
 
+      {/* Modal: botão "Criar e selecionar" → POST /usuarios (papel cliente, status ativo) */}
       <UsuarioQuickModal
         open={userModalOpen}
         onClose={() => setUserModalOpen(false)}

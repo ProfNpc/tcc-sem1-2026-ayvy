@@ -2,7 +2,9 @@ package com.ayvy.api_java.business;
 
 import com.ayvy.api_java.infrastructure.entities.Pagamento;
 import com.ayvy.api_java.infrastructure.repositories.PagamentoRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -22,7 +24,7 @@ public class PagamentoService {
     //READ
     public Pagamento buscarPagamentoPorId(Integer id){
         return repository.findById(id).orElseThrow(
-                () -> new RuntimeException("Pagamento não encontrado")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pagamento não encontrado")
         );
     }
 

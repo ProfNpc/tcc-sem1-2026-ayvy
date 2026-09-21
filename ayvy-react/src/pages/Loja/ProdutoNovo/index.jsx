@@ -4,6 +4,7 @@ import Footer from "../../../components/Footer";
 import { useAuth } from "../../../context/AuthContext";
 import { isShopOwner } from "../../../utils/mockAuthUsers";
 import { normalizeSlugParam } from "../../../utils/lojistaData";
+import { publishProduct, saveDraft } from "../../../utils/shopOwnerStore";
 import "./style.css";
 
 const CATEGORIAS = [
@@ -60,8 +61,21 @@ export default function LojaProdutoNovo() {
     updateField("price", `${parts[0]},${parts[1].slice(0, 2)}`);
   }
 
-  function handleDraftSave() {
-    alert("Rascunho salvo (mock). Você pode continuar depois.");
+  async function handleDraftSave() {
+    if (!form.title.trim() && images.length === 0) {
+      alert("Preencha ao menos o nome ou uma foto para salvar o rascunho.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await saveDraft({ shopSlug: slug, form, images });
+      alert("Rascunho salvo! Você encontra em Minha loja → Rascunhos.");
+      navigate(`${lojaPath}?aba=rascunhos`, { replace: true });
+    } catch {
+      alert("Não foi possível salvar o rascunho.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function toggleChip(listName, value) {
@@ -121,7 +135,7 @@ export default function LojaProdutoNovo() {
     });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!form.title.trim()) {
       alert("Informe o nome do produto.");
@@ -137,11 +151,15 @@ export default function LojaProdutoNovo() {
     }
 
     setSaving(true);
-    setTimeout(() => {
+    try {
+      await publishProduct({ shopSlug: slug, form, images });
+      alert("Produto publicado! Ele aparece em Meus produtos.");
+      navigate(`${lojaPath}?aba=produtos`, { replace: true });
+    } catch {
+      alert("Não foi possível publicar o produto.");
+    } finally {
       setSaving(false);
-      alert("Produto salvo com sucesso!");
-      navigate(lojaPath, { replace: true });
-    }, 600);
+    }
   }
 
   return (
