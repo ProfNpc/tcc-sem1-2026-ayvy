@@ -54,9 +54,8 @@ public class NotificacoesService {
         if (notificacoes.getTipo() != null) {
             notificacoesEntity.setTipo(notificacoes.getTipo());
         }
-        if (notificacoes.getLida() != null) {
-            notificacoesEntity.setLida(notificacoes.getLida());
-        }
+        // `lida` é byte primitivo no entity — sempre atualiza quando o campo vem no body
+        notificacoesEntity.setLida(notificacoes.getLida());
 
         repository.saveAndFlush(notificacoesEntity);
         return "Notificação Editada";
