@@ -33,7 +33,7 @@ const SAMPLE_REVIEWS = [
 ];
 
 export function enrichShop(shop, slug) {
-  const productCount = shop.products.length;
+  const productCount = (shop.products || []).length;
   return {
     ...shop,
     slug,
@@ -42,6 +42,11 @@ export function enrichShop(shop, slug) {
     followers: shop.followers ?? "359",
     chatResponseRate: shop.chatResponseRate ?? "83%",
     productCount,
+    stats: shop.stats ?? [
+      { label: "produtos", value: productCount },
+      { label: "avaliações", value: shop.reviewCount ?? 18 },
+      { label: "seguidores", value: shop.followers ?? "359" },
+    ],
   };
 }
 

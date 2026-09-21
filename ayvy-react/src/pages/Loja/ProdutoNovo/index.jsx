@@ -1,27 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import Footer from "../../../components/Footer";
 import { useAuth } from "../../../context/AuthContext";
 import { isShopOwner } from "../../../utils/mockAuthUsers";
 import { normalizeSlugParam } from "../../../utils/lojistaData";
-import { publishProduct, saveDraft } from "../../../utils/shopOwnerStore";
+import {
+  listCategorias,
+  salvarProdutoLojista,
+} from "../../../services/lojistaApi";
 import "./style.css";
-
-const CATEGORIAS = [
-  "Roupas",
-  "Calçados",
-  "Acessórios",
-  "Moda praia",
-  "Infantil",
-  "Outros",
-];
 
 const TAMANHOS_PADRAO = ["PP", "P", "M", "G", "GG", "Único"];
 
 const EMPTY_FORM = {
   title: "",
   description: "",
-  category: "",
+  categoryId: "",
   price: "",
   discountPercent: "",
   stock: "",
@@ -41,6 +35,21 @@ export default function LojaProdutoNovo() {
   const [images, setImages] = useState([]);
   const [colorInput, setColorInput] = useState("");
   const [saving, setSaving] = useState(false);
+  const [categorias, setCategorias] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listCategorias()
+      .then((list) => {
+        if (!cancelled) setCategorias(Array.isArray(list) ? list : []);
+      })
+      .catch(() => {
+        if (!cancelled) setCategorias([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (!isShopOwner(user, slug)) {
     return <Navigate to={lojaPath} replace />;
@@ -50,7 +59,6 @@ export default function LojaProdutoNovo() {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  /** Aceita só dígitos e vírgula (formato 189,90). */
   function handlePriceChange(raw) {
     const cleaned = String(raw).replace(/[^\d,]/g, "");
     const parts = cleaned.split(",");
@@ -61,18 +69,56 @@ export default function LojaProdutoNovo() {
     updateField("price", `${parts[0]},${parts[1].slice(0, 2)}`);
   }
 
+  async function persist(status, successMsg, redirectAba) {
+    if (!user?.lojistaId) {
+      alert("Sessão de lojista incompleta. Faça login novamente.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await salvarProdutoLojista({
+        lojistaId: user.lojistaId,
+        form,
+        images,
+        status,
+        categoriaId: form.categoryId || null,
+      });
+      alert(successMsg);
+      navigate(`${lojaPath}?aba=${redirectAba}`, { replace: true });
+    } catch (err) {
+      alert(err.message || "Não foi possível salvar o produto.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function handleDraftSave() {
     if (!form.title.trim() && images.length === 0) {
       alert("Preencha ao menos o nome ou uma foto para salvar o rascunho.");
       return;
     }
+    const formDraft = {
+      ...form,
+      price: form.price.trim() || "0,00",
+      title: form.title.trim() || "Rascunho sem nome",
+    };
+    if (!user?.lojistaId) {
+      alert("Sessão de lojista incompleta. Faça login novamente.");
+      return;
+    }
     setSaving(true);
     try {
-      await saveDraft({ shopSlug: slug, form, images });
-      alert("Rascunho salvo! Você encontra em Minha loja → Rascunhos.");
+      await salvarProdutoLojista({
+        lojistaId: user.lojistaId,
+        form: formDraft,
+        images,
+        status: "rascunho",
+        categoriaId: form.categoryId || null,
+      });
+      alert("Rascunho salvo na API! Você encontra em Minha loja → Rascunhos.");
       navigate(`${lojaPath}?aba=rascunhos`, { replace: true });
-    } catch {
-      alert("Não foi possível salvar o rascunho.");
+    } catch (err) {
+      alert(err.message || "Não foi possível salvar o produto.");
     } finally {
       setSaving(false);
     }
@@ -91,7 +137,6 @@ export default function LojaProdutoNovo() {
   function addColor() {
     const name = colorInput.trim();
     if (!name) return;
-
     const exists = form.colors.some((c) => c.toLowerCase() === name.toLowerCase());
     if (!exists) {
       setForm((prev) => ({ ...prev, colors: [...prev.colors, name] }));
@@ -149,17 +194,11 @@ export default function LojaProdutoNovo() {
       alert("Adicione pelo menos uma foto.");
       return;
     }
-
-    setSaving(true);
-    try {
-      await publishProduct({ shopSlug: slug, form, images });
-      alert("Produto publicado! Ele aparece em Meus produtos.");
-      navigate(`${lojaPath}?aba=produtos`, { replace: true });
-    } catch {
-      alert("Não foi possível publicar o produto.");
-    } finally {
-      setSaving(false);
-    }
+    await persist(
+      "ativo",
+      "Produto publicado na API! Ele aparece em Meus produtos.",
+      "produtos",
+    );
   }
 
   return (
@@ -172,7 +211,7 @@ export default function LojaProdutoNovo() {
             </Link>
             <h1>Cadastrar produto</h1>
             <p className="produto-novo-sub">
-              Preencha as informações do item. 
+              Os dados são salvos na API (rascunho ou publicação).
             </p>
           </div>
         </header>
@@ -248,13 +287,13 @@ export default function LojaProdutoNovo() {
             <label className="produto-novo-field">
               <span>Categoria</span>
               <select
-                value={form.category}
-                onChange={(e) => updateField("category", e.target.value)}
+                value={form.categoryId}
+                onChange={(e) => updateField("categoryId", e.target.value)}
               >
                 <option value="">Selecione</option>
-                {CATEGORIAS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nome}
                   </option>
                 ))}
               </select>
@@ -281,7 +320,7 @@ export default function LojaProdutoNovo() {
                 />
               </label>
               <label className="produto-novo-field">
-                <span>Desconto (%)</span>
+                <span>Desconto (%) — só vitrine</span>
                 <input
                   type="number"
                   min={0}
@@ -305,7 +344,7 @@ export default function LojaProdutoNovo() {
                 />
               </label>
               <label className="produto-novo-field">
-                <span>SKU / código</span>
+                <span>SKU / código — só vitrine</span>
                 <input
                   type="text"
                   placeholder="Opcional"
@@ -320,14 +359,12 @@ export default function LojaProdutoNovo() {
             <h2>
               <i className="fas fa-palette" aria-hidden /> Variações
             </h2>
-            <p className="produto-novo-hint">Selecione as opções disponíveis para o cliente.</p>
+            <p className="produto-novo-hint">
+              Cores e tamanhos ficam só no front por enquanto (sem coluna no banco).
+            </p>
 
             <div className="produto-novo-chips-group">
               <span className="produto-novo-chips-label">Cores</span>
-              <p className="produto-novo-hint produto-novo-hint--tight">
-                Digite a cor e pressione Enter para adicionar.
-              </p>
-
               {form.colors.length > 0 ? (
                 <div className="produto-novo-chips produto-novo-chips--tags">
                   {form.colors.map((cor) => (
@@ -350,7 +387,7 @@ export default function LojaProdutoNovo() {
                 <input
                   type="text"
                   className="produto-novo-color-input"
-                  placeholder="Ex.: Verde musgo, Off-white…"
+                  placeholder="Ex.: Verde musgo…"
                   value={colorInput}
                   onChange={(e) => setColorInput(e.target.value)}
                   onKeyDown={handleColorKeyDown}
@@ -381,6 +418,7 @@ export default function LojaProdutoNovo() {
               type="button"
               className="produto-novo-btn produto-novo-btn--ghost"
               onClick={handleDraftSave}
+              disabled={saving}
             >
               Salvar rascunho
             </button>

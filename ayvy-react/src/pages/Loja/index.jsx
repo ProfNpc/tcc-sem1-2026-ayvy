@@ -7,20 +7,17 @@ import { useAuth } from "../../context/AuthContext";
 import { formatBRL } from "../../utils/cartHelpers";
 import { isShopOwner } from "../../utils/mockAuthUsers";
 import { normalizeSlugParam, resolveShopsMap } from "../../utils/lojistaData";
-import {
-  countNewOrdersForShop,
-  listOrdersForShop,
-  randomTrackingCode,
-  updateOrderStatus,
-} from "../../utils/ordersStore";
 import { enrichProduct, enrichShop } from "../../utils/productHelpers";
 import {
-  deleteDraft,
-  deletePublishedExtra,
-  listDrafts,
-  listPublishedExtras,
-  publishDraft,
-} from "../../utils/shopOwnerStore";
+  cancelarPedidoLojista,
+  enviarPedidoLojista,
+  excluirProdutoApi,
+  inativarProdutoApi,
+  listPedidosDoLojista,
+  listProdutosDoLojista,
+  mapApiProdutoToCard,
+  publicarProdutoApi,
+} from "../../services/lojistaApi";
 import "./style.css";
 
 const FOLLOW_KEY = "ayvy.following.v1";
@@ -48,6 +45,18 @@ export default function Loja() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [shopsMap, setShopsMap] = useState(null);
 
+  const initialTab = searchParams.get("aba");
+  const [ownerTab, setOwnerTab] = useState(
+    initialTab === "rascunhos" || initialTab === "pedidos" ? initialTab : "produtos",
+  );
+  const [chatOpen, setChatOpen] = useState(false);
+  const [followingSlugs, setFollowingSlugs] = useState(() => readFollowing());
+  const [tick, setTick] = useState(0);
+  const [ownerProdutos, setOwnerProdutos] = useState([]);
+  const [ownerDrafts, setOwnerDrafts] = useState([]);
+  const [shopOrders, setShopOrders] = useState([]);
+  const [ownerLoading, setOwnerLoading] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -57,35 +66,57 @@ export default function Loja() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tick]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!isOwner || !user?.lojistaId) {
+        setOwnerProdutos([]);
+        setOwnerDrafts([]);
+        setShopOrders([]);
+        return;
+      }
+      setOwnerLoading(true);
+      try {
+        const [ativos, rascunhos, pedidos] = await Promise.all([
+          listProdutosDoLojista(user.lojistaId, "ativo"),
+          listProdutosDoLojista(user.lojistaId, "rascunho"),
+          listPedidosDoLojista(user.lojistaId),
+        ]);
+        if (cancelled) return;
+        setOwnerProdutos((ativos || []).map(mapApiProdutoToCard));
+        setOwnerDrafts(
+          (rascunhos || []).map((p) => ({
+            ...mapApiProdutoToCard(p),
+            images: mapApiProdutoToCard(p).images,
+          })),
+        );
+        setShopOrders(pedidos || []);
+      } catch {
+        if (!cancelled) {
+          setOwnerProdutos([]);
+          setOwnerDrafts([]);
+          setShopOrders([]);
+        }
+      } finally {
+        if (!cancelled) setOwnerLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOwner, user?.lojistaId, tick]);
 
   const shopRaw = shopsMap?.[slug];
   const shop = shopRaw ? enrichShop(shopRaw, slug) : null;
 
-  const initialTab = searchParams.get("aba");
-  const [ownerTab, setOwnerTab] = useState(
-    initialTab === "rascunhos" || initialTab === "pedidos" ? initialTab : "produtos",
-  );
-  const [chatOpen, setChatOpen] = useState(false);
-  const [followingSlugs, setFollowingSlugs] = useState(() => readFollowing());
-  const [hiddenProductIds, setHiddenProductIds] = useState([]);
-  const [tick, setTick] = useState(0);
-
-  const drafts = useMemo(
-    () => (isOwner ? listDrafts(slug) : []),
-    [isOwner, slug, tick],
-  );
-  const publishedExtras = useMemo(
-    () => (isOwner ? listPublishedExtras(slug) : []),
-    [isOwner, slug, tick],
-  );
-  const shopOrders = useMemo(
-    () => (isOwner ? listOrdersForShop(slug) : []),
-    [isOwner, slug, tick],
-  );
   const newOrdersCount = useMemo(
-    () => (isOwner ? countNewOrdersForShop(slug) : 0),
-    [isOwner, slug, tick],
+    () =>
+      shopOrders.filter((o) =>
+        ["aguardando_pagamento", "pago", "em_separacao", "pendente"].includes(o.status),
+      ).length,
+    [shopOrders],
   );
 
   if (!shopsMap) {
@@ -106,10 +137,9 @@ export default function Loja() {
   }
 
   const isFollowing = followingSlugs.includes(slug);
-  const catalogProducts = [
-    ...publishedExtras,
-    ...shop.products.filter((p) => !hiddenProductIds.includes(p.id)),
-  ];
+  const catalogProducts = isOwner
+    ? ownerProdutos
+    : shop.products || [];
 
   function selectTab(tab) {
     setOwnerTab(tab);
@@ -130,40 +160,55 @@ export default function Loja() {
     });
   }
 
-  function handleDeleteProduct(productId) {
+  async function handleDeleteProduct(productId) {
     const ok = window.confirm("Remover este produto da vitrine?");
     if (!ok) return;
-    if (String(productId).startsWith("pub-")) {
-      deletePublishedExtra(productId);
+    try {
+      await inativarProdutoApi(productId);
       refresh();
-      return;
+    } catch (e) {
+      alert(e.message || "Falha ao remover produto");
     }
-    setHiddenProductIds((prev) => [...prev, productId]);
   }
 
-  function handlePublishDraft(draftId) {
-    publishDraft(draftId);
-    refresh();
-    selectTab("produtos");
+  async function handlePublishDraft(draftId) {
+    try {
+      await publicarProdutoApi(draftId);
+      refresh();
+      selectTab("produtos");
+    } catch (e) {
+      alert(e.message || "Falha ao publicar");
+    }
   }
 
-  function handleDeleteDraft(draftId) {
+  async function handleDeleteDraft(draftId) {
     if (!window.confirm("Excluir este rascunho?")) return;
-    deleteDraft(draftId);
-    refresh();
+    try {
+      await excluirProdutoApi(draftId);
+      refresh();
+    } catch (e) {
+      alert(e.message || "Falha ao excluir rascunho");
+    }
   }
 
-  function handleCancelOrder(orderId) {
+  async function handleCancelOrder(order) {
     if (!window.confirm("Cancelar este pedido do cliente?")) return;
-    updateOrderStatus(orderId, "cancelado");
-    refresh();
+    try {
+      await cancelarPedidoLojista(order.apiId, user?.id);
+      refresh();
+    } catch (e) {
+      alert(e.message || "Falha ao cancelar");
+    }
   }
 
-  function handleSendOrder(orderId) {
-    const code = randomTrackingCode();
-    updateOrderStatus(orderId, "enviado", { trackingCode: code });
-    alert(`Pedido marcado como enviado!\nCódigo dos Correios (mock): ${code}`);
-    refresh();
+  async function handleSendOrder(order) {
+    try {
+      await enviarPedidoLojista(order.apiId, user?.id);
+      alert("Pedido marcado como enviado na API.");
+      refresh();
+    } catch (e) {
+      alert(e.message || "Falha ao enviar");
+    }
   }
 
   return (
@@ -176,7 +221,7 @@ export default function Loja() {
           <p className="loja-hero-handle">{shop.handle}</p>
           <p className="loja-hero-bio">{shop.bio}</p>
           <div className="loja-stats">
-            {shop.stats.map((s) => (
+            {(shop.stats || []).map((s) => (
               <span key={s.label}>
                 <strong>{s.value}</strong> {s.label}
               </span>
@@ -228,8 +273,8 @@ export default function Loja() {
               onClick={() => selectTab("rascunhos")}
             >
               Rascunhos
-              {drafts.length > 0 ? (
-                <span className="loja-tab-count">{drafts.length}</span>
+              {ownerDrafts.length > 0 ? (
+                <span className="loja-tab-count">{ownerDrafts.length}</span>
               ) : null}
             </button>
             <button
@@ -249,6 +294,8 @@ export default function Loja() {
           <h2 className="loja-produtos-titulo">Recomendado para você</h2>
         )}
 
+        {ownerLoading && isOwner ? <p className="loja-empty-hint">Carregando dados da API…</p> : null}
+
         {(!isOwner || ownerTab === "produtos") && (
           <div className="loja-product-grid">
             {catalogProducts.map((p) => {
@@ -266,7 +313,7 @@ export default function Loja() {
                   productId={product.id}
                   shopSlug={slug}
                   ownerMode={isOwner}
-                  onDelete={() => handleDeleteProduct(p.id)}
+                  onDelete={() => handleDeleteProduct(p.apiId || p.id)}
                 />
               );
             })}
@@ -283,17 +330,17 @@ export default function Loja() {
 
         {isOwner && ownerTab === "rascunhos" && (
           <div className="loja-product-grid">
-            {drafts.length === 0 ? (
+            {ownerDrafts.length === 0 ? (
               <p className="loja-empty-hint">
-                Nenhum rascunho ainda. Em{" "}
+                Nenhum rascunho na API. Em{" "}
                 <Link to={`/loja/${slug}/produto/novo`}>cadastrar produto</Link>, use{" "}
                 <strong>Salvar rascunho</strong>.
               </p>
             ) : (
-              drafts.map((draft) => (
+              ownerDrafts.map((draft) => (
                 <article key={draft.id} className="loja-draft-card">
                   <div className="loja-draft-card__img-wrap">
-                    <img src={draft.images?.[0]} alt="" />
+                    <img src={draft.images?.[0] || draft.img} alt="" />
                     <span className="loja-draft-tag">Rascunho</span>
                   </div>
                   <strong>{draft.title}</strong>
@@ -302,14 +349,14 @@ export default function Loja() {
                     <button
                       type="button"
                       className="loja-draft-btn loja-draft-btn--primary"
-                      onClick={() => handlePublishDraft(draft.id)}
+                      onClick={() => handlePublishDraft(draft.apiId || draft.id)}
                     >
                       Publicar
                     </button>
                     <button
                       type="button"
                       className="loja-draft-btn"
-                      onClick={() => handleDeleteDraft(draft.id)}
+                      onClick={() => handleDeleteDraft(draft.apiId || draft.id)}
                     >
                       Excluir
                     </button>
@@ -330,8 +377,8 @@ export default function Loja() {
           <div className="loja-orders">
             {shopOrders.length === 0 ? (
               <p className="loja-empty-hint">
-                Ainda não há pedidos desta loja. Quando um cliente finalizar a compra com
-                produtos seus, o pedido aparece aqui.
+                Ainda não há pedidos desta loja na API. Quando um cliente finalizar a compra
+                com produtos seus, o pedido aparece aqui.
               </p>
             ) : (
               shopOrders.map((order) => (
@@ -353,15 +400,11 @@ export default function Loja() {
                         <strong>{order.cliente?.nome}</strong>
                       </p>
                       <p>{order.cliente?.email}</p>
-                      <p>CPF {order.cliente?.cpf}</p>
                       <p>{order.cliente?.telefone}</p>
                     </div>
                     <div>
                       <h3>Entrega</h3>
                       <p>{order.cliente?.endereco}</p>
-                      <p>
-                        Frete: {order.freteNome} · {order.freteLabel}
-                      </p>
                     </div>
                     <div>
                       <h3>Pagamento</h3>
@@ -381,36 +424,28 @@ export default function Loja() {
                         <img src={item.image} alt="" />
                         <div>
                           <strong>{item.name}</strong>
-                          <span>
-                            {[item.color, item.size].filter(Boolean).join(" · ")}
-                            {(item.color || item.size) && " · "}
-                            Qtd {item.quantity || 1}
-                          </span>
+                          <span>Qtd {item.quantity || 1}</span>
                         </div>
                         <em>{formatBRL(item.lineTotal || 0)}</em>
                       </li>
                     ))}
                   </ul>
 
-                  {order.trackingCode ? (
-                    <p className="loja-order-tracking">
-                      Código de rastreio: <strong>{order.trackingCode}</strong>
-                    </p>
-                  ) : null}
-
-                  {order.status !== "cancelado" && order.status !== "enviado" ? (
+                  {order.status !== "cancelado" &&
+                  order.status !== "enviado" &&
+                  order.status !== "entregue" ? (
                     <div className="loja-order-actions">
                       <button
                         type="button"
                         className="loja-order-btn loja-order-btn--danger"
-                        onClick={() => handleCancelOrder(order.id)}
+                        onClick={() => handleCancelOrder(order)}
                       >
                         Cancelar pedido
                       </button>
                       <button
                         type="button"
                         className="loja-order-btn loja-order-btn--primary"
-                        onClick={() => handleSendOrder(order.id)}
+                        onClick={() => handleSendOrder(order)}
                       >
                         Enviar pedido
                       </button>

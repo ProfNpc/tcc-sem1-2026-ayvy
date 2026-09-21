@@ -19,11 +19,13 @@ import Cadastro from "../pages/Cadastro";
 import Carrinho from "../pages/Carrinho";
 import Checkout from "../pages/Checkout";
 import EsqueciSenha from "../pages/EsqueciSenha";
+import Favoritos from "../pages/Favoritos";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Loja from "../pages/Loja";
 import LojaProdutoNovo from "../pages/Loja/ProdutoNovo";
 import MeusPedidos from "../pages/MeusPedidos";
+import Notificacoes from "../pages/Notificacoes";
 import PedidoSucesso from "../pages/PedidoSucesso";
 import Perfil from "../pages/Perfil";
 import Produto from "../pages/Produto";
@@ -49,6 +51,22 @@ export default function AppRoutes() {
           element={
             <RequireAuth>
               <MeusPedidos />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="favoritos"
+          element={
+            <RequireAuth>
+              <Favoritos />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="notificacoes"
+          element={
+            <RequireAuth>
+              <Notificacoes />
             </RequireAuth>
           }
         />

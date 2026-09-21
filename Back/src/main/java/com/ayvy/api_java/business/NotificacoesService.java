@@ -54,6 +54,9 @@ public class NotificacoesService {
         if (notificacoes.getTipo() != null) {
             notificacoesEntity.setTipo(notificacoes.getTipo());
         }
+        if (notificacoes.getLida() != null) {
+            notificacoesEntity.setLida(notificacoes.getLida());
+        }
 
         repository.saveAndFlush(notificacoesEntity);
         return "Notificação Editada";
