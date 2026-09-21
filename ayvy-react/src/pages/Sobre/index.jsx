@@ -85,7 +85,7 @@ export default function Sobre() {
           <strong>Equipe AYVY reunida</strong> — Colaboradores Extras: José Neto e Pedro Talles
         </p>
       </div>
-
+ 
       <Footer variant="sobre" />
     </>
   );
