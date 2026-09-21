@@ -1,20 +1,20 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
-import { SHOPS } from "../../utils/lojistaData";
+import { resolveShopsMap } from "../../utils/lojistaData";
 import "./style.css";
 
-function recommendProducts(cart, limit = 5) {
+function recommendProducts(shops, cart, limit = 5) {
   const inCart = new Set(cart.map((l) => String(l.productId || "")));
   const all = [];
-  for (const [slug, shop] of Object.entries(SHOPS)) {
+  for (const [slug, shop] of Object.entries(shops || {})) {
     for (const p of shop.products || []) {
       if (inCart.has(String(p.id))) continue;
       all.push({
         id: p.id,
-        title: p.title,
+        title: p.title || p.name,
         price: p.price,
-        image: p.images?.[0] || "/assets/img/ayvy-media-a.png",
+        image: p.images?.[0] || p.href || p.img || "/assets/img/ayvy-media-a.png",
         slug,
         shopName: shop.name,
       });
@@ -46,8 +46,23 @@ export default function Carrinho() {
   const [cepInput, setCepInput] = useState(
     freight.cep ? formatCep(freight.cep) : "",
   );
+  const [shopsMap, setShopsMap] = useState(null);
 
-  const recomenda = useMemo(() => recommendProducts(cart), [cart]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const map = await resolveShopsMap();
+      if (!cancelled) setShopsMap(map);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const recomenda = useMemo(
+    () => recommendProducts(shopsMap, cart),
+    [shopsMap, cart],
+  );
 
   function handleCalcularFrete(e) {
     e.preventDefault();

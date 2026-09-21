@@ -1,5 +1,10 @@
 import { createContext, useCallback, useContext, useMemo, useSyncExternalStore } from "react";
-import { resolveMockSession, ROLES } from "../../utils/mockAuthUsers";
+import {
+  findLojistaByUsuarioId,
+  loginUsuario,
+  sessionFromUsuario,
+} from "../../services/authApi";
+import { getPostLoginPath, ROLES } from "../../utils/mockAuthUsers";
 import "./style.css";
 
 const AUTH_KEY = "ayvy.auth";
@@ -53,9 +58,24 @@ export default function AuthProvider({ children }) {
   const user = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
   const loggedIn = Boolean(user);
 
-  const loginMock = useCallback((loginInput, password) => {
-    const session = resolveMockSession(loginInput, password);
-    if (!session) return null;
+  const login = useCallback(async (emailInput, password) => {
+    const email = String(emailInput || "").trim();
+    const senha = String(password || "").trim();
+    if (!email || !senha) {
+      throw new Error("Preencha e-mail e senha.");
+    }
+
+    const usuario = await loginUsuario({ email, senha });
+    let lojista = null;
+    if (String(usuario.papel).toLowerCase() === ROLES.LOJISTA) {
+      try {
+        lojista = await findLojistaByUsuarioId(usuario.id);
+      } catch {
+        lojista = null;
+      }
+    }
+
+    const session = sessionFromUsuario(usuario, lojista);
     persistSession(session);
     return session;
   }, []);
@@ -73,10 +93,13 @@ export default function AuthProvider({ children }) {
       isLojista: user?.role === ROLES.LOJISTA,
       isCliente: user?.role === ROLES.CLIENTE,
       shopSlug: user?.shopSlug ?? null,
-      loginMock,
+      login,
+      /** @deprecated use login — mantido para não quebrar imports antigos */
+      loginMock: login,
       logout,
+      getPostLoginPath,
     }),
-    [user, loggedIn, loginMock, logout],
+    [user, loggedIn, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

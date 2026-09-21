@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
@@ -7,6 +7,12 @@ import {
   saveAddress,
   saveOrder,
 } from "../../utils/ordersStore";
+import {
+  checkoutPedido,
+  criarEndereco,
+  criarPagamento,
+  listEnderecos,
+} from "../../services/pedidosApi";
 import { formatCep } from "../../utils/cartHelpers";
 import "./style.css";
 
@@ -71,6 +77,43 @@ export default function Checkout() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!user?.id) return;
+      try {
+        const apiList = await listEnderecos();
+        const mine = (apiList || [])
+          .filter((e) => e?.usuario?.id === user.id || e?.usuarioId === user.id)
+          .map((e) => ({
+            id: `api-${e.id}`,
+            apiId: e.id,
+            nome: e.apelido || user.displayName || "Endereço",
+            rua: e.logradouro || "",
+            complemento: e.complemento || "",
+            bairro: e.bairro || "",
+            cidade: e.cidade || "",
+            uf: e.uf || "",
+            cep: formatCep(String(e.cep || "").replace(/\D/g, "")),
+            telefone: user.telefone || "",
+            cpf: "",
+          }));
+        if (cancelled || mine.length === 0) return;
+        const local = listAddresses();
+        const merged = [...mine, ...local.filter((a) => !String(a.id).startsWith("api-"))];
+        setAddresses(merged);
+        setSelectedAddressId((prev) =>
+          merged.some((a) => a.id === prev) ? prev : merged[0].id,
+        );
+      } catch {
+        /* mantém endereços locais */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, user?.displayName, user?.telefone]);
+
   const selectedAddress = useMemo(() => {
     if (selectedAddressId === "novo") return null;
     return addresses.find((a) => a.id === selectedAddressId) ?? null;
@@ -127,6 +170,24 @@ export default function Checkout() {
       const saved = saveAddress(addr);
       setAddresses(listAddresses());
       setSelectedAddressId(saved.id);
+      if (user?.id) {
+        try {
+          await criarEndereco({
+            usuario: { id: user.id },
+            logradouro: addr.rua,
+            numero: addr.numero || "S/N",
+            complemento: addr.complemento || null,
+            bairro: addr.bairro || "Centro",
+            cidade: addr.cidade,
+            uf: String(addr.uf || "").slice(0, 2).toUpperCase(),
+            cep: String(addr.cep || "").replace(/\D/g, ""),
+            principal: true,
+            apelido: addr.nome || "Entrega",
+          });
+        } catch {
+          /* salva local mesmo se API falhar */
+        }
+      }
     }
     await ensureFreightForAddress(addr);
     setStep(1);
@@ -167,7 +228,7 @@ export default function Checkout() {
     }
   }
 
-  function handleFinalize() {
+  async function handleFinalize() {
     setError("");
     const addr = resolveAddress();
     if (!addr) {
@@ -196,28 +257,79 @@ export default function Checkout() {
     }
 
     setSaving(true);
-    const order = saveOrder({
-      cart,
-      user: {
-        login: user?.login || "cliente",
-        displayName: accountName,
-        email: accountEmail,
-      },
-      address: {
-        ...addr,
-        telefone: addr.telefone || newAddress.telefone,
-        cpf: addr.cpf || newAddress.cpf || "000.000.000-00",
-      },
-      freight: freightOpt,
-      paymentMethod,
-      subtotal,
-      freightValue: freightOpt.price,
-      total: subtotal + freightOpt.price,
-    });
+    try {
+      const apiItems = cart
+        .map((line) => ({
+          produtoId: line.apiId ?? (Number.isFinite(Number(line.productId)) ? Number(line.productId) : null),
+          quantidade: line.quantity || 1,
+        }))
+        .filter((i) => i.produtoId != null);
 
-    clear();
-    setDrawerOpen(false);
-    navigate(`/pedido/sucesso?id=${encodeURIComponent(order.id)}`, { replace: true });
+      let orderIdLocal = null;
+
+      if (user?.id && apiItems.length === cart.length) {
+        const cep = String(addr.cep || "").replace(/\D/g, "");
+        const pedido = await checkoutPedido({
+          usuarioId: user.id,
+          observacao: "",
+          enderecoEntrega: {
+            logradouro: addr.rua || addr.logradouro,
+            numero: addr.numero || "S/N",
+            complemento: addr.complemento || null,
+            bairro: addr.bairro || "Centro",
+            cidade: addr.cidade,
+            uf: String(addr.uf || "").slice(0, 2).toUpperCase(),
+            cep,
+          },
+          itens: apiItems,
+        });
+
+        try {
+          await criarPagamento({
+            pedido: { id: pedido.id },
+            valor: subtotal + freightOpt.price,
+            status: "aprovado",
+            tipo: paymentMethod === "cartao" ? "cartao_credito" : "pix",
+            referencia: paymentMethod === "pix" ? pixCode : card.number.slice(-4),
+          });
+        } catch {
+          /* pagamento opcional se falhar */
+        }
+
+        orderIdLocal = `#AY-${pedido.id}`;
+      }
+
+      const order = saveOrder({
+        cart,
+        user: {
+          login: user?.login || "cliente",
+          displayName: accountName,
+          email: accountEmail,
+          id: user?.id,
+        },
+        address: {
+          ...addr,
+          telefone: addr.telefone || newAddress.telefone,
+          cpf: addr.cpf || newAddress.cpf || "000.000.000-00",
+        },
+        freight: freightOpt,
+        paymentMethod,
+        subtotal,
+        freightValue: freightOpt.price,
+        total: subtotal + freightOpt.price,
+        apiPedidoId: orderIdLocal,
+      });
+
+      clear();
+      setDrawerOpen(false);
+      navigate(`/pedido/sucesso?id=${encodeURIComponent(orderIdLocal || order.id)}`, {
+        replace: true,
+      });
+    } catch (err) {
+      setError(err.message || "Não foi possível finalizar o pedido na API.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   const shipOpt =

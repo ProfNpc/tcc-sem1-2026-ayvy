@@ -171,14 +171,22 @@ public class UsuarioService {
         }
     }
 
-    //erros a serem corrigidos:
     public Usuario autenticar(String email, String senhaDigitada) {
-        Usuario usuario = repository.findByEmail(email)
+        if (email == null || email.isBlank() || senhaDigitada == null || senhaDigitada.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail e senha são obrigatórios");
+        }
+
+        Usuario usuario = repository.findByEmail(email.trim())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos"));
 
         if (!passwordEncoder.matches(senhaDigitada, usuario.getSenha())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos");
         }
+
+        if (usuario.getStatus() != StatusUsuario.ativo) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Usuário inativo ou bloqueado");
+        }
+
         return usuario;
     }
 }

@@ -516,3 +516,26 @@ export function findProduct(slug, productId) {
   const product = shop.products.find((x) => x.id === productId);
   return product ? { shop, product } : null;
 }
+
+/**
+ * Mistura mock + API (API sobrescreve o mesmo slug).
+ * @returns {Promise<Record<string, object>>}
+ */
+export async function resolveShopsMap() {
+  try {
+    const { loadShopsFromApi } = await import("../services/shopApi");
+    const apiShops = await loadShopsFromApi();
+    return { ...SHOPS, ...apiShops };
+  } catch {
+    return { ...SHOPS };
+  }
+}
+
+export async function findProductAsync(slug, productId) {
+  const shops = await resolveShopsMap();
+  const shop = shops[slug];
+  if (!shop || !productId) return null;
+  const product = shop.products.find((x) => String(x.id) === String(productId));
+  return product ? { shop, product, shops } : null;
+}
+

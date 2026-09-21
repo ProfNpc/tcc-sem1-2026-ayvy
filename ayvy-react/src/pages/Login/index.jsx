@@ -8,10 +8,12 @@ import { loginPageHrefs } from "../../utils/authPageStyles";
 import "./style.css";
 
 export default function Login() {
-  const { loggedIn, loginMock, user, role } = useAuth();
+  const { loggedIn, login, user, role } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [visible, setVisible] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const justSubmittedRef = useRef(false);
 
   useExternalStylesOnce(loginPageHrefs);
@@ -22,7 +24,6 @@ export default function Login() {
     return () => clearTimeout(t);
   }, []);
 
-  /** Só redireciona quem já estava logado ao abrir /login (evita competir com o submit). */
   useEffect(() => {
     if (justSubmittedRef.current) return;
     if (!loggedIn || !role || !user) return;
@@ -31,21 +32,29 @@ export default function Login() {
     navigate(dest, { replace: true });
   }, [loggedIn, role, user, location.state, navigate]);
 
-  function onSubmit(e) {
+  async function onSubmit(e) {
     e.preventDefault();
+    setError("");
     const form = e.currentTarget;
-    const login = String(new FormData(form).get("username") || "").trim();
+    const email = String(new FormData(form).get("username") || "").trim();
     const password = String(new FormData(form).get("password") || "").trim();
-    const session = loginMock(login, password);
 
-    if (!session) {
-      alert("Preencha usuário e senha.");
+    if (!email || !password) {
+      setError("Preencha e-mail e senha.");
       return;
     }
 
-    justSubmittedRef.current = true;
-    const dest = getPostLoginPath(session, location.state?.from);
-    navigate(dest, { replace: true });
+    setLoading(true);
+    try {
+      const session = await login(email, password);
+      justSubmittedRef.current = true;
+      const dest = getPostLoginPath(session, location.state?.from);
+      navigate(dest, { replace: true });
+    } catch (err) {
+      setError(err.message || "Não foi possível entrar.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const animStyle = visible
@@ -61,7 +70,10 @@ export default function Login() {
         transition: "opacity 400ms ease, transform 400ms ease",
       }}
     >
-      <LoginForm onSubmit={onSubmit} />
+      {error ? (
+        <p style={{ color: "#b00020", textAlign: "center", marginBottom: "0.75rem" }}>{error}</p>
+      ) : null}
+      <LoginForm onSubmit={onSubmit} loading={loading} />
     </main>
   );
 }

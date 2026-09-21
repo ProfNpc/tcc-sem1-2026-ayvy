@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { fetchAddressByCep } from "../../utils/viacep";
 import "./style.css";
 
-export default function CadastroForm({ onSubmit }) {
+export default function CadastroForm({ onSubmit, loading = false }) {
   const [tipoLojista, setTipoLojista] = useState(false);
   const [cep, setCep] = useState("");
   const [logradouro, setLogradouro] = useState("");
@@ -27,12 +27,7 @@ export default function CadastroForm({ onSubmit }) {
   }
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit?.(e);
-      }}
-    >
+    <form onSubmit={onSubmit}>
       <h1>Cadastro AYVY</h1>
 
       <p className="cadastro-intro-tipo">O que você deseja ser?</p>
@@ -62,24 +57,25 @@ export default function CadastroForm({ onSubmit }) {
 
       <div className="input-box">
         <i className="bx bxs-user" />
-        <input type="text" placeholder="Nome Completo" required />
+        <input type="text" name="nome" placeholder="Nome Completo" required />
       </div>
 
       <span className="label-pequena">Data de Nascimento</span>
       <div className="input-box">
         <i className="bx bxs-calendar" />
-        <input type="date" required />
+        <input type="date" name="dataNascimento" required={!tipoLojista} />
       </div>
 
       <div className="input-box">
         <i className="bx bxs-envelope" />
-        <input type="email" placeholder="E-mail" required />
+        <input type="email" name="email" placeholder="E-mail" required />
       </div>
 
       <div className="input-box">
         <i className="bx bxs-id-card" />
         <input
           type="text"
+          name="documento"
           id="documento"
           placeholder={tipoLojista ? "CNPJ da Empresa" : "CPF"}
           maxLength={tipoLojista ? 14 : 11}
@@ -91,6 +87,7 @@ export default function CadastroForm({ onSubmit }) {
         <i className="bx bxs-map-pin" />
         <input
           type="text"
+          name="cep"
           id="cep"
           placeholder="CEP"
           maxLength={8}
@@ -105,6 +102,7 @@ export default function CadastroForm({ onSubmit }) {
         <i className="bx bxs-direction-left" />
         <input
           type="text"
+          name="logradouro"
           id="logradouro"
           placeholder="Logradouro"
           required
@@ -117,6 +115,7 @@ export default function CadastroForm({ onSubmit }) {
         <i className="bx bxs-navigation" />
         <input
           type="text"
+          name="numero"
           id="numero"
           placeholder="Número"
           required
@@ -129,6 +128,7 @@ export default function CadastroForm({ onSubmit }) {
         <i className="bx bxs-building-house" />
         <input
           type="text"
+          name="bairro"
           id="bairro"
           placeholder="Bairro"
           required
@@ -141,6 +141,7 @@ export default function CadastroForm({ onSubmit }) {
         <i className="bx bxs-city" />
         <input
           type="text"
+          name="cidade"
           id="cidade"
           placeholder="Cidade"
           required
@@ -153,6 +154,7 @@ export default function CadastroForm({ onSubmit }) {
         <i className="bx bxs-map-alt" />
         <input
           type="text"
+          name="estado"
           id="estado"
           placeholder="Estado (Ex: SP)"
           maxLength={2}
@@ -164,12 +166,12 @@ export default function CadastroForm({ onSubmit }) {
 
       <div className="input-box">
         <i className="bx bxs-lock-alt" />
-        <input type="password" placeholder="Crie uma Senha" required />
+        <input type="password" name="senha" placeholder="Crie uma Senha" required />
       </div>
 
       <div className="input-box">
         <i className="bx bxs-lock-open-alt" />
-        <input type="password" placeholder="Confirme a Senha" required />
+        <input type="password" name="senha2" placeholder="Confirme a Senha" required />
       </div>
 
       <div className="remember-forgot">
@@ -178,8 +180,8 @@ export default function CadastroForm({ onSubmit }) {
         </label>
       </div>
 
-      <button type="submit" className="btn-register">
-        Finalizar Cadastro
+      <button type="submit" className="btn-register" disabled={loading}>
+        {loading ? "Cadastrando…" : "Finalizar Cadastro"}
       </button>
 
       <div className="login-link">

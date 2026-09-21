@@ -13,6 +13,7 @@ import {
   formatCep,
   lineSubtotal,
 } from "../../utils/cartHelpers";
+import { calcularFrete } from "../../services/pedidosApi";
 import { getShippingOptions } from "../../utils/freightMock";
 import { fetchAddressByCep } from "../../utils/viacep";
 import "./style.css";
@@ -28,6 +29,7 @@ const EMPTY_FREIGHT = {
   error: "",
   cepConfirmed: false,
   editingCep: true,
+  options: [],
 };
 
 function readCart() {
@@ -134,8 +136,9 @@ export default function CartProvider({ children }) {
 
   const shippingOptions = useMemo(() => {
     if (!freight.cepConfirmed || !freight.cep) return [];
+    if (freight.options?.length) return freight.options;
     return getShippingOptions(freight.cep, subtotal);
-  }, [freight.cepConfirmed, freight.cep, subtotal]);
+  }, [freight.cepConfirmed, freight.cep, freight.options, subtotal]);
 
   const selectedFreight = useMemo(() => {
     if (shippingOptions.length === 0) return null;
@@ -200,11 +203,38 @@ export default function CartProvider({ children }) {
           error: msg,
           cepConfirmed: false,
           selectedOptionId: null,
+          options: [],
         }));
         return;
       }
 
-      const options = getShippingOptions(cep, subtotal);
+      let options = getShippingOptions(cep, subtotal);
+      const apiItens = cart
+        .map((line) => line.apiId ?? (Number.isFinite(Number(line.productId)) ? Number(line.productId) : null))
+        .filter((id) => id != null)
+        .map((produtoId) => ({ produtoId }));
+
+      if (apiItens.length > 0) {
+        try {
+          const valorApi = await calcularFrete({ cepDestino: cep, itens: apiItens });
+          const price = Number(valorApi);
+          if (Number.isFinite(price)) {
+            options = [
+              {
+                id: "api",
+                name: "Frete AYVY (API)",
+                days: "Prazo calculado pelo back",
+                price,
+                priceLabel: price === 0 ? "Grátis" : formatBRL(price),
+              },
+              ...options,
+            ];
+          }
+        } catch {
+          /* mantém opções mock se a API de frete falhar */
+        }
+      }
+
       setFreight({
         cep,
         city: result.data.cidade,
@@ -214,9 +244,10 @@ export default function CartProvider({ children }) {
         error: "",
         cepConfirmed: true,
         editingCep: false,
+        options,
       });
     },
-    [subtotal],
+    [subtotal, cart],
   );
 
   const selectFreightOption = useCallback((optionId) => {

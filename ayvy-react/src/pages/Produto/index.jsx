@@ -1,10 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Footer from "../../components/Footer";
 import FloatingChat from "../../components/FloatingChat";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
-import { findProduct, normalizeSlugParam } from "../../utils/lojistaData";
+import {
+  desfavoritarProduto,
+  favoritarProduto,
+  registrarVisualizacao,
+  verificarFavorito,
+} from "../../services/favoritosApi";
+import { findProductAsync, normalizeSlugParam } from "../../utils/lojistaData";
 import { enrichProduct, enrichShop, getColorImageIndex, getImageForColor, renderStars } from "../../utils/productHelpers";
 import "./style.css";
 
@@ -42,7 +48,18 @@ function StarRating({ rating }) {
 export default function Produto() {
   const { slug: raw, productId } = useParams();
   const slug = normalizeSlugParam(raw || "");
-  const rawFound = findProduct(slug, productId || "");
+  const [rawFound, setRawFound] = useState(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const found = await findProductAsync(slug, productId || "");
+      if (!cancelled) setRawFound(found);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, productId]);
 
   const found = useMemo(() => {
     if (!rawFound) return null;
@@ -51,6 +68,14 @@ export default function Produto() {
       product: enrichProduct(rawFound.product, rawFound.shop),
     };
   }, [rawFound, slug]);
+
+  if (rawFound === undefined) {
+    return (
+      <div className="produto-not-found">
+        <p>Carregando produto…</p>
+      </div>
+    );
+  }
 
   if (!found) {
     return (
@@ -73,7 +98,7 @@ export default function Produto() {
 
 function ProdutoDetail({ slug, shop, product }) {
   const { addItem, toggle } = useCart();
-  const { loggedIn } = useAuth();
+  const { loggedIn, user } = useAuth();
 
   const [activeImage, setActiveImage] = useState(0);
   const [color, setColor] = useState(product.colors[0] ?? "");
@@ -84,7 +109,33 @@ function ProdutoDetail({ slug, shop, product }) {
   const [chatOpen, setChatOpen] = useState(false);
 
   const favKey = `${slug}:${product.id}`;
+  const apiProdutoId = product.apiId ?? (Number.isFinite(Number(product.id)) ? Number(product.id) : null);
   const isFavorite = favorites.includes(favKey);
+
+  useEffect(() => {
+    if (!apiProdutoId) return;
+    registrarVisualizacao({
+      produtoId: apiProdutoId,
+      usuarioId: user?.id ?? null,
+    }).catch(() => {});
+  }, [apiProdutoId, user?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!user?.id || !apiProdutoId) return;
+      try {
+        const yes = await verificarFavorito(user.id, apiProdutoId);
+        if (cancelled || !yes) return;
+        setFavorites((prev) => (prev.includes(favKey) ? prev : [...prev, favKey]));
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, apiProdutoId, favKey]);
 
   const filteredReviews =
     reviewFilter === "all"
@@ -100,14 +151,23 @@ function ProdutoDetail({ slug, shop, product }) {
     1: product.reviews.filter((r) => r.rating === 1).length,
   };
 
-  function toggleFavorite() {
-    setFavorites((prev) => {
-      const next = prev.includes(favKey)
-        ? prev.filter((k) => k !== favKey)
-        : [...prev, favKey];
-      localStorage.setItem(FAV_KEY, JSON.stringify(next));
-      return next;
-    });
+  async function toggleFavorite() {
+    const nextLocal = favorites.includes(favKey)
+      ? favorites.filter((k) => k !== favKey)
+      : [...favorites, favKey];
+    setFavorites(nextLocal);
+    localStorage.setItem(FAV_KEY, JSON.stringify(nextLocal));
+
+    if (!user?.id || !apiProdutoId) return;
+    try {
+      if (nextLocal.includes(favKey)) {
+        await favoritarProduto({ usuarioId: user.id, produtoId: apiProdutoId });
+      } else {
+        await desfavoritarProduto(user.id, apiProdutoId);
+      }
+    } catch {
+      /* localStorage já atualizado */
+    }
   }
 
   const imageCount = product.images.length;
@@ -142,6 +202,7 @@ function ProdutoDetail({ slug, shop, product }) {
       size,
       quantity,
       productId: product.id,
+      apiId: product.apiId ?? (Number.isFinite(Number(product.id)) ? Number(product.id) : null),
       shopSlug: slug,
       shopName: shop?.name || slug,
     });

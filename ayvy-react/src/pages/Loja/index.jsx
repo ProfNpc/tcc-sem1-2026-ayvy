@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import Card from "../../components/Card";
 import Footer from "../../components/Footer";
@@ -6,7 +6,7 @@ import FloatingChat from "../../components/FloatingChat";
 import { useAuth } from "../../context/AuthContext";
 import { formatBRL } from "../../utils/cartHelpers";
 import { isShopOwner } from "../../utils/mockAuthUsers";
-import { SHOPS, normalizeSlugParam } from "../../utils/lojistaData";
+import { normalizeSlugParam, resolveShopsMap } from "../../utils/lojistaData";
 import {
   countNewOrdersForShop,
   listOrdersForShop,
@@ -43,11 +43,24 @@ function paymentLabel(method) {
 export default function Loja() {
   const { slug: raw } = useParams();
   const slug = normalizeSlugParam(raw || "");
-  const shopRaw = SHOPS[slug];
-  const shop = shopRaw ? enrichShop(shopRaw, slug) : null;
   const { user } = useAuth();
   const isOwner = isShopOwner(user, slug);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [shopsMap, setShopsMap] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const map = await resolveShopsMap();
+      if (!cancelled) setShopsMap(map);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const shopRaw = shopsMap?.[slug];
+  const shop = shopRaw ? enrichShop(shopRaw, slug) : null;
 
   const initialTab = searchParams.get("aba");
   const [ownerTab, setOwnerTab] = useState(
@@ -74,6 +87,14 @@ export default function Loja() {
     () => (isOwner ? countNewOrdersForShop(slug) : 0),
     [isOwner, slug, tick],
   );
+
+  if (!shopsMap) {
+    return (
+      <div className="loja-not-found">
+        <p>Carregando loja…</p>
+      </div>
+    );
+  }
 
   if (!shop) {
     return (

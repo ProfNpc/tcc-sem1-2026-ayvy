@@ -1,23 +1,30 @@
 import { Link } from "react-router-dom";
 import "./style.css";
 
-export default function LoginForm({ onSubmit }) {
+export default function LoginForm({ onSubmit, loading = false }) {
   return (
     <form onSubmit={onSubmit}>
       <h1>Login AYVY</h1>
 
       <div className="input-box">
         <input
-          placeholder="Usuário"
-          type="text"
+          placeholder="E-mail"
+          type="email"
           name="username"
           autoComplete="username"
+          required
         />
         <i className="bx bxs-user" />
       </div>
 
       <div className="input-box">
-        <input placeholder="Senha" type="password" name="password" autoComplete="current-password" />
+        <input
+          placeholder="Senha"
+          type="password"
+          name="password"
+          autoComplete="current-password"
+          required
+        />
         <i className="bx bxs-lock-alt" />
       </div>
 
@@ -31,8 +38,8 @@ export default function LoginForm({ onSubmit }) {
         </Link>
       </div>
 
-      <button type="submit" className="login">
-        Login
+      <button type="submit" className="login" disabled={loading}>
+        {loading ? "Entrando…" : "Login"}
       </button>
 
       <div className="resgister-link">

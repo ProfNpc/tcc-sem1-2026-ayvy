@@ -1,16 +1,78 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { getPedidoItens, listPedidosPorUsuario } from "../../services/pedidosApi";
 import { listOrdersByUser } from "../../utils/ordersStore";
+import { formatBRL } from "../../utils/cartHelpers";
 import "./style.css";
+
+function formatWhen(iso) {
+  if (!iso) return "";
+  try {
+    return new Date(iso).toLocaleString("pt-BR");
+  } catch {
+    return String(iso);
+  }
+}
 
 export default function MeusPedidos() {
   const { user, loggedIn } = useAuth();
+  const [pedidos, setPedidos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const pedidos = useMemo(() => {
-    if (!loggedIn) return [];
-    return listOrdersByUser(user?.login);
-  }, [user?.login, loggedIn]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!loggedIn) {
+        setPedidos([]);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError("");
+      try {
+        if (user?.id) {
+          const apiPedidos = await listPedidosPorUsuario(user.id);
+          const enriched = await Promise.all(
+            (apiPedidos || []).map(async (p) => {
+              let itensLabel = "Itens do pedido";
+              try {
+                const itens = await getPedidoItens(p.id);
+                itensLabel = (itens || [])
+                  .map((i) => `${i.quantidade}× ${i.produto?.nome || "Produto"}`)
+                  .join(" · ");
+              } catch {
+                /* ignore */
+              }
+              return {
+                id: `#AY-${p.id}`,
+                status: String(p.status || "").toLowerCase(),
+                criadoEm: formatWhen(p.criadoEm),
+                itens: itensLabel,
+                loja: "AYVY",
+                valor: formatBRL(Number(p.valorTotal) || 0),
+                cliente: { endereco: "" },
+              };
+            }),
+          );
+          if (!cancelled) setPedidos(enriched);
+        } else {
+          if (!cancelled) setPedidos(listOrdersByUser(user?.login));
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e.message || "Erro ao carregar pedidos");
+          setPedidos(listOrdersByUser(user?.login));
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, user?.login, loggedIn]);
 
   if (!loggedIn) {
     return (
@@ -36,7 +98,10 @@ export default function MeusPedidos() {
         </p>
       </header>
 
-      {pedidos.length === 0 ? (
+      {loading ? <p>Carregando…</p> : null}
+      {error ? <p style={{ color: "#b00020" }}>{error}</p> : null}
+
+      {!loading && pedidos.length === 0 ? (
         <div className="ck-empty ck-empty--soft">
           <p>Você ainda não tem pedidos.</p>
           <Link to="/" className="ck-btn ck-btn--primary">
@@ -59,7 +124,9 @@ export default function MeusPedidos() {
                 <span>{pedido.loja}</span>
                 <strong>{pedido.valor}</strong>
               </div>
-              <p className="mp-addr">{pedido.cliente?.endereco}</p>
+              {pedido.cliente?.endereco ? (
+                <p className="mp-addr">{pedido.cliente.endereco}</p>
+              ) : null}
             </li>
           ))}
         </ul>
