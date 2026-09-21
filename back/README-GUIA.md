@@ -65,15 +65,15 @@ server.port=8082
 
 ### Script para criar as tabelas
 
-Arquivo: **`database/ayvySQLEscola.sql`** (versão SQL Server, para SSMS)
+Arquivo oficial: **`database/ayvySQL_DER.sql`** (SQL Server, DBeaver/SSMS)
 
-Como usar (SQL Server Management Studio ou similar):
+Como usar:
 
-1. Abra o SSMS e conecte em `localhost`
-2. Abra o arquivo `database/ayvySQLEscola.sql`
-3. Execute o script (cria o banco `ayvy` e todas as tabelas)
+1. Suba o SQL Server (`docker compose up -d` na raiz) ou conecte no SSMS/DBeaver em `localhost:1433`
+2. Se já existirem tabelas antigas, rode `database/drop-ayvy-tables.sql`
+3. Execute `database/ayvySQL_DER.sql` (cria/usa o banco `ayvy` e todas as tabelas)
 
-O arquivo `database/ayvy_schema.sql` é a versão **MySQL antiga** — só serve de referência histórica.
+Referência antiga (não usar em produção do TCC): `database/ayvySQLEscola-antigo.sql`
 
 ### Hibernate (`ddl-auto=update`)
 
@@ -365,7 +365,7 @@ Mais detalhes: **`back/postman/README.md`**
 |---------|----------------|-------------|
 | Front: “não conectou em 8082” | API parada | `cd back && ./mvnw spring-boot:run` |
 | Erro ao subir API (banco) | SQL Server off ou senha errada | SSMS + conferir `application.properties` |
-| Tabela não existe | Script não rodou | Executar `database/ayvySQLEscola.sql` |
+| Tabela não existe | Script não rodou | Executar `database/ayvySQL_DER.sql` |
 | Imagem não aparece | Caminho errado ou arquivo sumiu | Ver `back/uploads/` e URL `/uploads/...` |
 | CORS | Front em porta não liberada | `WebConfig.java` (5173, 5174) |
 
@@ -377,7 +377,7 @@ Mais detalhes: **`back/postman/README.md`**
 |-----------|--------|
 | **Subir a API** | `README.md` → `./mvnw spring-boot:run` |
 | **Config do SQL Server** | `src/main/resources/application.properties` |
-| **Criar banco/tabelas** | `database/ayvySQLEscola.sql` (SSMS) |
+| **Criar banco/tabelas** | `database/ayvySQL_DER.sql` (DBeaver/SSMS) |
 | **Ver todas as URLs** | pasta `controller/` ou seção 6 deste guia |
 | **Regra de cadastro** | `business/UsuarioService.java` (e Cliente/Lojista) |
 | **Como é a tabela X** | `infrastructure/entities/` |
@@ -396,7 +396,7 @@ Mais detalhes: **`back/postman/README.md`**
 1. **Banco** = SQL Server, banco **`ayvy`**, config em **`application.properties`**
 2. **API** = Java na porta **8082**, rotas em **`controller/`**
 3. **Regras** = **`business/`**
-4. **Tabelas** = **`entities/`** + script **`ayvySQLEscola.sql`**
+4. **Tabelas** = **`entities/`** + script **`ayvySQL_DER.sql`**
 5. **Site** = React chama **`adminApi.js`**, que bate na API
 6. **Fotos** = **`POST /upload`** → pasta **`uploads/`**
 

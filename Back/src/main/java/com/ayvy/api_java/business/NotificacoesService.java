@@ -8,60 +8,54 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
-
 @Service
-
 public class NotificacoesService {
 
     private final NotificacoesRepository repository;
 
-    public NotificacoesService(NotificacoesRepository repository) {this.repository = repository;}
-
-    //CREATE
-    public String salvarNotificacoes(Notificacoes notificacoes){
-        repository.saveAndFlush(notificacoes);
-        return ("Notificacoes Enviada");
+    public NotificacoesService(NotificacoesRepository repository) {
+        this.repository = repository;
     }
 
-    //READ
-    public Notificacoes buscarNotificacoesPorTituloouMensagem(String titulo, String mensagem){
+    public String salvarNotificacoes(Notificacoes notificacoes) {
+        repository.saveAndFlush(notificacoes);
+        return "Notificacoes Enviada";
+    }
+
+    public Notificacoes buscarNotificacoesPorTituloOuMensagem(String titulo, String mensagem) {
         return repository.findByTituloOrMensagem(titulo, mensagem).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "notificação não encontrada")
         );
     }
 
-    public List<Notificacoes> listarMensagens(){
+    public List<Notificacoes> listarNotificacoes() {
         return repository.findAll();
     }
 
-    //DELETE - deixar histórico de notificações
-//    public String deletarNotificacoesPorId(Integer id){
-//        repository.deleteById(id);
-//        return ("Notificacoes Apagada");
-//    }
-
-    //UPDATE - como funcionará esse esquema? apenas lojistas enviam notificações
-    public String atualizarNotificacoesPorId(Integer id, Notificacoes notificacoes){
-        Notificacoes notificacoesEntity = repository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND ,"Notificação não encontrada")
-        );
-
-        if(notificacoes.getMensagem() != null){
-        notificacoesEntity.setMensagem(notificacoes.getMensagem());}
-
-       repository.saveAndFlush(notificacoesEntity);
-        return ("Notificação Editada");
+    public String deletarNotificacoesPorId(Integer id) {
+        if (!repository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Notificação não encontrada");
+        }
+        repository.deleteById(id);
+        return "Notificacoes Apagada";
     }
 
-  /* ========= ! FORMA ANTIGA ! =============================================
-        //Talvez possamos reomear para 'editada' depois
-        Notificacoes notificacoesAtualizada = Notificacoes.builder()
-                .texto(notificacoes.getTexto() != null ?
-                        notificacoes.getTexto() : notificacoesEntity.getTexto())
-                .nome(notificacoesEntity.getNome())
-                .dataEnvio(notificacoesEntity.getDataEnvio())
-                .dataRecebimento(notificacoesEntity.getDataRecebimento())
-                .id(notificacoesEntity.getId())
-                .build();
-    }*/
+    public String atualizarNotificacoesPorId(Integer id, Notificacoes notificacoes) {
+        Notificacoes notificacoesEntity = repository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notificação não encontrada")
+        );
+
+        if (notificacoes.getMensagem() != null) {
+            notificacoesEntity.setMensagem(notificacoes.getMensagem());
+        }
+        if (notificacoes.getTitulo() != null) {
+            notificacoesEntity.setTitulo(notificacoes.getTitulo());
+        }
+        if (notificacoes.getTipo() != null) {
+            notificacoesEntity.setTipo(notificacoes.getTipo());
+        }
+
+        repository.saveAndFlush(notificacoesEntity);
+        return "Notificação Editada";
+    }
 }

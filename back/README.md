@@ -26,11 +26,12 @@ Guia fácil (pastas, URLs, SQL Server, onde achar tudo): **[README-GUIA.md](./RE
 
 ## Antes de subir — SQL Server
 
-O projeto usa **Microsoft SQL Server** (não Docker/MySQL).
+O projeto usa **Microsoft SQL Server** (Docker na raiz ou instância local).
 
-1. SQL Server rodando em **`localhost:1433`**
-2. Banco **`ayvy`** criado — script: **`database/ayvySQLEscola.sql`** (executar no SSMS)
-3. Usuário/senha conferidos em **`src/main/resources/application.properties`**
+1. SQL Server rodando em **`localhost:1433`** (`docker compose up -d` na raiz)
+2. Banco **`ayvy`** + tabelas — script: **`database/ayvySQL_DER.sql`** (DBeaver/SSMS)
+3. Reset opcional: **`database/drop-ayvy-tables.sql`** e depois o DER de novo
+4. Usuário/senha conferidos em **`src/main/resources/application.properties`**
 
 Detalhes: [README-GUIA §3 — SQL Server](./README-GUIA.md#3-banco-de-dados--sql-server-não-é-mais-dockermysql)
 

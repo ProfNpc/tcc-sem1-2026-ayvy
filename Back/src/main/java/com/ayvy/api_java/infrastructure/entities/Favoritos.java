@@ -28,7 +28,7 @@ public class Favoritos {
     private Produto produto;
 
     @CreationTimestamp
-    @Column(name = "data_criacao")
-    private LocalDateTime dataCriacao;
+    @Column(name = "criado_em", nullable = false, updatable = false)
+    private LocalDateTime criadoEm;
 
 }

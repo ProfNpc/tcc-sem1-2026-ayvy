@@ -28,7 +28,7 @@ cd back && ./mvnw spring-boot:run
 | Database | ayvy |
 | User / Password | ver `back/src/main/resources/application.properties` |
 
-Script das tabelas: `database/ayvySQLEscola.sql` (SSMS)
+Script das tabelas: `database/ayvySQL_DER.sql` (DBeaver/SSMS)
 
 ## Imagens
 
