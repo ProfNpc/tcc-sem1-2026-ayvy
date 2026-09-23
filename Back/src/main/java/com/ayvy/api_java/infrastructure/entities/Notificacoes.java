@@ -37,6 +37,6 @@ public class Notificacoes {
     private LocalDateTime lidaEm;
 
     @Column(name = "lida")
-    private byte lida;
+    private Boolean lida;
 
 }

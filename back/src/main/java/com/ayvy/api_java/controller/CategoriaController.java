@@ -33,8 +33,7 @@ public class CategoriaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarCategoriaPorId(@PathVariable Integer id,
-                                                      @RequestParam Categoria categoria) {
+    public ResponseEntity<Void> deletarCategoriaPorId(@PathVariable Integer id) {
         categoriaService.deletarCategoriaPorId(id);
         return ResponseEntity.ok().build();
     }

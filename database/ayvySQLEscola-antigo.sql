@@ -842,3 +842,9 @@ SELECT * FROM lojistas;
 --END
 --GO
 
+select * from usuarios;
+select * from clientes;
+select * from enderecos
+
+
+
