@@ -1,5 +1,6 @@
 package com.ayvy.api_java.infrastructure.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,6 +17,7 @@ public class PedidoProdutos {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "pedido_id", nullable = false)
     private Pedido pedido;

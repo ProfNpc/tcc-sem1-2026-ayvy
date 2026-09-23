@@ -1,5 +1,6 @@
 package com.ayvy.api_java.infrastructure.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -22,6 +23,7 @@ public class Pagamento {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "pedido_id", nullable = false)
+    @JsonIgnoreProperties({"usuario"})
     private Pedido pedido;
 
     @Column(name = "valor", nullable = false)

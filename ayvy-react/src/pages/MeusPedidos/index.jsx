@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { getPedidoItens, listPedidosPorUsuario } from "../../services/pedidosApi";
-import { listOrdersByUser } from "../../utils/ordersStore";
+import {
+  getPedidoItens,
+  listPagamentos,
+  listPedidosPorUsuario,
+} from "../../services/pedidosApi";
 import { formatBRL } from "../../utils/cartHelpers";
 import "./style.css";
 
@@ -15,6 +18,7 @@ const STATUS_META = {
     className: "mp-status--pendente",
   },
   em_preparacao: { label: "Em preparação", className: "mp-status--enviado" },
+  em_separacao: { label: "Em separação", className: "mp-status--enviado" },
   entregue: { label: "Entregue", className: "mp-status--pago" },
   cancelado: { label: "Cancelado", className: "mp-status--cancelado" },
 };
@@ -24,7 +28,7 @@ function formatWhen(iso) {
   try {
     return new Date(iso).toLocaleString("pt-BR", {
       day: "2-digit",
-      month: "short",
+      month: "long",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
@@ -32,6 +36,14 @@ function formatWhen(iso) {
   } catch {
     return String(iso);
   }
+}
+
+function formatPagamentoTipo(tipo) {
+  const t = String(tipo || "").toLowerCase();
+  if (t === "pix") return "Pix";
+  if (t === "cartao_credito" || t === "credito") return "Cartão de crédito";
+  if (t === "cartao_debito" || t === "debito") return "Cartão de débito";
+  return "";
 }
 
 function statusMeta(raw) {
@@ -53,7 +65,7 @@ export default function MeusPedidos() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (!loggedIn) {
+      if (!loggedIn || !user?.id) {
         setPedidos([]);
         setLoading(false);
         return;
@@ -61,42 +73,60 @@ export default function MeusPedidos() {
       setLoading(true);
       setError("");
       try {
-        if (user?.id) {
-          const apiPedidos = await listPedidosPorUsuario(user.id);
-          const enriched = await Promise.all(
-            (apiPedidos || []).map(async (p) => {
-              let itensLabel = "Itens do pedido";
-              let itemCount = 0;
-              try {
-                const itens = await getPedidoItens(p.id);
-                itemCount = (itens || []).length;
-                itensLabel = (itens || [])
-                  .map((i) => `${i.quantidade}× ${i.produto?.nome || "Produto"}`)
-                  .join(" · ");
-              } catch {
-                /* ignore */
-              }
-              return {
-                id: `#AY-${p.id}`,
-                rawId: p.id,
-                status: String(p.status || "").toLowerCase(),
-                criadoEm: formatWhen(p.criadoEm),
-                itens: itensLabel,
-                itemCount,
-                loja: "AYVY",
-                valor: formatBRL(Number(p.valorTotal) || 0),
-                cliente: { endereco: "" },
-              };
-            }),
-          );
-          if (!cancelled) setPedidos(enriched);
-        } else if (!cancelled) {
-          setPedidos(listOrdersByUser(user?.login));
+        const [apiPedidos, pags] = await Promise.all([
+          listPedidosPorUsuario(user.id),
+          listPagamentos().catch(() => []),
+        ]);
+        const pagByPedido = {};
+        for (const pag of pags || []) {
+          const pid = pag?.pedido?.id ?? pag?.pedidoId;
+          if (pid != null) pagByPedido[pid] = pag.tipo;
         }
+        const enriched = await Promise.all(
+          (apiPedidos || []).map(async (p) => {
+            let itensLabel = "Itens do pedido";
+            let itemCount = 0;
+            let loja = "AYVY";
+            try {
+              const itens = await getPedidoItens(p.id);
+              itemCount = (itens || []).length;
+              itensLabel = (itens || [])
+                .map((i) => `${i.quantidade}× ${i.produto?.nome || "Produto"}`)
+                .join(" · ");
+              const lojas = [
+                ...new Set(
+                  (itens || [])
+                    .map(
+                      (i) =>
+                        i?.lojista?.nomeLoja ||
+                        i?.produto?.lojista?.nomeLoja ||
+                        "",
+                    )
+                    .filter(Boolean),
+                ),
+              ];
+              if (lojas.length) loja = lojas.join(", ");
+            } catch {
+              /* ignore */
+            }
+            return {
+              id: `#AY-${p.id}`,
+              rawId: p.id,
+              status: String(p.status || "").toLowerCase(),
+              criadoEm: formatWhen(p.criadoEm),
+              itens: itensLabel,
+              itemCount,
+              loja,
+              pagamento: formatPagamentoTipo(pagByPedido[p.id]),
+              valor: formatBRL(Number(p.valorTotal) || 0),
+            };
+          }),
+        );
+        if (!cancelled) setPedidos(enriched);
       } catch (e) {
         if (!cancelled) {
           setError(e.message || "Erro ao carregar pedidos");
-          setPedidos(listOrdersByUser(user?.login));
+          setPedidos([]);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -105,7 +135,7 @@ export default function MeusPedidos() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id, user?.login, loggedIn]);
+  }, [user?.id, loggedIn]);
 
   if (!loggedIn) {
     return (
@@ -156,7 +186,10 @@ export default function MeusPedidos() {
             <i className="fas fa-box-open" />
           </div>
           <h2>Nenhum pedido ainda</h2>
-          <p>Quando você finalizar uma compra, ela aparece aqui.</p>
+          <p>
+            Quando você finalizar uma compra com produtos cadastrados na API, ela
+            aparece aqui.
+          </p>
           <Link to="/" className="ck-btn ck-btn--primary">
             Explorar lojas
           </Link>
@@ -173,7 +206,9 @@ export default function MeusPedidos() {
                 <div className="mp-card-body">
                   <div className="mp-card-top">
                     <div>
-                      <strong className="mp-id">{pedido.id}</strong>
+                      <strong className="mp-loja-name">
+                        <i className="fas fa-store" aria-hidden /> {pedido.loja}
+                      </strong>
                       <p className="mp-when">
                         <i className="far fa-clock" aria-hidden /> {pedido.criadoEm}
                       </p>
@@ -183,22 +218,16 @@ export default function MeusPedidos() {
 
                   <p className="mp-itens">{pedido.itens}</p>
 
+                  {pedido.pagamento ? (
+                    <p className="mp-pay">
+                      <i className="fas fa-wallet" aria-hidden /> {pedido.pagamento}
+                    </p>
+                  ) : null}
+
                   <div className="mp-foot">
-                    <span className="mp-loja">
-                      <i className="fas fa-store" aria-hidden /> {pedido.loja}
-                      {pedido.itemCount ? (
-                        <em>
-                          · {pedido.itemCount}{" "}
-                          {pedido.itemCount === 1 ? "item" : "itens"}
-                        </em>
-                      ) : null}
-                    </span>
+                    <span className="mp-order-id">{pedido.id}</span>
                     <strong className="mp-valor">{pedido.valor}</strong>
                   </div>
-
-                  {pedido.cliente?.endereco ? (
-                    <p className="mp-addr">{pedido.cliente.endereco}</p>
-                  ) : null}
                 </div>
               </li>
             );

@@ -1,11 +1,20 @@
 import { Link, useSearchParams } from "react-router-dom";
-import { getOrderById } from "../../utils/ordersStore";
 import "./style.css";
+
+function paymentLabel(raw) {
+  const t = String(raw || "").toLowerCase();
+  if (t === "pix") return "Pix";
+  if (t === "cartao_credito" || t === "credito" || t === "cartao") {
+    return "Cartão de crédito";
+  }
+  if (t === "cartao_debito" || t === "debito") return "Cartão de débito";
+  return raw || "";
+}
 
 export default function PedidoSucesso() {
   const [params] = useSearchParams();
   const id = params.get("id") || "";
-  const order = id ? getOrderById(id) : null;
+  const pay = paymentLabel(params.get("pay") || "");
 
   return (
     <div className="ck-page ck-success">
@@ -15,25 +24,23 @@ export default function PedidoSucesso() {
         </div>
         <h1>Compra finalizada com sucesso</h1>
         <p>
-          Seu pedido{order ? ` ${order.id}` : ""} foi registrado. Você pode acompanhar
+          Seu pedido{id ? ` ${id}` : ""} foi registrado na API. Você pode acompanhar
           os detalhes em Meus pedidos.
         </p>
-        {order ? (
+        {id || pay ? (
           <ul className="ck-success-meta">
-            <li>
-              <span>Total</span>
-              <strong>{order.valor}</strong>
-            </li>
-            <li>
-              <span>Entrega</span>
-              <strong>
-                {order.freteNome} · {order.freteLabel}
-              </strong>
-            </li>
-            <li>
-              <span>Pagamento</span>
-              <strong>{order.paymentMethod === "cartao" ? "Cartão" : "Pix"}</strong>
-            </li>
+            {id ? (
+              <li>
+                <span>Pedido</span>
+                <strong>{id}</strong>
+              </li>
+            ) : null}
+            {pay ? (
+              <li>
+                <span>Pagamento</span>
+                <strong>{pay}</strong>
+              </li>
+            ) : null}
           </ul>
         ) : null}
         <div className="ck-success-actions">

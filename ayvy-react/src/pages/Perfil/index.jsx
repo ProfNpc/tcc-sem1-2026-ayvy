@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getUsuario, updateUsuario, uploadImage } from "../../services/adminApi";
@@ -8,7 +8,11 @@ import {
   deletarEndereco,
   listEnderecos,
 } from "../../services/pedidosApi";
-import { formatCep } from "../../utils/cartHelpers";
+import {
+  formatCardExpiry,
+  formatCardNumber,
+  formatCep,
+} from "../../utils/cartHelpers";
 import useCepLookup from "../../hooks/useCepLookup";
 import {
   deletePaymentMethod,
@@ -37,10 +41,13 @@ const EMPTY_CARD = {
   number: "",
   validity: "",
   brand: "Cartão",
+  kind: "credito",
 };
 
 export default function Perfil() {
-  const { user } = useAuth();
+  const { user, updateSession } = useAuth();
+  const isLojista = user?.role === "lojista";
+  const shopSlug = user?.shopSlug;
   const [searchParams, setSearchParams] = useSearchParams();
   const aba = searchParams.get("aba") === "seguranca" ? "seguranca" : "perfil";
 
@@ -59,7 +66,8 @@ export default function Perfil() {
 
   const [addresses, setAddresses] = useState([]);
   const [addrForm, setAddrForm] = useState(EMPTY_ADDR);
-  const { formatAndLookup, cepLoading, cepError: cepLookupError } = useCepLookup(
+  const nomeCompletoRef = useRef(null);
+  const { formatAndLookup, cepLoading, cepError: cepLookupError, cepHint } = useCepLookup(
     (data) => {
       setAddrForm((f) => ({
         ...f,
@@ -73,9 +81,13 @@ export default function Perfil() {
   const [addrSaving, setAddrSaving] = useState(false);
   const [showAddrForm, setShowAddrForm] = useState(false);
 
-  const [payments, setPayments] = useState(() => listPaymentMethods());
+  const [payments, setPayments] = useState(() => listPaymentMethods(user?.id));
   const [cardForm, setCardForm] = useState(EMPTY_CARD);
   const [showCardForm, setShowCardForm] = useState(false);
+
+  useEffect(() => {
+    setPayments(listPaymentMethods(user?.id));
+  }, [user?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,7 +97,16 @@ export default function Perfil() {
         const data = await getUsuario(user.id);
         if (cancelled) return;
         setNomeCompleto(data.nome || "");
-        setNomeUsuario((data.email || "").split("@")[0] || "");
+        const fromApi = data.nomeUsuario;
+        let fromLocal = "";
+        try {
+          fromLocal = localStorage.getItem(`ayvy.username.u${user.id}`) || "";
+        } catch {
+          /* ignore */
+        }
+        setNomeUsuario(
+          fromApi || fromLocal || (data.email || "").split("@")[0] || "",
+        );
         setEmail(data.email || "");
         setTelefone(data.telefone || "");
         setSidebarTitle(data.nome || "Minha conta");
@@ -148,6 +169,14 @@ export default function Perfil() {
     else setSearchParams({});
   }
 
+  function goEditPerfil() {
+    setAba("perfil");
+    requestAnimationFrame(() => {
+      nomeCompletoRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      nomeCompletoRef.current?.focus();
+    });
+  }
+
   async function onUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -173,16 +202,56 @@ export default function Perfil() {
     setMsg("");
     setError("");
     try {
+      const emailTrim = email.trim();
+      if (!emailTrim || !emailTrim.includes("@")) {
+        setError("Informe um e-mail válido.");
+        setSaving(false);
+        return;
+      }
+      const handle = nomeUsuario.trim().replace(/^@+/, "");
+      if (!handle) {
+        setError("Informe um nome de usuário.");
+        setSaving(false);
+        return;
+      }
+      if (!/^[a-zA-Z0-9._-]{3,80}$/.test(handle)) {
+        setError(
+          "Nome de usuário: 3–80 caracteres (letras, números, ponto, _ ou -).",
+        );
+        setSaving(false);
+        return;
+      }
       const payload = {
-        nome: nomeCompleto.trim() || nomeUsuario.trim(),
+        nome: nomeCompleto.trim() || handle,
+        nomeUsuario: handle,
+        email: emailTrim,
         telefone: telefone.trim() || null,
         avatarUrl: avatarPath || null,
       };
-      await updateUsuario(user.id, payload);
+      const updated = await updateUsuario(user.id, payload);
+      const nextLogin =
+        updated?.nomeUsuario || handle;
+      try {
+        localStorage.setItem(`ayvy.username.u${user.id}`, nextLogin);
+      } catch {
+        /* ignore */
+      }
+      setNomeUsuario(nextLogin);
       setSidebarTitle(payload.nome || "Minha conta");
+      updateSession?.({
+        login: nextLogin,
+        displayName: payload.nome,
+        email: emailTrim,
+        avatarUrl: avatarPath || user.avatarUrl || null,
+      });
       setMsg("Perfil atualizado.");
     } catch (err) {
-      setError(err.message || "Erro ao gravar");
+      const raw = String(err.message || "");
+      if (/unique|duplic|já exist|constraint/i.test(raw)) {
+        setError("Esse nome de usuário já está em uso.");
+      } else {
+        setError(err.message || "Erro ao gravar");
+      }
     } finally {
       setSaving(false);
     }
@@ -287,17 +356,23 @@ export default function Perfil() {
   function handleSaveCard(e) {
     e.preventDefault();
     const digits = String(cardForm.number || "").replace(/\D/g, "");
-    if (!cardForm.holder.trim() || digits.length < 12 || !cardForm.validity.trim()) {
-      setError("Preencha nome, número e validade do cartão.");
+    const validity = formatCardExpiry(cardForm.validity);
+    if (!cardForm.holder.trim() || digits.length < 12 || validity.length < 5) {
+      setError("Preencha nome, número e validade do cartão (MM/AA).");
       return;
     }
-    savePaymentMethod({
-      holder: cardForm.holder.trim(),
-      last4: digits.slice(-4),
-      validity: cardForm.validity.trim(),
-      brand: cardForm.brand || "Cartão",
-    });
-    setPayments(listPaymentMethods());
+    savePaymentMethod(
+      {
+        holder: cardForm.holder.trim(),
+        number: digits,
+        last4: digits.slice(-4),
+        validity,
+        brand: cardForm.brand || "Cartão",
+        kind: cardForm.kind === "debito" ? "debito" : "credito",
+      },
+      user?.id,
+    );
+    setPayments(listPaymentMethods(user?.id));
     setCardForm(EMPTY_CARD);
     setShowCardForm(false);
     setError("");
@@ -305,8 +380,8 @@ export default function Perfil() {
   }
 
   function handleDeleteCard(id) {
-    deletePaymentMethod(id);
-    setPayments(listPaymentMethods());
+    deletePaymentMethod(id, user?.id);
+    setPayments(listPaymentMethods(user?.id));
     setMsg("Forma de pagamento removida.");
   }
 
@@ -323,7 +398,7 @@ export default function Perfil() {
             <img className="js-perfil-avatar" src={avatarSrc} alt="Foto do usuário" />
             <div>
               <h3 id="nomePerfilSidebar">{sidebarTitle}</h3>
-              <button type="button" className="perfil-edit-link" onClick={() => setAba("perfil")}>
+              <button type="button" className="perfil-edit-link" onClick={goEditPerfil}>
                 <i className="fa-solid fa-pen" />
                 Editar perfil
               </button>
@@ -350,7 +425,9 @@ export default function Perfil() {
               >
                 Segurança
               </button>
-              <Link to="/meus-pedidos">Pedidos</Link>
+              {isLojista && shopSlug ? (
+                <Link to={`/loja/${shopSlug}?aba=pedidos`}>Pedidos</Link>
+              ) : null}
               <Link to="/favoritos">Favoritos</Link>
             </div>
             <Link to="/meus-pedidos" className="menu-link">
@@ -396,6 +473,7 @@ export default function Perfil() {
                     <label htmlFor="inputNomeCompleto">Nome</label>
                     <input
                       id="inputNomeCompleto"
+                      ref={nomeCompletoRef}
                       type="text"
                       placeholder="Digite seu nome"
                       autoComplete="name"
@@ -403,9 +481,16 @@ export default function Perfil() {
                       onChange={(e) => setNomeCompleto(e.target.value)}
                     />
                   </div>
-                  <div className="campo-texto">
-                    <label>Email</label>
-                    <span className="campo-texto-valor">{email || "—"}</span>
+                  <div className="campo">
+                    <label htmlFor="inputEmail">Email</label>
+                    <input
+                      id="inputEmail"
+                      type="email"
+                      placeholder="seu@email.com"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </div>
                   <div className="campo">
                     <label htmlFor="inputTelefone">Telefone</label>
@@ -533,6 +618,9 @@ export default function Perfil() {
                           <span className="seg-cep-hint seg-cep-hint--err">
                             {cepLookupError}
                           </span>
+                        ) : null}
+                        {!cepLookupError && cepHint ? (
+                          <span className="seg-cep-hint">{cepHint}</span>
                         ) : null}
                       </div>
                       <div className="campo seg-span-2">
@@ -665,6 +753,18 @@ export default function Perfil() {
                   {showCardForm ? (
                     <form className="seg-form-grid" onSubmit={handleSaveCard}>
                       <div className="campo seg-span-2">
+                        <label>Tipo</label>
+                        <select
+                          value={cardForm.kind}
+                          onChange={(e) =>
+                            setCardForm((f) => ({ ...f, kind: e.target.value }))
+                          }
+                        >
+                          <option value="credito">Cartão de crédito</option>
+                          <option value="debito">Cartão de débito</option>
+                        </select>
+                      </div>
+                      <div className="campo seg-span-2">
                         <label>Nome no cartão</label>
                         <input
                           value={cardForm.holder}
@@ -679,11 +779,15 @@ export default function Perfil() {
                         <input
                           value={cardForm.number}
                           onChange={(e) =>
-                            setCardForm((f) => ({ ...f, number: e.target.value }))
+                            setCardForm((f) => ({
+                              ...f,
+                              number: formatCardNumber(e.target.value),
+                            }))
                           }
                           inputMode="numeric"
                           autoComplete="cc-number"
                           placeholder="0000 0000 0000 0000"
+                          maxLength={19}
                         />
                       </div>
                       <div className="campo">
@@ -691,10 +795,15 @@ export default function Perfil() {
                         <input
                           value={cardForm.validity}
                           onChange={(e) =>
-                            setCardForm((f) => ({ ...f, validity: e.target.value }))
+                            setCardForm((f) => ({
+                              ...f,
+                              validity: formatCardExpiry(e.target.value),
+                            }))
                           }
                           placeholder="MM/AA"
+                          inputMode="numeric"
                           autoComplete="cc-exp"
+                          maxLength={5}
                         />
                       </div>
                       <div className="campo">
@@ -728,6 +837,7 @@ export default function Perfil() {
                         <li key={pm.id} className="seg-item">
                           <div>
                             <strong>
+                              {pm.kind === "debito" ? "Débito" : "Crédito"} ·{" "}
                               {pm.brand} •••• {pm.last4}
                             </strong>
                             <p>

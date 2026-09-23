@@ -93,6 +93,14 @@ export default function AuthProvider({ children }) {
     persistSession(null);
   }, []);
 
+  const updateSession = useCallback((patch) => {
+    const current = sessionSnapshot;
+    if (!current) return null;
+    const next = { ...current, ...patch };
+    persistSession(next);
+    return next;
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -106,9 +114,10 @@ export default function AuthProvider({ children }) {
       /** @deprecated use login — mantido para não quebrar imports antigos */
       loginMock: login,
       logout,
+      updateSession,
       getPostLoginPath,
     }),
-    [user, loggedIn, login, logout],
+    [user, loggedIn, login, logout, updateSession],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

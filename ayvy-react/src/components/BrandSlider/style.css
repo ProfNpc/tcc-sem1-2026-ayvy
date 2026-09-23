@@ -1,4 +1,4 @@
-/* brand strip — ida e volta */
+/* brand strip — scroll contínuo numa direção */
 
 .brand-slider-section {
   overflow: hidden;
@@ -22,7 +22,7 @@
 .brand-track {
   display: flex;
   width: max-content;
-  animation: brand-pingpong 42s ease-in-out infinite alternate;
+  animation: brand-scroll 80s linear infinite;
   will-change: transform;
 }
 
@@ -38,7 +38,7 @@
   box-sizing: border-box;
 }
 
-@keyframes brand-pingpong {
+@keyframes brand-scroll {
   from {
     transform: translateX(0);
   }

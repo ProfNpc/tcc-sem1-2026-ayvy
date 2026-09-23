@@ -4,6 +4,13 @@ import { useCart } from "../../context/CartContext";
 import { formatCep } from "../../utils/cartHelpers";
 import "./style.css";
 
+function productPath(item) {
+  const slug = item.shopSlug || item.slug;
+  const pid = item.productId || item.apiId;
+  if (!slug || !pid) return null;
+  return `/loja/${slug}/p/${pid}`;
+}
+
 export default function CartDrawer() {
   const navigate = useNavigate();
   const {
@@ -45,6 +52,13 @@ export default function CartDrawer() {
     navigate("/carrinho");
   }
 
+  function goToProduct(item) {
+    const to = productPath(item);
+    if (!to) return;
+    setDrawerOpen(false);
+    navigate(to);
+  }
+
   return (
     <>
       <div className={`cart-drawer ${drawerOpen ? "open" : ""}`} id="cartDrawer">
@@ -59,49 +73,92 @@ export default function CartDrawer() {
           {cart.length === 0 ? (
             <p className="cart-empty">O carrinho de compras está vazio!</p>
           ) : (
-            cart.map((item) => (
-              <article key={item.id} className="cart-line">
-                <img src={item.image} alt="" className="cart-line-img" />
-                <div className="cart-line-body">
-                  <div className="cart-line-top">
-                    <h3 className="cart-line-name">{item.name}</h3>
+            cart.map((item) => {
+              const to = productPath(item);
+              return (
+                <article key={item.id} className="cart-line">
+                  {to ? (
                     <button
                       type="button"
-                      className="cart-line-remove"
-                      onClick={() => removeLine(item.id)}
-                      aria-label="Remover"
+                      className="cart-line-img-btn"
+                      onClick={() => goToProduct(item)}
+                      aria-label={`Abrir ${item.name}`}
                     >
-                      <i className="fas fa-trash-alt" />
+                      <img src={item.image} alt="" className="cart-line-img" />
                     </button>
-                  </div>
-                  {(item.color || item.size) && (
-                    <p className="cart-line-variant">
-                      {[item.color, item.size].filter(Boolean).join(" · ")}
-                    </p>
+                  ) : (
+                    <img src={item.image} alt="" className="cart-line-img" />
                   )}
-                  <div className="cart-line-bottom">
-                    <div className="cart-line-qty">
+                  <div className="cart-line-body">
+                    <div className="cart-line-top">
+                      {to ? (
+                        <button
+                          type="button"
+                          className="cart-line-name cart-line-name--link"
+                          onClick={() => goToProduct(item)}
+                        >
+                          {item.name}
+                        </button>
+                      ) : (
+                        <h3 className="cart-line-name">{item.name}</h3>
+                      )}
                       <button
                         type="button"
-                        aria-label="Diminuir"
-                        onClick={() => updateQuantity(item.id, -1)}
+                        className="cart-line-remove"
+                        onClick={() => removeLine(item.id)}
+                        aria-label="Remover"
                       >
-                        −
-                      </button>
-                      <span>{item.quantity || 1}</span>
-                      <button
-                        type="button"
-                        aria-label="Aumentar"
-                        onClick={() => updateQuantity(item.id, 1)}
-                      >
-                        +
+                        <i className="fas fa-trash-alt" />
                       </button>
                     </div>
-                    <span className="cart-line-price">{formatBRL(lineSubtotal(item))}</span>
+                    {(item.color || item.size) &&
+                      (to ? (
+                        <button
+                          type="button"
+                          className="cart-line-variant cart-line-variant--link"
+                          onClick={() => goToProduct(item)}
+                        >
+                          {[item.color, item.size].filter(Boolean).join(" · ")}
+                          <span> · Alterar</span>
+                        </button>
+                      ) : (
+                        <p className="cart-line-variant">
+                          {[item.color, item.size].filter(Boolean).join(" · ")}
+                        </p>
+                      ))}
+                    {to && !(item.color || item.size) ? (
+                      <button
+                        type="button"
+                        className="cart-line-variant cart-line-variant--link"
+                        onClick={() => goToProduct(item)}
+                      >
+                        Alterar opções
+                      </button>
+                    ) : null}
+                    <div className="cart-line-bottom">
+                      <div className="cart-line-qty">
+                        <button
+                          type="button"
+                          aria-label="Diminuir"
+                          onClick={() => updateQuantity(item.id, -1)}
+                        >
+                          −
+                        </button>
+                        <span>{item.quantity || 1}</span>
+                        <button
+                          type="button"
+                          aria-label="Aumentar"
+                          onClick={() => updateQuantity(item.id, 1)}
+                        >
+                          +
+                        </button>
+                      </div>
+                      <span className="cart-line-price">{formatBRL(lineSubtotal(item))}</span>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))
+                </article>
+              );
+            })
           )}
         </div>
 
@@ -151,33 +208,33 @@ export default function CartDrawer() {
               {!freight.editingCep &&
                 freight.cepConfirmed &&
                 shippingOptions.length > 0 && (
-                <div className="cart-shipping-options">
-                  <p className="cart-shipping-label">Envio a domicílio</p>
-                  <ul>
-                    {shippingOptions.map((opt) => (
-                      <li key={opt.id}>
-                        <label className="cart-shipping-option">
-                          <input
-                            type="radio"
-                            name="shipping"
-                            checked={freight.selectedOptionId === opt.id}
-                            onChange={() => selectFreightOption(opt.id)}
-                          />
-                          <span className="cart-shipping-option-body">
-                            <span className="cart-shipping-option-row">
-                              <strong>{opt.name}</strong>
-                              <span className="cart-shipping-option-price">
-                                {opt.priceLabel}
+                  <div className="cart-shipping-options">
+                    <p className="cart-shipping-label">Envio a domicílio</p>
+                    <ul>
+                      {shippingOptions.map((opt) => (
+                        <li key={opt.id}>
+                          <label className="cart-shipping-option">
+                            <input
+                              type="radio"
+                              name="shipping"
+                              checked={freight.selectedOptionId === opt.id}
+                              onChange={() => selectFreightOption(opt.id)}
+                            />
+                            <span className="cart-shipping-option-body">
+                              <span className="cart-shipping-option-row">
+                                <strong>{opt.name}</strong>
+                                <span className="cart-shipping-option-price">
+                                  {opt.priceLabel}
+                                </span>
                               </span>
+                              <small>{opt.days}</small>
                             </span>
-                            <small>{opt.days}</small>
-                          </span>
-                        </label>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                          </label>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
             </section>
 
             <div className="cart-total-block">

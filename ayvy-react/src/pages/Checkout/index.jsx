@@ -4,15 +4,16 @@ import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import {
   saveAddress,
-  saveOrder,
 } from "../../utils/ordersStore";
 import {
+  atualizarStatusPedido,
   checkoutPedido,
   criarEndereco,
   criarPagamento,
   listEnderecos,
 } from "../../services/pedidosApi";
-import { formatCep } from "../../utils/cartHelpers";
+import { formatCardExpiry, formatCardNumber, formatCep } from "../../utils/cartHelpers";
+import { listPaymentMethods } from "../../utils/paymentMethodsStore";
 import useCepLookup from "../../hooks/useCepLookup";
 import "./style.css";
 
@@ -62,7 +63,7 @@ export default function Checkout() {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("novo");
   const [newAddress, setNewAddress] = useState(EMPTY_NEW);
-  const { formatAndLookup, cepLoading, cepError } = useCepLookup((data) => {
+  const { formatAndLookup, cepLoading, cepError, cepHint } = useCepLookup((data) => {
     setNewAddress((a) => ({
       ...a,
       rua: data.logradouro || a.rua,
@@ -72,6 +73,8 @@ export default function Checkout() {
     }));
   });
   const [paymentMethod, setPaymentMethod] = useState("pix");
+  const [savedCards, setSavedCards] = useState(() => listPaymentMethods(user?.id));
+  const [selectedCardId, setSelectedCardId] = useState("");
   const [card, setCard] = useState({
     number: "",
     validity: "",
@@ -83,6 +86,104 @@ export default function Checkout() {
   const [pixCopied, setPixCopied] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const list = listPaymentMethods(user?.id);
+    setSavedCards(list);
+    // Prefere cartão salvo; senão formulário novo
+    setSelectedCardId(list.length > 0 ? list[0].id : "novo");
+    if (list.length > 0) {
+      const pm = list[0];
+      setCard((c) => ({
+        ...c,
+        number: formatCardNumber(pm.number || ""),
+        validity: formatCardExpiry(pm.validity || ""),
+        holder: pm.holder || "",
+        cvv: "",
+      }));
+    }
+  }, [user?.id]);
+
+  function applySavedCard(pmId) {
+    setSelectedCardId(pmId);
+    if (pmId === "novo" || !pmId) {
+      setCard((c) => ({
+        ...c,
+        number: "",
+        validity: "",
+        holder: "",
+        cvv: "",
+      }));
+      return;
+    }
+    const pm = savedCards.find((c) => c.id === pmId);
+    if (!pm) return;
+    setCard((c) => ({
+      ...c,
+      number: formatCardNumber(pm.number || ""),
+      validity: formatCardExpiry(pm.validity || ""),
+      holder: pm.holder || "",
+      cvv: "",
+    }));
+  }
+
+  const usingSavedCard = Boolean(selectedCardId && selectedCardId !== "novo");
+  const isCardPay =
+    paymentMethod === "cartao_credito" || paymentMethod === "cartao_debito";
+  const cardKindWanted =
+    paymentMethod === "cartao_debito" ? "debito" : "credito";
+  const cardsForMethod = useMemo(
+    () =>
+      isCardPay
+        ? savedCards.filter((c) => (c.kind || "credito") === cardKindWanted)
+        : [],
+    [savedCards, isCardPay, cardKindWanted],
+  );
+
+  function selectPayMethod(method) {
+    setPaymentMethod(method);
+    setPixCode("");
+    setPixCopied(false);
+    if (method === "cartao_credito" || method === "cartao_debito") {
+      const kind = method === "cartao_debito" ? "debito" : "credito";
+      const list = savedCards.filter((c) => (c.kind || "credito") === kind);
+      if (list.length) applySavedCard(list[0].id);
+      else applySavedCard("novo");
+    }
+  }
+
+  const installmentsField = (
+    <label>
+      Parcelamento
+      <select
+        value={card.installments}
+        onChange={(e) => setCard((c) => ({ ...c, installments: e.target.value }))}
+      >
+        <option value="1">1x de {formatBRL(total)} sem juros</option>
+        <option value="2">2x de {formatBRL(total / 2)} sem juros</option>
+        <option value="3">3x de {formatBRL(total / 3)} sem juros</option>
+        <option value="4">4x de {formatBRL(total / 4)} sem juros</option>
+      </select>
+    </label>
+  );
+  const cvvField = (
+    <label className="ck-card-cvv">
+      CVV
+      <input
+        value={card.cvv}
+        placeholder="123"
+        inputMode="numeric"
+        autoComplete="cc-csc"
+        maxLength={4}
+        onChange={(e) =>
+          setCard((c) => ({
+            ...c,
+            cvv: e.target.value.replace(/\D/g, "").slice(0, 4),
+          }))
+        }
+      />
+    </label>
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -268,6 +369,10 @@ export default function Checkout() {
 
   async function handleFinalize() {
     setError("");
+    if (!user?.id) {
+      setError("Faça login novamente para finalizar a compra.");
+      return;
+    }
     const addr = resolveAddress();
     if (!addr) {
       setError("Endereço inválido.");
@@ -282,10 +387,13 @@ export default function Checkout() {
       setStep(1);
       return;
     }
-    if (paymentMethod === "cartao") {
-      const digits = card.number.replace(/\D/g, "");
+
+    const isCard =
+      paymentMethod === "cartao_credito" || paymentMethod === "cartao_debito";
+    if (isCard) {
+      const digits = String(card.number || "").replace(/\D/g, "");
       if (digits.length < 13 || !card.validity || !card.cvv || !card.holder.trim()) {
-        setError("Preencha os dados do cartão (mock).");
+        setError("Preencha os dados do cartão (incluindo CVV).");
         return;
       }
     }
@@ -294,77 +402,88 @@ export default function Checkout() {
       return;
     }
 
+    const apiItems = cart
+      .map((line) => {
+        const raw = line.apiId ?? line.productId;
+        const produtoId = Number(raw);
+        return {
+          produtoId: Number.isFinite(produtoId) && produtoId > 0 ? produtoId : null,
+          quantidade: line.quantity || 1,
+        };
+      })
+      .filter((i) => i.produtoId != null);
+
+    if (apiItems.length !== cart.length || apiItems.length === 0) {
+      setError(
+        "Há itens no carrinho que não estão na API (catálogo antigo/mock). Remova-os, compre produtos cadastrados pelo lojista e tente de novo.",
+      );
+      return;
+    }
+
     setSaving(true);
     try {
-      const apiItems = cart
-        .map((line) => ({
-          produtoId: line.apiId ?? (Number.isFinite(Number(line.productId)) ? Number(line.productId) : null),
-          quantidade: line.quantity || 1,
-        }))
-        .filter((i) => i.produtoId != null);
+      const cep = String(addr.cep || "").replace(/\D/g, "");
+      const pedido = await checkoutPedido({
+        usuarioId: user.id,
+        observacao: "",
+        enderecoEntrega: {
+          logradouro: addr.rua || addr.logradouro,
+          numero: addr.numero || "S/N",
+          complemento: addr.complemento || null,
+          bairro: addr.bairro || "Centro",
+          cidade: addr.cidade,
+          uf: String(addr.uf || "").slice(0, 2).toUpperCase(),
+          cep,
+        },
+        itens: apiItems,
+      });
 
-      let orderIdLocal = null;
+      const tipoPagamento =
+        paymentMethod === "cartao_credito"
+          ? "cartao_credito"
+          : paymentMethod === "cartao_debito"
+            ? "cartao_debito"
+            : "pix";
 
-      if (user?.id && apiItems.length === cart.length) {
-        const cep = String(addr.cep || "").replace(/\D/g, "");
-        const pedido = await checkoutPedido({
-          usuarioId: user.id,
-          observacao: "",
-          enderecoEntrega: {
-            logradouro: addr.rua || addr.logradouro,
-            numero: addr.numero || "S/N",
-            complemento: addr.complemento || null,
-            bairro: addr.bairro || "Centro",
-            cidade: addr.cidade,
-            uf: String(addr.uf || "").slice(0, 2).toUpperCase(),
-            cep,
-          },
-          itens: apiItems,
+      try {
+        await criarPagamento({
+          pedido: { id: pedido.id },
+          valor: Number(pedido.valorTotal) || subtotal + freightOpt.price,
+          status: "aprovado",
+          tipo: tipoPagamento,
+          referencia:
+            paymentMethod === "pix"
+              ? pixCode
+              : `****${String(card.number).replace(/\D/g, "").slice(-4)}`,
         });
-
-        try {
-          await criarPagamento({
-            pedido: { id: pedido.id },
-            valor: subtotal + freightOpt.price,
-            status: "aprovado",
-            tipo: paymentMethod === "cartao" ? "cartao_credito" : "pix",
-            referencia: paymentMethod === "pix" ? pixCode : card.number.slice(-4),
-          });
-        } catch {
-          /* pagamento opcional se falhar */
-        }
-
-        orderIdLocal = `#AY-${pedido.id}`;
+      } catch (payErr) {
+        setError(
+          payErr.message ||
+            "Pedido criado, mas o pagamento não foi registrado. Tente de novo ou fale com o suporte.",
+        );
+        setSaving(false);
+        return;
       }
 
-      const order = saveOrder({
-        cart,
-        user: {
-          login: user?.login || "cliente",
-          displayName: accountName,
-          email: accountEmail,
-          id: user?.id,
-        },
-        address: {
-          ...addr,
-          telefone: addr.telefone || newAddress.telefone,
-          cpf: addr.cpf || newAddress.cpf || "000.000.000-00",
-        },
-        freight: freightOpt,
-        paymentMethod,
-        subtotal,
-        freightValue: freightOpt.price,
-        total: subtotal + freightOpt.price,
-        apiPedidoId: orderIdLocal,
-      });
+      try {
+        await atualizarStatusPedido(pedido.id, "pago", user.id);
+      } catch {
+        /* status pode permanecer aguardando_pagamento */
+      }
 
+      const orderId = `#AY-${pedido.id}`;
       clear();
       setDrawerOpen(false);
-      navigate(`/pedido/sucesso?id=${encodeURIComponent(orderIdLocal || order.id)}`, {
-        replace: true,
-      });
+      navigate(
+        `/pedido/sucesso?id=${encodeURIComponent(orderId)}&pay=${encodeURIComponent(tipoPagamento)}`,
+        { replace: true },
+      );
     } catch (err) {
-      setError(err.message || "Não foi possível finalizar o pedido na API.");
+      const raw = err.message || "Não foi possível finalizar o pedido na API.";
+      const msg = /endereço principal/i.test(raw)
+        ? "A loja deste produto ainda não cadastrou endereço de origem. Peça ao lojista para salvar um endereço principal no perfil, ou tente outro produto."
+        : raw;
+      setError(msg);
     } finally {
       setSaving(false);
     }
@@ -505,6 +624,9 @@ export default function Checkout() {
                       {cepError ? (
                         <span className="ck-cep-hint ck-cep-hint--err">{cepError}</span>
                       ) : null}
+                      {!cepError && cepHint ? (
+                        <span className="ck-cep-hint">{cepHint}</span>
+                      ) : null}
                     </label>
                     <label className="ck-span-2">
                       Rua / número
@@ -556,7 +678,7 @@ export default function Checkout() {
                       />
                     </label>
                     <label>
-                      CPF (mock)
+                      CPF
                       <input
                         value={newAddress.cpf}
                         onChange={(e) =>
@@ -664,70 +786,223 @@ export default function Checkout() {
               <p className="ck-muted">Escolha a entrega para liberar o pagamento.</p>
             ) : (
               <>
-                <label className={`ck-pay-option${paymentMethod === "cartao" ? " is-selected" : ""}`}>
+                <label className={`ck-pay-option${paymentMethod === "cartao_credito" ? " is-selected" : ""}`}>
                   <input
                     type="radio"
                     name="pay"
-                    checked={paymentMethod === "cartao"}
-                    onChange={() => {
-                      setPaymentMethod("cartao");
-                      setPixCode("");
-                      setPixCopied(false);
-                    }}
+                    checked={paymentMethod === "cartao_credito"}
+                    onChange={() => selectPayMethod("cartao_credito")}
                   />
                   <span>Cartão de crédito</span>
                 </label>
 
-                {paymentMethod === "cartao" && (
+                {paymentMethod === "cartao_credito" && (
                   <div className="ck-card-form">
-                    <p className="ck-secure-hint">
-                      <i className="fas fa-lock" aria-hidden /> Dados em ambiente seguro (mock)
-                    </p>
-                    <label>
-                      Número do cartão
-                      <input
-                        value={card.number}
-                        placeholder="ACCT-000003"
-                        onChange={(e) => setCard((c) => ({ ...c, number: e.target.value }))}
-                      />
-                    </label>
-                    <div className="ck-card-row">
-                      <label>
-                        Validade
-                        <input
-                          value={card.validity}
-                          placeholder="MM/AA"
-                          onChange={(e) => setCard((c) => ({ ...c, validity: e.target.value }))}
-                        />
-                      </label>
-                      <label>
-                        CVV
-                        <input
-                          value={card.cvv}
-                          placeholder="123"
-                          onChange={(e) => setCard((c) => ({ ...c, cvv: e.target.value }))}
-                        />
-                      </label>
-                    </div>
-                    <label>
-                      Nome do titular
-                      <input
-                        value={card.holder}
-                        onChange={(e) => setCard((c) => ({ ...c, holder: e.target.value }))}
-                      />
-                    </label>
-                    <label>
-                      Parcelamento
-                      <select
-                        value={card.installments}
-                        onChange={(e) => setCard((c) => ({ ...c, installments: e.target.value }))}
-                      >
-                        <option value="1">1x de {formatBRL(total)} sem juros</option>
-                        <option value="2">2x de {formatBRL(total / 2)} sem juros</option>
-                        <option value="3">3x de {formatBRL(total / 3)} sem juros</option>
-                        <option value="4">4x de {formatBRL(total / 4)} sem juros</option>
-                      </select>
-                    </label>
+                    {cardsForMethod.length > 0 ? (
+                      <ul className="ck-card-pick-list">
+                        {cardsForMethod.map((pm) => (
+                          <li key={pm.id}>
+                            <label className="ck-card-pick">
+                              <input
+                                type="radio"
+                                name="saved-card-credito"
+                                checked={selectedCardId === pm.id}
+                                onChange={() => applySavedCard(pm.id)}
+                              />
+                              <span>
+                                {pm.holder || pm.brand || "Cartão"}
+                                {" · "}
+                                {pm.brand || "Cartão"} •••• {pm.last4}
+                              </span>
+                            </label>
+                          </li>
+                        ))}
+                        <li>
+                          <label className="ck-card-pick">
+                            <input
+                              type="radio"
+                              name="saved-card-credito"
+                              checked={selectedCardId === "novo"}
+                              onChange={() => applySavedCard("novo")}
+                            />
+                            <span>Usar outro cartão</span>
+                          </label>
+                        </li>
+                      </ul>
+                    ) : (
+                      <p className="ck-muted ck-card-hint">
+                        Nenhum cartão de crédito no perfil.{" "}
+                        <Link to="/perfil?aba=seguranca">Adicionar em Segurança</Link>
+                        {" "}ou preencha abaixo.
+                      </p>
+                    )}
+
+                    {usingSavedCard ? (
+                      <>
+                        <div className="ck-card-row ck-card-row--saved">{cvvField}</div>
+                        {installmentsField}
+                      </>
+                    ) : (
+                      <>
+                        <label>
+                          Número do cartão
+                          <input
+                            value={card.number}
+                            placeholder="ACCT-000003"
+                            inputMode="numeric"
+                            autoComplete="cc-number"
+                            maxLength={19}
+                            onChange={(e) => {
+                              setSelectedCardId("novo");
+                              setCard((c) => ({
+                                ...c,
+                                number: formatCardNumber(e.target.value),
+                              }));
+                            }}
+                          />
+                        </label>
+                        <div className="ck-card-row">
+                          <label>
+                            Validade
+                            <input
+                              value={card.validity}
+                              placeholder="MM/AA"
+                              inputMode="numeric"
+                              autoComplete="cc-exp"
+                              maxLength={5}
+                              onChange={(e) => {
+                                setSelectedCardId("novo");
+                                setCard((c) => ({
+                                  ...c,
+                                  validity: formatCardExpiry(e.target.value),
+                                }));
+                              }}
+                            />
+                          </label>
+                          {cvvField}
+                        </div>
+                        <label>
+                          Nome do titular
+                          <input
+                            value={card.holder}
+                            autoComplete="cc-name"
+                            onChange={(e) => {
+                              setSelectedCardId("novo");
+                              setCard((c) => ({ ...c, holder: e.target.value }));
+                            }}
+                          />
+                        </label>
+                        {installmentsField}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <label className={`ck-pay-option${paymentMethod === "cartao_debito" ? " is-selected" : ""}`}>
+                  <input
+                    type="radio"
+                    name="pay"
+                    checked={paymentMethod === "cartao_debito"}
+                    onChange={() => selectPayMethod("cartao_debito")}
+                  />
+                  <span>Cartão de débito</span>
+                </label>
+
+                {paymentMethod === "cartao_debito" && (
+                  <div className="ck-card-form">
+                    {cardsForMethod.length > 0 ? (
+                      <ul className="ck-card-pick-list">
+                        {cardsForMethod.map((pm) => (
+                          <li key={pm.id}>
+                            <label className="ck-card-pick">
+                              <input
+                                type="radio"
+                                name="saved-card-debito"
+                                checked={selectedCardId === pm.id}
+                                onChange={() => applySavedCard(pm.id)}
+                              />
+                              <span>
+                                {pm.holder || pm.brand || "Cartão"}
+                                {" · "}
+                                {pm.brand || "Cartão"} •••• {pm.last4}
+                              </span>
+                            </label>
+                          </li>
+                        ))}
+                        <li>
+                          <label className="ck-card-pick">
+                            <input
+                              type="radio"
+                              name="saved-card-debito"
+                              checked={selectedCardId === "novo"}
+                              onChange={() => applySavedCard("novo")}
+                            />
+                            <span>Usar outro cartão</span>
+                          </label>
+                        </li>
+                      </ul>
+                    ) : (
+                      <p className="ck-muted ck-card-hint">
+                        Nenhum cartão de débito no perfil.{" "}
+                        <Link to="/perfil?aba=seguranca">Adicionar em Segurança</Link>
+                        {" "}ou preencha abaixo.
+                      </p>
+                    )}
+
+                    {usingSavedCard ? (
+                      <div className="ck-card-row ck-card-row--saved">{cvvField}</div>
+                    ) : (
+                      <>
+                        <label>
+                          Número do cartão
+                          <input
+                            value={card.number}
+                            placeholder="ACCT-000003"
+                            inputMode="numeric"
+                            autoComplete="cc-number"
+                            maxLength={19}
+                            onChange={(e) => {
+                              setSelectedCardId("novo");
+                              setCard((c) => ({
+                                ...c,
+                                number: formatCardNumber(e.target.value),
+                              }));
+                            }}
+                          />
+                        </label>
+                        <div className="ck-card-row">
+                          <label>
+                            Validade
+                            <input
+                              value={card.validity}
+                              placeholder="MM/AA"
+                              inputMode="numeric"
+                              autoComplete="cc-exp"
+                              maxLength={5}
+                              onChange={(e) => {
+                                setSelectedCardId("novo");
+                                setCard((c) => ({
+                                  ...c,
+                                  validity: formatCardExpiry(e.target.value),
+                                }));
+                              }}
+                            />
+                          </label>
+                          {cvvField}
+                        </div>
+                        <label>
+                          Nome do titular
+                          <input
+                            value={card.holder}
+                            autoComplete="cc-name"
+                            onChange={(e) => {
+                              setSelectedCardId("novo");
+                              setCard((c) => ({ ...c, holder: e.target.value }));
+                            }}
+                          />
+                        </label>
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -736,7 +1011,7 @@ export default function Checkout() {
                     type="radio"
                     name="pay"
                     checked={paymentMethod === "pix"}
-                    onChange={() => setPaymentMethod("pix")}
+                    onChange={() => selectPayMethod("pix")}
                   />
                   <span>Pix</span>
                 </label>
@@ -757,19 +1032,19 @@ export default function Checkout() {
                         <div className="ck-pix-qr" aria-hidden>
                           <div>
                             <i className="fas fa-qrcode" style={{ fontSize: "2.5rem" }} />
-                            <p>QR Code mock</p>
+                            <p>Pix copia e cola</p>
                           </div>
                         </div>
                         <p className="ck-pix-code">{pixCode}</p>
                         <p className="ck-pix-hint">
                           {pixCopied
                             ? "Código copiado! Depois de pagar, confirme abaixo."
-                            : "Código gerado (mock). Copie ou escaneie e confirme o pagamento."}
+                            : "Copie o código Pix e confirme o pagamento após pagar."}
                         </p>
                       </>
                     ) : (
                       <p className="ck-pix-hint">
-                        Gere o QR Code ou copie o código para simular o pagamento Pix.
+                        Gere o código Pix para continuar o pagamento.
                       </p>
                     )}
                   </div>
@@ -777,7 +1052,7 @@ export default function Checkout() {
 
                 {error && step === 2 ? <p className="ck-error">{error}</p> : null}
 
-                {paymentMethod === "cartao" ? (
+                {isCardPay ? (
                   <button
                     type="button"
                     className="ck-btn ck-btn--primary ck-btn--block"

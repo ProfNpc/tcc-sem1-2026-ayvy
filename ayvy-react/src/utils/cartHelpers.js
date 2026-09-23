@@ -22,6 +22,19 @@ export function formatCep(raw) {
   return `${d.slice(0, 5)}-${d.slice(5)}`;
 }
 
+/** 0000 0000 0000 0000 */
+export function formatCardNumber(raw) {
+  const d = String(raw || "").replace(/\D/g, "").slice(0, 16);
+  return d.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+}
+
+/** MM/AA */
+export function formatCardExpiry(raw) {
+  const d = String(raw || "").replace(/\D/g, "").slice(0, 4);
+  if (d.length <= 2) return d;
+  return `${d.slice(0, 2)}/${d.slice(2)}`;
+}
+
 /** Mesma variante = mesma linha no carrinho */
 export function cartLineKey(item) {
   return [

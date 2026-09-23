@@ -13,7 +13,7 @@ export default function CadastroForm({ onSubmit, loading = false }) {
   const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
-  const { formatAndLookup, cepLoading, cepError } = useCepLookup((data) => {
+  const { formatAndLookup, cepLoading, cepError, cepHint } = useCepLookup((data) => {
     setLogradouro(data.logradouro);
     setBairro(data.bairro);
     setCidade(data.cidade);
@@ -100,6 +100,7 @@ export default function CadastroForm({ onSubmit, loading = false }) {
         <p className="cadastro-cep-hint">Buscando endereço…</p>
       ) : null}
       {cepError ? <p className="cadastro-cep-hint cadastro-cep-err">{cepError}</p> : null}
+      {!cepError && cepHint ? <p className="cadastro-cep-hint">{cepHint}</p> : null}
 
       <div className="input-box">
         <i className="bx bxs-direction-left" />

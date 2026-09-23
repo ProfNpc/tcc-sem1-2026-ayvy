@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import {
   atualizarStatusPedido,
+  getPedidoEndereco,
   getPedidoItens,
+  listPagamentos,
   listTodosPedidos,
 } from "../../../services/pedidosApi";
 import { formatBRL } from "../../../utils/cartHelpers";
@@ -28,7 +30,28 @@ function formatWhen(iso) {
   }
 }
 
-function mapApiPedido(p, itensLabel) {
+function formatEndereco(e) {
+  if (!e) return "—";
+  const parts = [
+    [e.logradouro, e.numero].filter(Boolean).join(", "),
+    e.complemento,
+    e.bairro,
+    [e.cidade, e.uf].filter(Boolean).join(" — "),
+    e.cep ? `CEP ${e.cep}` : "",
+  ].filter(Boolean);
+  return parts.join(" · ") || "—";
+}
+
+function formatPagamentoTipo(tipo) {
+  const t = String(tipo || "").toLowerCase();
+  if (t === "pix") return "Pix";
+  if (t === "cartao_credito" || t === "credito") return "Cartão de crédito";
+  if (t === "cartao_debito" || t === "debito") return "Cartão de débito";
+  if (!t) return "—";
+  return String(tipo);
+}
+
+function mapApiPedido(p, { itensLabel, lojasLabel, pagamentoTipo, endereco }) {
   const status = String(p.status || "").toLowerCase();
   return {
     apiId: p.id,
@@ -36,15 +59,16 @@ function mapApiPedido(p, itensLabel) {
     criadoEm: formatWhen(p.criadoEm),
     status: status === "aguardando_pagamento" ? "pendente" : status,
     rawStatus: status,
-    loja: "Marketplace",
+    loja: lojasLabel || "Marketplace",
     valor: formatBRL(Number(p.valorTotal) || 0),
     itens: itensLabel || "—",
+    pagamento: formatPagamentoTipo(pagamentoTipo),
     cliente: {
       nome: p.usuario?.nome || "Cliente",
       email: p.usuario?.email || "—",
       cpf: "—",
       telefone: p.usuario?.telefone || "—",
-      endereco: "Ver endereço no pedido",
+      endereco: endereco || "—",
     },
   };
 }
@@ -63,19 +87,52 @@ export default function AdminPedidosList() {
       setLoading(true);
       setError("");
       try {
-        const list = await listTodosPedidos();
+        const [list, pags] = await Promise.all([
+          listTodosPedidos(),
+          listPagamentos().catch(() => []),
+        ]);
+        const pagByPedido = {};
+        for (const pag of pags || []) {
+          const pid = pag?.pedido?.id ?? pag?.pedidoId;
+          if (pid != null) pagByPedido[pid] = pag.tipo;
+        }
         const cards = await Promise.all(
           (list || []).map(async (p) => {
             let itensLabel = "—";
+            let lojasLabel = "";
+            let endereco = "—";
             try {
               const itens = await getPedidoItens(p.id);
               itensLabel = (itens || [])
                 .map((i) => `${i.quantidade}× ${i.produto?.nome || "Produto"}`)
                 .join(" · ");
+              const lojas = [
+                ...new Set(
+                  (itens || [])
+                    .map(
+                      (i) =>
+                        i?.lojista?.nomeLoja ||
+                        i?.produto?.lojista?.nomeLoja ||
+                        "",
+                    )
+                    .filter(Boolean),
+                ),
+              ];
+              lojasLabel = lojas.join(", ");
             } catch {
               /* ignore */
             }
-            return mapApiPedido(p, itensLabel);
+            try {
+              endereco = formatEndereco(await getPedidoEndereco(p.id));
+            } catch {
+              /* ignore */
+            }
+            return mapApiPedido(p, {
+              itensLabel,
+              lojasLabel,
+              pagamentoTipo: pagByPedido[p.id],
+              endereco,
+            });
           }),
         );
         if (!cancelled) setPedidos(cards);
@@ -197,10 +254,18 @@ export default function AdminPedidosList() {
                     <i className="fas fa-phone" aria-hidden />
                     {pedido.cliente.telefone}
                   </p>
+                  <p>
+                    <i className="fas fa-map-marker-alt" aria-hidden />
+                    {pedido.cliente.endereco}
+                  </p>
                 </div>
 
                 <div className="admin-pedido-block">
                   <h3>Pedido</h3>
+                  <p>
+                    <i className="fas fa-store" aria-hidden />
+                    {pedido.loja}
+                  </p>
                   <p>
                     <i className="fas fa-box" aria-hidden />
                     {pedido.itens}
@@ -208,6 +273,10 @@ export default function AdminPedidosList() {
                   <p className="admin-pedido-valor">
                     <i className="fas fa-tag" aria-hidden />
                     {pedido.valor}
+                  </p>
+                  <p>
+                    <i className="fas fa-wallet" aria-hidden />
+                    {pedido.pagamento || "—"}
                   </p>
                   {pedido.rawStatus === "aguardando_pagamento" ? (
                     <button

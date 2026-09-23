@@ -102,39 +102,67 @@ export default function Carrinho() {
           </header>
 
           <ul className="ck-cart-lines">
-            {cart.map((item) => (
-              <li key={item.id} className="ck-cart-line">
-                <img src={item.image} alt="" />
-                <div className="ck-cart-line-info">
-                  <strong>{item.name}</strong>
-                  {(item.color || item.size) && (
-                    <span>
-                      {[item.color, item.size].filter(Boolean).join(" · ")}
-                    </span>
+            {cart.map((item) => {
+              const slug = item.shopSlug || item.slug;
+              const pid = item.productId || item.apiId;
+              const to = slug && pid ? `/loja/${slug}/p/${pid}` : null;
+              return (
+                <li key={item.id} className="ck-cart-line">
+                  {to ? (
+                    <Link to={to} className="ck-cart-line-media">
+                      <img src={item.image} alt="" />
+                    </Link>
+                  ) : (
+                    <img src={item.image} alt="" />
                   )}
-                  <em>{formatBRL(lineSubtotal(item))}</em>
-                </div>
-                <div className="ck-cart-line-actions">
-                  <div className="ck-qty">
-                    <button type="button" onClick={() => updateQuantity(item.id, -1)}>
-                      −
-                    </button>
-                    <span>{item.quantity || 1}</span>
-                    <button type="button" onClick={() => updateQuantity(item.id, 1)}>
-                      +
+                  <div className="ck-cart-line-info">
+                    {to ? (
+                      <Link to={to} className="ck-cart-line-title">
+                        {item.name}
+                      </Link>
+                    ) : (
+                      <strong>{item.name}</strong>
+                    )}
+                    {(item.color || item.size) && (
+                      to ? (
+                        <Link to={to} className="ck-cart-line-variant">
+                          {[item.color, item.size].filter(Boolean).join(" · ")} · Alterar
+                        </Link>
+                      ) : (
+                        <span>
+                          {[item.color, item.size].filter(Boolean).join(" · ")}
+                        </span>
+                      )
+                    )}
+                    {to && !(item.color || item.size) ? (
+                      <Link to={to} className="ck-cart-line-variant">
+                        Alterar opções
+                      </Link>
+                    ) : null}
+                    <em>{formatBRL(lineSubtotal(item))}</em>
+                  </div>
+                  <div className="ck-cart-line-actions">
+                    <div className="ck-qty">
+                      <button type="button" onClick={() => updateQuantity(item.id, -1)}>
+                        −
+                      </button>
+                      <span>{item.quantity || 1}</span>
+                      <button type="button" onClick={() => updateQuantity(item.id, 1)}>
+                        +
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      className="ck-remove"
+                      aria-label="Remover"
+                      onClick={() => removeLine(item.id)}
+                    >
+                      <i className="fas fa-times" />
                     </button>
                   </div>
-                  <button
-                    type="button"
-                    className="ck-remove"
-                    aria-label="Remover"
-                    onClick={() => removeLine(item.id)}
-                  >
-                    <i className="fas fa-times" />
-                  </button>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         </section>
 

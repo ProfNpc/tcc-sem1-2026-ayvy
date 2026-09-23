@@ -20,6 +20,10 @@ export function getPedidoItens(id) {
   return apiJson(`/pedidos/${id}/itens`);
 }
 
+export function getPedidoEndereco(id) {
+  return apiJson(`/pedidos/${id}/endereco-entrega`);
+}
+
 export function atualizarStatusPedido(id, status, actorUsuarioId) {
   const params = new URLSearchParams({ novoStatus: status });
   if (actorUsuarioId != null) params.set("actorUsuarioId", String(actorUsuarioId));
@@ -35,6 +39,10 @@ export function calcularFrete({ cepDestino, itens }) {
 
 export function criarPagamento(payload) {
   return apiJson("/pagamentos", { method: "POST", body: payload });
+}
+
+export function listPagamentos() {
+  return apiJson("/pagamentos");
 }
 
 export function listEnderecos() {

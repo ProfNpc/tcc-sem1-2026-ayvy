@@ -64,7 +64,7 @@ export default function Notificacoes() {
 
   if (!loggedIn) {
     return (
-      <div className="ck-page">
+      <div className="ck-page mp-page">
         <div className="ck-empty">
           <h1>Notificações</h1>
           <p>Faça login para ver suas notificações.</p>
@@ -77,19 +77,37 @@ export default function Notificacoes() {
   }
 
   return (
-    <div className="ck-page">
-      <header className="ck-cart-head">
-        <h1>Notificações</h1>
-        <p>
-          Avisos da sua conta. <Link to="/perfil">Voltar ao perfil</Link>
-        </p>
+    <div className="ck-page mp-page">
+      <header className="mp-hero">
+        <div>
+          <p className="mp-eyebrow">Minha conta</p>
+          <h1>Notificações</h1>
+          <p className="mp-sub">Avisos da sua conta na AYVY.</p>
+        </div>
+        <div className="mp-hero-actions">
+          <Link to="/perfil" className="ck-btn ck-btn--ghost">
+            Voltar ao perfil
+          </Link>
+          <Link to="/" className="ck-btn ck-btn--primary">
+            Continuar comprando
+          </Link>
+        </div>
       </header>
 
-      {loading ? <p>Carregando…</p> : null}
-      {error ? <p style={{ color: "#b00020" }}>{error}</p> : null}
+      {loading ? (
+        <div className="mp-loading" role="status">
+          <span className="mp-spinner" aria-hidden />
+          Carregando notificações…
+        </div>
+      ) : null}
+      {error ? <p className="mp-error">{error}</p> : null}
 
       {!loading && itens.length === 0 ? (
-        <div className="ck-empty ck-empty--soft">
+        <div className="mp-empty">
+          <div className="mp-empty-icon" aria-hidden>
+            <i className="fas fa-bell" />
+          </div>
+          <h2>Nenhuma notificação</h2>
           <p>Nenhuma notificação por enquanto.</p>
         </div>
       ) : (

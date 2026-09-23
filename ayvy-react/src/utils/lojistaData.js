@@ -574,16 +574,16 @@ export function findProduct(slug, productId) {
 }
 
 /**
- * Mistura mock + API (API sobrescreve o mesmo slug).
+ * Mapa de lojas/produtos só da API (sem fallback mock).
  * @returns {Promise<Record<string, object>>}
  */
 export async function resolveShopsMap() {
   try {
     const { loadShopsFromApi } = await import("../services/shopApi");
     const apiShops = await loadShopsFromApi();
-    return { ...SHOPS, ...apiShops };
+    return apiShops && Object.keys(apiShops).length > 0 ? apiShops : {};
   } catch {
-    return { ...SHOPS };
+    return {};
   }
 }
 

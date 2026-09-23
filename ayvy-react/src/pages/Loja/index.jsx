@@ -32,8 +32,12 @@ function readFollowing() {
 }
 
 function paymentLabel(method) {
-  if (method === "cartao") return "Cartão de crédito";
-  if (method === "pix") return "Pix";
+  const t = String(method || "").toLowerCase();
+  if (t === "cartao" || t === "cartao_credito" || t === "credito") {
+    return "Cartão de crédito";
+  }
+  if (t === "cartao_debito" || t === "debito") return "Cartão de débito";
+  if (t === "pix") return "Pix";
   return method || "—";
 }
 

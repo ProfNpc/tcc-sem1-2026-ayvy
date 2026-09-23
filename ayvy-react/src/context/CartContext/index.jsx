@@ -14,7 +14,6 @@ import {
   lineSubtotal,
 } from "../../utils/cartHelpers";
 import { calcularFrete } from "../../services/pedidosApi";
-import { getShippingOptions } from "../../utils/freightMock";
 import { fetchAddressByCep } from "../../utils/viacep";
 import "./style.css";
 
@@ -136,9 +135,8 @@ export default function CartProvider({ children }) {
 
   const shippingOptions = useMemo(() => {
     if (!freight.cepConfirmed || !freight.cep) return [];
-    if (freight.options?.length) return freight.options;
-    return getShippingOptions(freight.cep, subtotal);
-  }, [freight.cepConfirmed, freight.cep, freight.options, subtotal]);
+    return freight.options?.length ? freight.options : [];
+  }, [freight.cepConfirmed, freight.cep, freight.options]);
 
   const selectedFreight = useMemo(() => {
     if (shippingOptions.length === 0) return null;
@@ -208,31 +206,58 @@ export default function CartProvider({ children }) {
         return;
       }
 
-      let options = getShippingOptions(cep, subtotal);
       const apiItens = cart
-        .map((line) => line.apiId ?? (Number.isFinite(Number(line.productId)) ? Number(line.productId) : null))
+        .map((line) =>
+          line.apiId ??
+          (Number.isFinite(Number(line.productId)) ? Number(line.productId) : null),
+        )
         .filter((id) => id != null)
         .map((produtoId) => ({ produtoId }));
 
-      if (apiItens.length > 0) {
-        try {
-          const valorApi = await calcularFrete({ cepDestino: cep, itens: apiItens });
-          const price = Number(valorApi);
-          if (Number.isFinite(price)) {
-            options = [
-              {
-                id: "api",
-                name: "Frete AYVY (API)",
-                days: "Prazo calculado pelo back",
-                price,
-                priceLabel: price === 0 ? "Grátis" : formatBRL(price),
-              },
-              ...options,
-            ];
-          }
-        } catch {
-          /* mantém opções mock se a API de frete falhar */
+      if (apiItens.length === 0) {
+        setFreight((f) => ({
+          ...f,
+          loading: false,
+          error:
+            "Frete só é calculado para produtos cadastrados na API. Remova itens antigos do carrinho.",
+          cepConfirmed: false,
+          selectedOptionId: null,
+          options: [],
+        }));
+        return;
+      }
+
+      let options = [];
+      try {
+        const valorApi = await calcularFrete({
+          cepDestino: cep,
+          itens: apiItens,
+        });
+        const price = Number(valorApi);
+        if (!Number.isFinite(price)) {
+          throw new Error("Resposta de frete inválida");
         }
+        options = [
+          {
+            id: "api",
+            name: "Frete AYVY",
+            days: "Valor calculado pela API conforme distância",
+            price,
+            priceLabel: price === 0 ? "Grátis" : formatBRL(price),
+          },
+        ];
+      } catch (err) {
+        setFreight((f) => ({
+          ...f,
+          loading: false,
+          error:
+            err?.message ||
+            "Não foi possível calcular o frete na API. Tente novamente.",
+          cepConfirmed: false,
+          selectedOptionId: null,
+          options: [],
+        }));
+        return;
       }
 
       setFreight({
@@ -247,7 +272,7 @@ export default function CartProvider({ children }) {
         options,
       });
     },
-    [subtotal, cart],
+    [cart],
   );
 
   const selectFreightOption = useCallback((optionId) => {

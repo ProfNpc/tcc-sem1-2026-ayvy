@@ -82,6 +82,14 @@ public class UsuarioService {
         if (usuario.getNome() != null) {
             usuarioEntity.setNome(usuario.getNome());
         }
+        if (usuario.getNomeUsuario() != null) {
+            String handle = usuario.getNomeUsuario().trim();
+            if (handle.isEmpty()) {
+                usuarioEntity.setNomeUsuario(null);
+            } else {
+                usuarioEntity.setNomeUsuario(handle);
+            }
+        }
         if (usuario.getEmail() != null) {
             usuarioEntity.setEmail(usuario.getEmail());
         }

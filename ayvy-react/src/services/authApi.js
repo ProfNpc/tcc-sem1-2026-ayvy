@@ -69,7 +69,10 @@ export function sessionFromUsuario(usuario, lojista = null) {
   return {
     id: usuario.id,
     role,
-    login: usuario.email?.split("@")[0] || "",
+    login:
+      usuario.nomeUsuario ||
+      usuario.email?.split("@")[0] ||
+      "",
     email: usuario.email || "",
     displayName: usuario.nome || lojista?.nomeLoja || usuario.email || "Usuário",
     status: usuario.status || "ativo",

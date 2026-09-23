@@ -14,6 +14,7 @@ CREATE TABLE usuarios (
     id               INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     papel            VARCHAR(50) NOT NULL,
     nome             VARCHAR(150) NOT NULL,
+    nome_usuario     VARCHAR(80) NULL UNIQUE,
     email            VARCHAR(191) NOT NULL UNIQUE,
     senha_hash       VARCHAR(255) NOT NULL,
     telefone         VARCHAR(20) NULL,

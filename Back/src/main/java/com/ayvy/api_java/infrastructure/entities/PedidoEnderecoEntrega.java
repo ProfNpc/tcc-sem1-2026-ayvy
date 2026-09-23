@@ -1,5 +1,6 @@
 package com.ayvy.api_java.infrastructure.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +16,7 @@ public class PedidoEnderecoEntrega {
     @Id
     private Integer id;
 
+    @JsonIgnore
     @ManyToOne(optional = false)
     @MapsId
     @JoinColumn (name = "pedido_id")

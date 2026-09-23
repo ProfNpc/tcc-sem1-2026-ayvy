@@ -6,9 +6,9 @@ import com.ayvy.api_java.infrastructure.geo.CalculadoraDistancia;
 import com.ayvy.api_java.infrastructure.geo.CepGeoLocalizacaoClient;
 import com.ayvy.api_java.infrastructure.geo.Coordinates;
 import com.ayvy.api_java.infrastructure.repositories.EnderecoRepository;
-import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -17,6 +17,11 @@ import java.util.stream.Collectors;
 
 @Service
 public class FreteService {
+
+    private static final Logger log = LoggerFactory.getLogger(FreteService.class);
+
+    /** CEP padrão (SP) quando a loja ainda não cadastrou endereço principal. */
+    private static final String CEP_ORIGEM_FALLBACK = "01001000";
 
     private final CepGeoLocalizacaoClient geoLocalizacaoClient;
     private final EnderecoRepository enderecoRepository;
@@ -31,7 +36,6 @@ public class FreteService {
      * principal de cada loja como origem) e SOMA tudo — carrinho com N lojistas
      * paga N fretes, um por remetente.
      */
-
     public BigDecimal calcularFreteTotal(List<PedidoProdutos> itens, String cepDestino) {
         Coordinates destino = geoLocalizacaoClient.buscarCoordenadas(cepDestino);
 
@@ -50,10 +54,21 @@ public class FreteService {
     }
 
     private String buscarCepOrigemLoja(Lojista lojista) {
-        return enderecoRepository.findByUsuarioIdAndPrincipalTrue(lojista.getUsuario().getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
-                       "Logista '" + lojista.getNomeLoja() + "' não tem endereço principal cadastrado" ))
-                .getCep();
+        Integer usuarioId = null;
+        if (lojista != null && lojista.getUsuario() != null) {
+            usuarioId = lojista.getUsuario().getId();
+        }
+        if (usuarioId != null) {
+            var opt = enderecoRepository.findByUsuarioIdAndPrincipalTrue(usuarioId);
+            if (opt.isPresent() && opt.get().getCep() != null && !opt.get().getCep().isBlank()) {
+                return opt.get().getCep();
+            }
+        }
+        log.warn(
+                "Lojista '{}' sem endereço principal — usando CEP origem fallback {}",
+                lojista != null ? lojista.getNomeLoja() : "?",
+                CEP_ORIGEM_FALLBACK);
+        return CEP_ORIGEM_FALLBACK;
     }
 
     private BigDecimal mapearFaixaDePreco(double distanciaKm) {

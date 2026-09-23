@@ -10,8 +10,8 @@ export default function BrandSlider({ title, brands }) {
     );
   }
 
-  // Duas cópias iguais → anima -50% e volta (ida e volta contínua)
-  const track = [...list, ...list, ...list, ...list];
+  // Duas cópias iguais → loop contínuo deslocando -50%
+  const track = [...list, ...list];
 
   return (
     <section className="brand-slider-section">

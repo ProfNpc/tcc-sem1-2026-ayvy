@@ -9,7 +9,9 @@ import {
 } from "./adminApi";
 import {
   atualizarStatusPedido,
+  getPedidoEndereco,
   getPedidoItens,
+  listPagamentos,
   listTodosPedidos,
 } from "./pedidosApi";
 import { resolveImageUrl } from "../utils/imageUrl";
@@ -29,6 +31,26 @@ function slugify(text) {
 function parsePrice(raw) {
   const n = Number(String(raw || "").replace(/\./g, "").replace(",", "."));
   return Number.isFinite(n) ? n : NaN;
+}
+
+function formatEndereco(e) {
+  if (!e) return "—";
+  const parts = [
+    [e.logradouro, e.numero].filter(Boolean).join(", "),
+    e.complemento,
+    e.bairro,
+    [e.cidade, e.uf].filter(Boolean).join(" — "),
+    e.cep ? `CEP ${e.cep}` : "",
+  ].filter(Boolean);
+  return parts.join(" · ") || "—";
+}
+
+function formatPagamentoTipo(tipo) {
+  const t = String(tipo || "").toLowerCase();
+  if (t === "pix") return "pix";
+  if (t === "cartao_credito" || t === "credito") return "cartao_credito";
+  if (t === "cartao_debito" || t === "debito") return "cartao_debito";
+  return t || "—";
 }
 
 export { listCategorias };
@@ -138,7 +160,16 @@ export async function excluirProdutoApi(produtoId) {
  * Pedidos que contêm itens desta loja.
  */
 export async function listPedidosDoLojista(lojistaId) {
-  const pedidos = await listTodosPedidos();
+  const [pedidos, pags] = await Promise.all([
+    listTodosPedidos(),
+    listPagamentos().catch(() => []),
+  ]);
+  const pagByPedido = {};
+  for (const pag of pags || []) {
+    const pid = pag?.pedido?.id ?? pag?.pedidoId;
+    if (pid != null) pagByPedido[pid] = pag.tipo;
+  }
+
   const out = [];
 
   for (const p of pedidos || []) {
@@ -148,13 +179,23 @@ export async function listPedidosDoLojista(lojistaId) {
     } catch {
       continue;
     }
-    const mine = (itens || []).filter((i) => i?.lojista?.id === lojistaId);
+    const mine = (itens || []).filter((i) => {
+      const lid = i?.lojista?.id ?? i?.produto?.lojista?.id;
+      return Number(lid) === Number(lojistaId);
+    });
     if (!mine.length) continue;
 
     const shopItemsTotal = mine.reduce((acc, i) => {
       const unit = Number(i.precoUnitario ?? i.produto?.preco ?? 0);
       return acc + unit * (i.quantidade || 1);
     }, 0);
+
+    let endereco = "—";
+    try {
+      endereco = formatEndereco(await getPedidoEndereco(p.id));
+    } catch {
+      /* ignore */
+    }
 
     out.push({
       apiId: p.id,
@@ -168,11 +209,11 @@ export async function listPedidosDoLojista(lojistaId) {
         email: p.usuario?.email || "—",
         cpf: "—",
         telefone: p.usuario?.telefone || "—",
-        endereco: "Ver endereço no pedido",
+        endereco,
       },
       freteNome: "Frete",
       freteLabel: "—",
-      paymentMethod: "—",
+      paymentMethod: formatPagamentoTipo(pagByPedido[p.id]),
       valor: formatBRL(Number(p.valorTotal) || 0),
       shopItemsTotal,
       items: mine.map((i) => ({
@@ -180,7 +221,8 @@ export async function listPedidosDoLojista(lojistaId) {
         name: i.produto?.nome || "Produto",
         image: resolveImageUrl(i.produto?.imagemPrincipalUrl) || "",
         quantity: i.quantidade || 1,
-        lineTotal: Number(i.precoUnitario ?? i.produto?.preco ?? 0) * (i.quantidade || 1),
+        lineTotal:
+          Number(i.precoUnitario ?? i.produto?.preco ?? 0) * (i.quantidade || 1),
         color: "",
         size: "",
       })),
