@@ -56,7 +56,6 @@ public class ProdutoService {
         Produto produto = repository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto não encontrado")
         );
-        repository.incrementarVisualizacao(id);
 
         return produto;
     }

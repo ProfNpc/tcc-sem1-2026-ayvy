@@ -22,10 +22,20 @@ public class NotificacoesService {
         return "Notificacoes Enviada";
     }
 
-    public Notificacoes buscarNotificacoesPorTituloOuMensagem(String titulo, String mensagem) {
-        return repository.findByTituloOrMensagem(titulo, mensagem).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "notificação não encontrada")
-        );
+    public List<Notificacoes> buscarNotificacoesPorTituloOuMensagem(String titulo, String mensagem) {
+        boolean temTitulo = titulo != null && !titulo.isBlank();
+        boolean temMensagem = mensagem != null && !mensagem.isBlank();
+
+        if (temTitulo && temMensagem) {
+            return repository.findByTituloOrMensagem(titulo, mensagem);
+        } else if (temTitulo) {
+            return repository.findByTitulo(titulo);
+        } else if (temMensagem) {
+            return repository.findByMensagem(mensagem);
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Informe ao menos 'titulo' ou 'mensagem' para buscar");
+        }
     }
 
     public List<Notificacoes> listarNotificacoes() {

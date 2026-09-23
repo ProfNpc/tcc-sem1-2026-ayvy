@@ -23,9 +23,10 @@ public class NotificacoesController {
         return ResponseEntity.ok().build();
     }
 
-    //CORRIGIR FORMA DE BUSCAR, É COM 1 OU DOIS?
-    @GetMapping("/{titulo}")
-    public ResponseEntity<Notificacoes> buscarNotificacoesPorTituloOuMensagem(@PathVariable String titulo, String mensagem){
+    @GetMapping("/buscar")
+    public ResponseEntity<List<Notificacoes>> buscarNotificacoesPorTituloOuMensagem(
+            @RequestParam(required = false) String titulo,
+            @RequestParam(required = false) String mensagem) {
         return ResponseEntity.ok(notificacoesService.buscarNotificacoesPorTituloOuMensagem(titulo, mensagem));
     }
 

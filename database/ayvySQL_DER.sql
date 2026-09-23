@@ -4,8 +4,10 @@
 -- Extra: tabelas/colunas necessárias para o que já funciona na API
 -- Compatível com DBeaver (sem GO)
 -- =====================================================================
-
+CREATE DATABASE ayvy;
+GO
 USE ayvy;
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: usuarios

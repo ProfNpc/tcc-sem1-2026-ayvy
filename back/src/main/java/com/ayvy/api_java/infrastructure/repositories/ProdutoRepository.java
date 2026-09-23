@@ -13,18 +13,4 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
 
     List<Produto> findByLojistaId(Integer id);
 
-    @Modifying
-    @Transactional
-    @Query("""
-            UPDATE Produto p
-            SET p.visualizacoesTotal = p.visualizacoesTotal + 1
-            WHERE p.id = :id 
-           """)
-
-    void incrementarVisualizacao(@Param("id") Integer id);
-
-//OU extend CrudRepository do Jpa
-    //Deletar pelo Id ou pelo Nome? Por enquanto por Id.
-   // @Transactional
-  //  void deleteById(Integer id);
 }
