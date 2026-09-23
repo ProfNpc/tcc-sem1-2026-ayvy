@@ -1,30 +1,24 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchAddressByCep } from "../../utils/viacep";
+import useCepLookup from "../../hooks/useCepLookup";
 import "./style.css";
 
 export default function CadastroForm({ onSubmit, loading = false }) {
   const [tipoLojista, setTipoLojista] = useState(false);
+  const [showSenha, setShowSenha] = useState(false);
+  const [showSenha2, setShowSenha2] = useState(false);
   const [cep, setCep] = useState("");
   const [logradouro, setLogradouro] = useState("");
   const [numero, setNumero] = useState("");
   const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
-
-  async function handleCepBlur() {
-    const result = await fetchAddressByCep(cep);
-    if (!result.ok) {
-      if (result.error === "notfound") alert("CEP não encontrado!");
-      if (result.error === "invalid") return;
-      if (result.error === "network") alert("Erro ao buscar CEP. Tente novamente.");
-      return;
-    }
-    setLogradouro(result.data.logradouro);
-    setBairro(result.data.bairro);
-    setCidade(result.data.cidade);
-    setEstado(result.data.estado);
-  }
+  const { formatAndLookup, cepLoading, cepError } = useCepLookup((data) => {
+    setLogradouro(data.logradouro);
+    setBairro(data.bairro);
+    setCidade(data.cidade);
+    setEstado(data.estado);
+  });
 
   return (
     <form onSubmit={onSubmit}>
@@ -90,13 +84,22 @@ export default function CadastroForm({ onSubmit, loading = false }) {
           name="cep"
           id="cep"
           placeholder="CEP"
-          maxLength={8}
+          maxLength={9}
           required
+          inputMode="numeric"
+          autoComplete="postal-code"
           value={cep}
-          onChange={(e) => setCep(e.target.value.replace(/\D/g, "").slice(0, 8))}
-          onBlur={handleCepBlur}
+          onChange={(e) => {
+            const { formatted, digits } = formatAndLookup(e.target.value);
+            setCep(formatted || digits);
+          }}
+          onBlur={() => formatAndLookup(cep)}
         />
       </div>
+      {cepLoading ? (
+        <p className="cadastro-cep-hint">Buscando endereço…</p>
+      ) : null}
+      {cepError ? <p className="cadastro-cep-hint cadastro-cep-err">{cepError}</p> : null}
 
       <div className="input-box">
         <i className="bx bxs-direction-left" />
@@ -164,14 +167,42 @@ export default function CadastroForm({ onSubmit, loading = false }) {
         />
       </div>
 
-      <div className="input-box">
-        <i className="bx bxs-lock-alt" />
-        <input type="password" name="senha" placeholder="Crie uma Senha" required />
+      <div className="input-box input-box--password">
+        <i className="bx bxs-lock-alt" aria-hidden />
+        <input
+          type={showSenha ? "text" : "password"}
+          name="senha"
+          placeholder="Crie uma Senha"
+          autoComplete="new-password"
+          required
+        />
+        <button
+          type="button"
+          className="password-toggle"
+          aria-label={showSenha ? "Ocultar senha" : "Mostrar senha"}
+          onClick={() => setShowSenha((v) => !v)}
+        >
+          <i className={`bx ${showSenha ? "bx-hide" : "bx-show"}`} />
+        </button>
       </div>
 
-      <div className="input-box">
-        <i className="bx bxs-lock-open-alt" />
-        <input type="password" name="senha2" placeholder="Confirme a Senha" required />
+      <div className="input-box input-box--password">
+        <i className="bx bxs-lock-open-alt" aria-hidden />
+        <input
+          type={showSenha2 ? "text" : "password"}
+          name="senha2"
+          placeholder="Confirme a Senha"
+          autoComplete="new-password"
+          required
+        />
+        <button
+          type="button"
+          className="password-toggle"
+          aria-label={showSenha2 ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
+          onClick={() => setShowSenha2((v) => !v)}
+        >
+          <i className={`bx ${showSenha2 ? "bx-hide" : "bx-show"}`} />
+        </button>
       </div>
 
       <div className="remember-forgot">

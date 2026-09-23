@@ -706,6 +706,18 @@
   grid-column: 1 / -1;
 }
 
+.ck-cep-hint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ck-muted, #6b6578);
+}
+
+.ck-cep-hint--err {
+  color: #b00020;
+}
+
 .ck-ship-summary {
   margin: 0;
   font-size: 0.9rem;
@@ -863,50 +875,204 @@
 }
 
 /* Meus pedidos */
+.mp-page {
+  padding-top: 1.75rem;
+}
+
+.mp-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.mp-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ck-purple);
+}
+
+.mp-hero h1 {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-weight: 800;
+  color: var(--ck-text);
+}
+
+.mp-sub {
+  margin: 0;
+  color: var(--ck-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.mp-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.mp-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  color: var(--ck-muted);
+  font-weight: 600;
+}
+
+.mp-spinner {
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 2px solid var(--ck-purple-border);
+  border-top-color: var(--ck-purple);
+  border-radius: 50%;
+  animation: mp-spin 0.7s linear infinite;
+}
+
+@keyframes mp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.mp-error {
+  color: #b00020;
+  font-weight: 600;
+}
+
+.mp-empty {
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  background: var(--ck-card);
+  border: 1px solid var(--ck-purple-border);
+  border-radius: 16px;
+}
+
+.mp-empty-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto 1rem;
+  border-radius: 999px;
+  background: var(--ck-purple-soft);
+  color: var(--ck-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+}
+
+.mp-empty h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.25rem;
+}
+
+.mp-empty p {
+  margin: 0 0 1.25rem;
+  color: var(--ck-muted);
+}
+
 .mp-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 1rem;
 }
 
 .mp-card {
-  padding: 1rem 1.15rem;
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  background: var(--ck-card);
+  border: 1px solid #ebe4f3;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(42, 36, 56, 0.04);
+  padding: 0;
+}
+
+.mp-card-accent {
+  width: 5px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, var(--ck-purple), #8a4fb8);
+}
+
+.mp-card-body {
+  flex: 1;
+  padding: 1.15rem 1.25rem;
+  min-width: 0;
 }
 
 .mp-card-top {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 0.75rem;
 }
 
-.mp-card-top strong {
+.mp-id {
+  display: block;
+  font-size: 1.05rem;
   color: var(--ck-text);
+  font-weight: 800;
 }
 
 .mp-when {
-  margin: 0.25rem 0 0.55rem;
+  margin: 0.3rem 0 0;
   font-size: 0.8rem;
   color: var(--ck-muted);
+  font-weight: 500;
+}
+
+.mp-when i {
+  margin-right: 0.25rem;
+  opacity: 0.7;
 }
 
 .mp-itens {
-  margin: 0 0 0.65rem;
-  font-size: 0.9rem;
+  margin: 0.85rem 0;
+  font-size: 0.92rem;
   color: var(--ck-text);
+  line-height: 1.45;
+  font-weight: 500;
 }
 
 .mp-foot {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f0eaf6;
   font-size: 0.9rem;
-  color: var(--ck-muted);
 }
 
-.mp-foot strong {
+.mp-loja {
+  color: var(--ck-muted);
+  font-weight: 600;
+}
+
+.mp-loja i {
   color: var(--ck-purple);
+  margin-right: 0.3rem;
+}
+
+.mp-loja em {
+  font-style: normal;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.mp-valor {
+  color: var(--ck-purple);
+  font-size: 1.05rem;
+  font-weight: 800;
 }
 
 .mp-addr {
@@ -918,9 +1084,11 @@
 .mp-status {
   font-size: 0.72rem;
   font-weight: 700;
-  text-transform: uppercase;
-  padding: 0.2rem 0.55rem;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  padding: 0.3rem 0.7rem;
   border-radius: 999px;
+  white-space: nowrap;
 }
 
 .mp-status--pago {
@@ -936,6 +1104,26 @@
 .mp-status--pendente {
   background: #fff7e6;
   color: #b45309;
+}
+
+.mp-status--cancelado {
+  background: #fde8e8;
+  color: #b91c1c;
+}
+
+@media (max-width: 640px) {
+  .mp-hero-actions {
+    width: 100%;
+  }
+
+  .mp-hero-actions .ck-btn {
+    flex: 1;
+  }
+
+  .mp-foot {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 @media (max-width: 980px) {

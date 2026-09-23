@@ -4,4 +4,46 @@
   margin-bottom: 10px;
 }
 
+.cadastro-cep-hint {
+  margin: -0.35rem 0 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #666;
+  text-align: left;
+  padding-left: 0.25rem;
+}
+
+.cadastro-cep-err {
+  color: #b00020;
+}
+
+.input-box--password input {
+  padding-right: 48px;
+}
+
+.input-box--password .password-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.input-box--password .password-toggle i {
+  position: static;
+  left: auto;
+  top: auto;
+  transform: none;
+  font-size: 20px;
+}
+
 /* demais estilos: cadastro.css (legado) */

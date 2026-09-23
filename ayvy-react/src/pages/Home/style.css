@@ -1,1 +1,13 @@
-/* home: geral.css; overlays no Banner */
+/* Home: estilos principais em public/assets/css/geral.css */
+
+@media (max-width: 1100px) {
+  body.page-home .home-product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  body.page-home .home-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

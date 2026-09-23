@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ADMIN_NAV } from "../../utils/adminDashboardMock";
+import NavCartButton from "../NavCartButton";
 import "./style.css";
 
 export default function AdminLayout() {
@@ -69,6 +70,10 @@ export default function AdminLayout() {
       </aside>
 
       <div className="admin-content-wrap">
+        <header className="admin-topbar">
+          <span className="admin-topbar-title">Painel</span>
+          <NavCartButton id="navCartIconAdmin" />
+        </header>
         <Outlet />
       </div>
     </div>

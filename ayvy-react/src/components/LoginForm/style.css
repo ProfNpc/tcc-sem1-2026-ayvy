@@ -1,1 +1,30 @@
-/* estilos do formulário: login.css (legado) */
+/* estilos do formulário: login.css (legado) + ajustes locais */
+
+.input-box--password .password-toggle {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.input-box--password .password-toggle i {
+  position: static;
+  transform: none;
+  font-size: 22px;
+  right: auto;
+  top: auto;
+}
+
+.input-box--password input {
+  padding-right: 48px;
+}

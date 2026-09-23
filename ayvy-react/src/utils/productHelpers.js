@@ -2,6 +2,20 @@
 const DEFAULT_COLORS = ["Preto", "Branco", "Bege", "Vermelho", "Azul"];
 const DEFAULT_SIZES = ["PP", "P", "M", "G", "GG"];
 
+const COLOR_ALIASES = {
+  Preto: ["preto", "preta", "black", "blk"],
+  Branco: ["branco", "branca", "white", "wht", "off"],
+  Bege: ["bege", "beige"],
+  Vermelho: ["vermelho", "vermelha", "red", "vinho"],
+  Azul: ["azul", "blue", "jeans"],
+  Verde: ["verde", "green"],
+  Rosa: ["rosa", "pink"],
+  Cinza: ["cinza", "grey", "gray"],
+  Marrom: ["marrom", "brown", "cafe", "couro"],
+  Amarelo: ["amarelo", "amarela", "yellow"],
+  Roxo: ["roxo", "roxa", "purple", "lilas", "track"],
+};
+
 const SAMPLE_REVIEWS = [
   {
     id: "r1",
@@ -50,9 +64,86 @@ export function enrichShop(shop, slug) {
   };
 }
 
+function normalizeFile(src) {
+  return String(src || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "");
+}
+
+function colorTokens(color) {
+  const c = String(color || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "");
+  for (const [name, aliases] of Object.entries(COLOR_ALIASES)) {
+    if (c.includes(name.toLowerCase()) || aliases.some((a) => c.includes(a))) {
+      return aliases;
+    }
+  }
+  return [c.split(/\s+/)[0]].filter(Boolean);
+}
+
+function findColorInFilename(src) {
+  const file = normalizeFile(src);
+  for (const [name, aliases] of Object.entries(COLOR_ALIASES)) {
+    if (aliases.some((a) => file.includes(a))) return name;
+  }
+  return null;
+}
+
+/** Infere cores a partir dos nomes das imagens (qualquer loja). */
+function inferColorsFromImages(images) {
+  const found = [];
+  for (const src of images) {
+    const name = findColorInFilename(src);
+    if (name && !found.includes(name)) found.push(name);
+  }
+  return found;
+}
+
+/**
+ * Monta mapa cor → imagem.
+ * Prioridade: colorImages explícito → match no nome do arquivo → sobras por ordem.
+ */
+export function buildColorImages(images, colors, explicit) {
+  const map = { ...(explicit || {}) };
+  if (!images?.length || !colors?.length) return map;
+
+  const used = new Set();
+  for (const color of colors) {
+    if (map[color]) {
+      const idx = images.indexOf(map[color]);
+      if (idx >= 0) used.add(idx);
+      continue;
+    }
+    const tokens = colorTokens(color);
+    const found = images.findIndex(
+      (src, i) => !used.has(i) && tokens.some((t) => normalizeFile(src).includes(t)),
+    );
+    if (found >= 0) {
+      map[color] = images[found];
+      used.add(found);
+    }
+  }
+
+  let ui = 0;
+  for (const color of colors) {
+    if (map[color]) continue;
+    while (ui < images.length && used.has(ui)) ui += 1;
+    if (ui < images.length) {
+      map[color] = images[ui];
+      used.add(ui);
+      ui += 1;
+    } else {
+      map[color] = images[0];
+    }
+  }
+  return map;
+}
+
 /**
  * Imagem da variante de cor (qualquer loja).
- * Ordem: colorImages explícito → índice da cor em colors[] → palavra da cor no nome do arquivo → 1ª foto.
  */
 export function getImageForColor(product, colorName) {
   const images = product?.images ?? [];
@@ -60,22 +151,16 @@ export function getImageForColor(product, colorName) {
   if (!colorName) return images[0];
 
   const color = String(colorName).trim();
-  if (product.colorImages?.[color]) return product.colorImages[color];
-
   const colors = product.colors ?? [];
-  const idx = colors.findIndex(
-    (c) => String(c).toLowerCase() === color.toLowerCase(),
+  const colorImages = buildColorImages(images, colors.length ? colors : [color], product.colorImages);
+
+  if (colorImages[color]) return colorImages[color];
+
+  const byKey = Object.keys(colorImages).find(
+    (k) => k.toLowerCase() === color.toLowerCase(),
   );
-  if (idx >= 0 && images[idx]) return images[idx];
+  if (byKey) return colorImages[byKey];
 
-  const tokens = colorTokens(color);
-  const byFile = images.find((src) => {
-    const file = String(src).toLowerCase();
-    return tokens.some((t) => file.includes(t));
-  });
-  if (byFile) return byFile;
-
-  if (idx >= 0) return images[Math.min(idx, images.length - 1)];
   return images[0];
 }
 
@@ -88,27 +173,6 @@ export function getColorImageIndex(product, colorName) {
   return i >= 0 ? i : 0;
 }
 
-function colorTokens(color) {
-  const c = String(color).toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
-  const map = {
-    preto: ["preto", "black", "blk"],
-    branco: ["branco", "white", "wht"],
-    bege: ["bege", "beige"],
-    vermelho: ["vermelho", "red", "vinho"],
-    azul: ["azul", "blue", "jeans"],
-    verde: ["verde", "green"],
-    rosa: ["rosa", "pink"],
-    cinza: ["cinza", "grey", "gray"],
-    marrom: ["marrom", "brown", "cafe"],
-    amarelo: ["amarelo", "yellow"],
-    roxo: ["roxo", "purple", "lilas"],
-  };
-  for (const [key, aliases] of Object.entries(map)) {
-    if (c.includes(key) || aliases.some((a) => c.includes(a))) return aliases;
-  }
-  return [c.split(/\s+/)[0]].filter(Boolean);
-}
-
 export function enrichProduct(product, shop) {
   const categoryPath = product.categoryPath ?? [
     "AYVY",
@@ -118,16 +182,21 @@ export function enrichProduct(product, shop) {
   const images =
     product.images ??
     (product.href ? [product.href.replace(/^public\//, "/")] : []);
+
+  const inferred = inferColorsFromImages(images);
   const colors =
     product.colors ??
-    (images.length >= 2 && images.length <= 5
-      ? DEFAULT_COLORS.slice(0, images.length)
-      : DEFAULT_COLORS.slice(0, 5));
+    (inferred.length
+      ? inferred
+      : DEFAULT_COLORS.slice(0, Math.min(Math.max(images.length, 1), 5)));
+
+  const colorImages = buildColorImages(images, colors, product.colorImages);
+
   return {
     ...product,
     images,
     colors,
-    colorImages: product.colorImages,
+    colorImages,
     sizes: product.sizes ?? DEFAULT_SIZES,
     rating: product.rating ?? 4.9,
     reviewCount: product.reviewCount ?? (product.reviews?.length ?? 12),

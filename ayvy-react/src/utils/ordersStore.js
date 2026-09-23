@@ -3,20 +3,6 @@ import { formatBRL, lineSubtotal } from "./cartHelpers";
 const ORDERS_KEY = "ayvy.orders.v1";
 const ADDRESSES_KEY = "ayvy.addresses.v1";
 
-const DEFAULT_ADDRESSES = [
-  {
-    id: "addr-1",
-    label: "Casa",
-    nome: "Cliente AYVY",
-    rua: "Rua das Flores, 120",
-    complemento: "Apt 42",
-    bairro: "Bela Vista",
-    cidade: "São Paulo",
-    uf: "SP",
-    cep: "01310-100",
-  },
-];
-
 function readJson(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
@@ -193,13 +179,24 @@ function formatRelative(date) {
   return `Agora · ${date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
 }
 
+function isMockAddress(addr) {
+  if (!addr) return false;
+  const nome = String(addr.nome || "").toLowerCase();
+  return (
+    addr.id === "addr-1" ||
+    nome === "cliente ayvy" ||
+    nome.includes("cliente ayvy")
+  );
+}
+
 export function listAddresses() {
-  const list = readJson(ADDRESSES_KEY, null);
-  if (!Array.isArray(list) || list.length === 0) {
-    writeJson(ADDRESSES_KEY, DEFAULT_ADDRESSES);
-    return DEFAULT_ADDRESSES;
+  const list = readJson(ADDRESSES_KEY, []);
+  if (!Array.isArray(list)) return [];
+  const cleaned = list.filter((a) => !isMockAddress(a));
+  if (cleaned.length !== list.length) {
+    writeJson(ADDRESSES_KEY, cleaned);
   }
-  return list;
+  return cleaned;
 }
 
 export function saveAddress(address) {

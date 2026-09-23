@@ -155,6 +155,31 @@
   overflow-x: hidden;
 }
 
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  background: #fff;
+  border-bottom: 1px solid #e6e4ec;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.admin-topbar-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b6578;
+}
+
+.admin-topbar .nav-cart-icon {
+  margin-left: 0;
+}
+
 @media (max-width: 900px) {
   .admin-shell {
     flex-direction: column;

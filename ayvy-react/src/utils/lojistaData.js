@@ -20,8 +20,18 @@ export const SHOPS = {
           price: "R$ 599,90",
           discountPercent: 15,
           soldCount: 1200,
-          images: ["/assets/img/Leather_Jacket.jpg",
-          "/assets/img/Leather_Jacket2.jpg", "/assets/img/red_leather.jpg", "/assets/img/Leather_branca.jpg", ],
+          colors: ["Preto", "Vermelho", "Branco"],
+          images: [
+            "/assets/img/Leather_Jacket.jpg",
+            "/assets/img/Leather_Jacket2.jpg",
+            "/assets/img/red_leather.jpg",
+            "/assets/img/Leather_branca.jpg",
+          ],
+          colorImages: {
+            Preto: "/assets/img/Leather_Jacket.jpg",
+            Vermelho: "/assets/img/red_leather.jpg",
+            Branco: "/assets/img/Leather_branca.jpg",
+          },
           description:
             "Jaqueta de couro legitimo, ideal para dias frios.",
         },
@@ -83,33 +93,51 @@ export const SHOPS = {
           id: "rf-4",
           title: "Calça Wide Leg",
           price: "R$ 179,90",
+          colors: ["Azul", "Cinza"],
           images: [
             "/assets/img/calca_wide.jpg",
             "/assets/img/calcawide_cinza.jpg",
           ],
+          colorImages: {
+            Azul: "/assets/img/calca_wide.jpg",
+            Cinza: "/assets/img/calcawide_cinza.jpg",
+          },
           description: "Cintura alta, comprimento alongado. Jeans de alta qualidade.",
         },
         {
           id: "rf-5",
           title: "Bolsa Tiracolo",
           price: "R$ 139,90",
+          colors: ["Azul", "Bege", "Vermelho", "Branco", "Preto"],
           images: [
             "/assets/img/bolsaazul.jpg",
             "/assets/img/bolsabege.jpg",
             "/assets/img/bolsared.jpg",
             "/assets/img/bolsabranca.jpg",
-            "/assets/img/bolsapreta.jpg"
+            "/assets/img/bolsapreta.jpg",
           ],
+          colorImages: {
+            Azul: "/assets/img/bolsaazul.jpg",
+            Bege: "/assets/img/bolsabege.jpg",
+            Vermelho: "/assets/img/bolsared.jpg",
+            Branco: "/assets/img/bolsabranca.jpg",
+            Preto: "/assets/img/bolsapreta.jpg",
+          },
           description: "é um acessório desenhado para ser pendurado no ombro, oferecendo praticidade e mantendo as mãos livres. Combina funcionalidade e estilo.",
         },
         {
           id: "rf-6",
           title: "Top Canelado",
           price: "R$ 89,90",
+          colors: ["Preto", "Branco"],
           images: [
             "/assets/img/top_canelado.jpg",
             "/assets/img/top_branco.jpg",
           ],
+          colorImages: {
+            Preto: "/assets/img/top_canelado.jpg",
+            Branco: "/assets/img/top_branco.jpg",
+          },
           description: "Malha canelada premium, alças ajustáveis.",
         },
         {
@@ -141,11 +169,17 @@ export const SHOPS = {
           price: "R$ 59,90",
           discountPercent: 25,
           soldCount: 780,
+          colors: ["Preto", "Azul", "Marrom"],
           images: [
             "/assets/img/saida_preta.jpg",
             "/assets/img/saidaAzul.jpg",
             "/assets/img/saidaMarrom.jpg",
           ],
+          colorImages: {
+            Preto: "/assets/img/saida_preta.jpg",
+            Azul: "/assets/img/saidaAzul.jpg",
+            Marrom: "/assets/img/saidaMarrom.jpg",
+          },
           description: "Couro sintético premium, alça ajustável.",
         },
         {
@@ -153,11 +187,17 @@ export const SHOPS = {
           title: "Camisa Oversized",
           price: "R$ 89,90",
           soldCount: 95,
+          colors: ["Branco", "Preto", "Bege"],
           images: [
             "/assets/img/camisaBranca.jpg",
             "/assets/img/camisapreta.jpg",
-            "/assets/img/camisaOff.jpg"
+            "/assets/img/camisaOff.jpg",
           ],
+          colorImages: {
+            Branco: "/assets/img/camisaBranca.jpg",
+            Preto: "/assets/img/camisapreta.jpg",
+            Bege: "/assets/img/camisaOff.jpg",
+          },
           description: "Tweed clássico, forro acetinado, botões dourados.",
         },
         {
@@ -214,9 +254,17 @@ export const SHOPS = {
           id: "ls-2",
           title: "Tênis New Balance 530 unissex",
           price: "R$ 749,90",
-          images: ["/assets/img/NBcinza2.png",
+          colors: ["Cinza", "Branco", "Preto"],
+          images: [
+            "/assets/img/NBcinza2.png",
             "/assets/img/NBbranco.png",
-          "/assets/img/NBpreto1.png",],
+            "/assets/img/NBpreto1.png",
+          ],
+          colorImages: {
+            Cinza: "/assets/img/NBcinza2.png",
+            Branco: "/assets/img/NBbranco.png",
+            Preto: "/assets/img/NBpreto1.png",
+          },
           description: "Algodão penteado 180g, gola canelada reforçada.",
         },
         {
@@ -240,9 +288,17 @@ export const SHOPS = {
           price: "R$ 80,00",
           discountPercent: 18,
           soldCount: 640,
-          images:  ["/assets/img/BoneAzul.png",
+          colors: ["Azul", "Preto", "Vermelho"],
+          images: [
+            "/assets/img/BoneAzul.png",
             "/assets/img/BonePreto.png",
-          "/assets/img/BoneVerm.png",],
+            "/assets/img/BoneVerm.png",
+          ],
+          colorImages: {
+            Azul: "/assets/img/BoneAzul.png",
+            Preto: "/assets/img/BonePreto.png",
+            Vermelho: "/assets/img/BoneVerm.png",
+          },
           description: "Tecido impermeável leve, capuz embutido.",
         },
         {

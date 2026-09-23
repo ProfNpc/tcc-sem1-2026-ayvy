@@ -1,1 +1,61 @@
-/* brand strip: geral.css */
+/* brand strip — ida e volta */
+
+.brand-slider-section {
+  overflow: hidden;
+  padding: 30px 0;
+  width: 100%;
+}
+
+.slider-title-center {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #333;
+}
+
+.brand-container {
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.brand-track {
+  display: flex;
+  width: max-content;
+  animation: brand-pingpong 42s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.brand-item {
+  flex: 0 0 auto;
+  min-width: 180px;
+  padding: 0 1.75rem;
+  font-weight: 900;
+  color: #777;
+  font-size: 1.2rem;
+  text-align: center;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+@keyframes brand-pingpong {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-track {
+    animation: none;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .brand-container {
+    mask-image: none;
+  }
+}

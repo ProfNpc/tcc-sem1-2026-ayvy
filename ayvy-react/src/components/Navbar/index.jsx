@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { useCart } from "../../context/CartContext";
 import scrollToSupportSection from "../../utils/scrollToSupport";
-import CartDrawer from "../CartDrawer";
 import LogoutModal from "../LogoutModal";
+import NavCartButton from "../NavCartButton";
 import NavbarMobile from "../NavbarMobile";
 import "./style.css";
 
 export default function Navbar() {
   const { loggedIn, logout, isAdmin, isLojista, isCliente, shopSlug } = useAuth();
   const minhaLojaPath = shopSlug ? `/loja/${shopSlug}` : "/";
-  const { cartCount, toggle } = useCart();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -59,18 +57,6 @@ export default function Navbar() {
                   <Link to="/sobre">
                     <i className="fas fa-info-circle" /> Sobre
                   </Link>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="nav-link-like"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      scrollToSupportSection();
-                    }}
-                  >
-                    <i className="fas fa-question-circle" /> Suporte AYVY
-                  </a>
                 </li>
                 <li style={{ display: loggedIn ? "" : "none" }}>
                   <button
@@ -131,17 +117,7 @@ export default function Navbar() {
             Cadastre-se
           </Link>
 
-          <div
-            className="nav-cart-icon"
-            id="navCartIcon"
-            onClick={toggle}
-            style={{ display: isCliente && loggedIn ? "flex" : "none" }}
-            title="Carrinho"
-            role="presentation"
-          >
-            <i className="fas fa-shopping-cart" />
-            <span id="cartCount">{cartCount}</span>
-          </div>
+          <NavCartButton id="navCartIcon" />
         </div>
       </header>
 
@@ -153,8 +129,6 @@ export default function Navbar() {
         isCliente={isCliente}
         minhaLojaPath={minhaLojaPath}
         onLogoutRequest={() => setLogoutOpen(true)}
-        cartCount={cartCount}
-        onCartClick={toggle}
       />
 
       <LogoutModal
@@ -162,8 +136,6 @@ export default function Navbar() {
         onClose={() => setLogoutOpen(false)}
         onConfirm={confirmLogout}
       />
-
-      <CartDrawer />
     </>
   );
 }

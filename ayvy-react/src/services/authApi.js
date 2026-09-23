@@ -33,7 +33,29 @@ export function listLojistas() {
 
 export async function findLojistaByUsuarioId(usuarioId) {
   const lojistas = await listLojistas();
-  return (lojistas || []).find((l) => l?.usuario?.id === usuarioId || l?.usuarioId === usuarioId) ?? null;
+  const uid = Number(usuarioId);
+  return (
+    (lojistas || []).find((l) => {
+      const lid = l?.usuario?.id ?? l?.usuarioId;
+      return lid != null && Number(lid) === uid;
+    }) ?? null
+  );
+}
+
+/**
+ * Aceita e-mail completo ou atalho de desenvolvimento (admin / adm).
+ * Não força lowercase no e-mail completo (match exato no back).
+ */
+export function resolveLoginEmail(raw) {
+  const value = String(raw || "").trim();
+  if (!value) return "";
+  if (value.includes("@")) return value;
+  const aliases = {
+    admin: "admin@ayvy.com.br",
+    administrador: "admin@ayvy.com.br",
+    adm: "admin@ayvy.com.br",
+  };
+  return aliases[value.toLowerCase()] || value;
 }
 
 /**
@@ -41,15 +63,18 @@ export async function findLojistaByUsuarioId(usuarioId) {
  */
 export function sessionFromUsuario(usuario, lojista = null) {
   const role = String(usuario?.papel || "cliente").toLowerCase();
+  const slug = lojista?.slug
+    ? String(lojista.slug).trim().toLowerCase().replace(/-/g, "_")
+    : null;
   return {
     id: usuario.id,
     role,
     login: usuario.email?.split("@")[0] || "",
     email: usuario.email || "",
-    displayName: usuario.nome || usuario.email || "Usuário",
+    displayName: usuario.nome || lojista?.nomeLoja || usuario.email || "Usuário",
     status: usuario.status || "ativo",
     avatarUrl: usuario.avatarUrl || null,
-    shopSlug: lojista?.slug || null,
+    shopSlug: slug,
     lojistaId: lojista?.id || null,
   };
 }

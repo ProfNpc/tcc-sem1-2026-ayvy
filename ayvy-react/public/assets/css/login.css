@@ -103,6 +103,11 @@ body {
   text-decoration: underline;
 }
 
+form .forgot-wrap,
+.container .forgot-wrap {
+  display: none;
+}
+
 /* Botão de login principal */
 .login {
   width: 100%;

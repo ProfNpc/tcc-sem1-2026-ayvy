@@ -45,6 +45,10 @@ export function criarEndereco(payload) {
   return apiJson("/enderecos", { method: "POST", body: payload });
 }
 
+export function deletarEndereco(id) {
+  return apiFetch(`/enderecos/${id}`, { method: "DELETE" });
+}
+
 export function deletarPedido(id) {
   return apiFetch(`/pedidos/${id}`, { method: "DELETE" });
 }

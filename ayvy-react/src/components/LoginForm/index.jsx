@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./style.css";
 
 export default function LoginForm({ onSubmit, loading = false }) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <form onSubmit={onSubmit}>
       <h1>Login AYVY</h1>
@@ -9,7 +12,7 @@ export default function LoginForm({ onSubmit, loading = false }) {
       <div className="input-box">
         <input
           placeholder="E-mail"
-          type="email"
+          type="text"
           name="username"
           autoComplete="username"
           required
@@ -17,15 +20,22 @@ export default function LoginForm({ onSubmit, loading = false }) {
         <i className="bx bxs-user" />
       </div>
 
-      <div className="input-box">
+      <div className="input-box input-box--password">
         <input
           placeholder="Senha"
-          type="password"
+          type={showPassword ? "text" : "password"}
           name="password"
           autoComplete="current-password"
           required
         />
-        <i className="bx bxs-lock-alt" />
+        <button
+          type="button"
+          className="password-toggle"
+          aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+          onClick={() => setShowPassword((v) => !v)}
+        >
+          <i className={`bx ${showPassword ? "bx-hide" : "bx-show"}`} />
+        </button>
       </div>
 
       <div className="remember-forgot">

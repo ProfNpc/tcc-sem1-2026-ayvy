@@ -71,7 +71,8 @@ export function getPostLoginPath(session, from) {
     return "/admin";
   }
   if (session.role === ROLES.LOJISTA) {
-    return "/";
+    if (session.shopSlug) return `/loja/${session.shopSlug}`;
+    return "/perfil";
   }
   if (typeof from === "string" && from && from !== "/login" && !from.startsWith("/admin")) {
     return from;

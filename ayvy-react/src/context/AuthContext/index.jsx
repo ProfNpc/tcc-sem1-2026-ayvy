@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useSyncExternalStore }
 import {
   findLojistaByUsuarioId,
   loginUsuario,
+  resolveLoginEmail,
   sessionFromUsuario,
 } from "../../services/authApi";
 import { getPostLoginPath, ROLES } from "../../utils/mockAuthUsers";
@@ -59,10 +60,13 @@ export default function AuthProvider({ children }) {
   const loggedIn = Boolean(user);
 
   const login = useCallback(async (emailInput, password) => {
-    const email = String(emailInput || "").trim();
+    const email = resolveLoginEmail(emailInput);
     const senha = String(password || "").trim();
     if (!email || !senha) {
       throw new Error("Preencha e-mail e senha.");
+    }
+    if (!email.includes("@")) {
+      throw new Error("Use o e-mail completo do cadastro (ex.: seu@email.com).");
     }
 
     const usuario = await loginUsuario({ email, senha });
@@ -72,6 +76,11 @@ export default function AuthProvider({ children }) {
         lojista = await findLojistaByUsuarioId(usuario.id);
       } catch {
         lojista = null;
+      }
+      if (!lojista) {
+        throw new Error(
+          "Conta lojista sem loja vinculada na API. Conclua o cadastro de lojista ou fale com o admin.",
+        );
       }
     }
 

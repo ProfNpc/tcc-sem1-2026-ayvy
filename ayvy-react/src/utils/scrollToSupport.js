@@ -1,4 +1,4 @@
-/** Comportamento alinhado ao legado (navbar.js): scroll suave ou navegação para /#support-section. */
+/** Scroll para o único bloco Suporte AYVY (home). */
 export default function scrollToSupportSection() {
   const support = document.getElementById("support-section");
   if (support) {

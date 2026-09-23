@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import scrollToSupportSection from "../../utils/scrollToSupport";
+import NavCartButton from "../NavCartButton";
 import "./style.css";
 
 export default function NavbarMobile({
@@ -10,8 +11,6 @@ export default function NavbarMobile({
   isCliente,
   minhaLojaPath = "/",
   onLogoutRequest,
-  cartCount,
-  onCartClick,
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -80,7 +79,7 @@ export default function NavbarMobile({
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/#support-section"
                   className="nav-link-like"
                   onClick={(e) => {
                     e.preventDefault();
@@ -134,17 +133,7 @@ export default function NavbarMobile({
         </Link>
       </div>
 
-      <div
-        className="nav-cart-icon"
-        id="navCartIconMobile"
-        onClick={onCartClick}
-        style={{ display: isCliente && loggedIn ? "flex" : "none" }}
-        title="Carrinho"
-        role="presentation"
-      >
-        <i className="fas fa-shopping-cart" />
-        <span id="cartCountMobile">{cartCount}</span>
-      </div>
+      <NavCartButton id="navCartIconMobile" />
     </header>
   );
 }

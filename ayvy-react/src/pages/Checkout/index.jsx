@@ -3,7 +3,6 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import {
-  listAddresses,
   saveAddress,
   saveOrder,
 } from "../../utils/ordersStore";
@@ -14,6 +13,7 @@ import {
   listEnderecos,
 } from "../../services/pedidosApi";
 import { formatCep } from "../../utils/cartHelpers";
+import useCepLookup from "../../hooks/useCepLookup";
 import "./style.css";
 
 const STEPS = [
@@ -59,11 +59,18 @@ export default function Checkout() {
   } = useCart();
 
   const [step, setStep] = useState(0);
-  const [addresses, setAddresses] = useState(() => listAddresses());
-  const [selectedAddressId, setSelectedAddressId] = useState(
-    () => listAddresses()[0]?.id ?? "novo",
-  );
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState("novo");
   const [newAddress, setNewAddress] = useState(EMPTY_NEW);
+  const { formatAndLookup, cepLoading, cepError } = useCepLookup((data) => {
+    setNewAddress((a) => ({
+      ...a,
+      rua: data.logradouro || a.rua,
+      bairro: data.bairro || a.bairro,
+      cidade: data.cidade || a.cidade,
+      uf: data.estado || a.uf,
+    }));
+  });
   const [paymentMethod, setPaymentMethod] = useState("pix");
   const [card, setCard] = useState({
     number: "",
@@ -80,15 +87,27 @@ export default function Checkout() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        setAddresses([]);
+        setSelectedAddressId("novo");
+        return;
+      }
       try {
         const apiList = await listEnderecos();
         const mine = (apiList || [])
-          .filter((e) => e?.usuario?.id === user.id || e?.usuarioId === user.id)
+          .filter((e) => {
+            const uid = e?.usuario?.id ?? e?.usuarioId;
+            return uid == null || Number(uid) === Number(user.id);
+          })
           .map((e) => ({
             id: `api-${e.id}`,
             apiId: e.id,
-            nome: e.apelido || user.displayName || "Endereço",
+            nome:
+              e.apelido ||
+              e.nome ||
+              user.displayName ||
+              "Meu endereço",
+            numero: e.numero || "",
             rua: e.logradouro || "",
             complemento: e.complemento || "",
             bairro: e.bairro || "",
@@ -98,15 +117,14 @@ export default function Checkout() {
             telefone: user.telefone || "",
             cpf: "",
           }));
-        if (cancelled || mine.length === 0) return;
-        const local = listAddresses();
-        const merged = [...mine, ...local.filter((a) => !String(a.id).startsWith("api-"))];
-        setAddresses(merged);
-        setSelectedAddressId((prev) =>
-          merged.some((a) => a.id === prev) ? prev : merged[0].id,
-        );
+        if (cancelled) return;
+        setAddresses(mine);
+        setSelectedAddressId(mine.length > 0 ? mine[0].id : "novo");
       } catch {
-        /* mantém endereços locais */
+        if (!cancelled) {
+          setAddresses([]);
+          setSelectedAddressId("novo");
+        }
       }
     })();
     return () => {
@@ -119,7 +137,7 @@ export default function Checkout() {
     return addresses.find((a) => a.id === selectedAddressId) ?? null;
   }, [addresses, selectedAddressId]);
 
-  const accountName = user?.displayName || "Cliente AYVY";
+  const accountName = user?.displayName || user?.login || "Cliente";
   const accountEmail =
     user?.email || `${user?.login || "cliente"}@ayvy.local`;
 
@@ -167,12 +185,9 @@ export default function Checkout() {
       return;
     }
     if (selectedAddressId === "novo") {
-      const saved = saveAddress(addr);
-      setAddresses(listAddresses());
-      setSelectedAddressId(saved.id);
       if (user?.id) {
         try {
-          await criarEndereco({
+          const created = await criarEndereco({
             usuario: { id: user.id },
             logradouro: addr.rua,
             numero: addr.numero || "S/N",
@@ -184,9 +199,32 @@ export default function Checkout() {
             principal: true,
             apelido: addr.nome || "Entrega",
           });
+          const apiId = created?.id;
+          const mapped = {
+            id: apiId != null ? `api-${apiId}` : `local-${Date.now()}`,
+            apiId: apiId ?? null,
+            nome: addr.nome,
+            numero: addr.numero || "S/N",
+            rua: addr.rua,
+            complemento: addr.complemento || "",
+            bairro: addr.bairro || "",
+            cidade: addr.cidade,
+            uf: addr.uf,
+            cep: addr.cep,
+            telefone: user.telefone || "",
+            cpf: "",
+          };
+          setAddresses((prev) => [mapped, ...prev.filter((a) => a.id !== mapped.id)]);
+          setSelectedAddressId(mapped.id);
         } catch {
-          /* salva local mesmo se API falhar */
+          const local = saveAddress(addr);
+          setAddresses((prev) => [local, ...prev.filter((a) => a.id !== local.id)]);
+          setSelectedAddressId(local.id);
         }
+      } else {
+        const local = saveAddress(addr);
+        setAddresses((prev) => [local, ...prev.filter((a) => a.id !== local.id)]);
+        setSelectedAddressId(local.id);
       }
     }
     await ensureFreightForAddress(addr);
@@ -452,14 +490,21 @@ export default function Checkout() {
                       <input
                         value={newAddress.cep}
                         maxLength={9}
+                        inputMode="numeric"
+                        autoComplete="postal-code"
+                        placeholder="00000-000"
                         onChange={(e) => {
-                          const d = e.target.value.replace(/\D/g, "").slice(0, 8);
-                          setNewAddress((a) => ({
-                            ...a,
-                            cep: d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d,
-                          }));
+                          const { formatted } = formatAndLookup(e.target.value);
+                          setNewAddress((a) => ({ ...a, cep: formatted }));
                         }}
+                        onBlur={() => formatAndLookup(newAddress.cep)}
                       />
+                      {cepLoading ? (
+                        <span className="ck-cep-hint">Buscando endereço…</span>
+                      ) : null}
+                      {cepError ? (
+                        <span className="ck-cep-hint ck-cep-hint--err">{cepError}</span>
+                      ) : null}
                     </label>
                     <label className="ck-span-2">
                       Rua / número

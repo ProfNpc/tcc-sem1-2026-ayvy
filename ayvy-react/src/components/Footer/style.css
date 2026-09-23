@@ -1,1 +1,227 @@
-/* footer: geral.css (site-footer / footer-ayvy) */
+/* Suporte AYVY — fundo branco */
+
+.ayvy-support {
+  --sup-purple: var(--ayvy-purple, #b06edc);
+  --sup-ink: #111111;
+  --sup-muted: #555555;
+  --sup-line: #efe6f6;
+  --sup-soft: #faf7fc;
+  background: #ffffff;
+  color: var(--sup-ink);
+  padding: 4rem 1.25rem 2.5rem;
+  margin-top: 4rem;
+  border-top: 1px solid var(--sup-line);
+}
+
+.ayvy-support__inner {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.ayvy-support__head {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.ayvy-support__eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sup-purple);
+}
+
+.ayvy-support__title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.75rem, 4vw, 2.35rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--sup-purple);
+}
+
+.ayvy-support__lead {
+  margin: 0 auto;
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--sup-muted);
+  font-weight: 500;
+}
+
+.ayvy-support__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 2.75rem;
+}
+
+.ayvy-support__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.35rem 1.25rem;
+  border-radius: 16px;
+  background: var(--sup-soft);
+  border: 1px solid var(--sup-line);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+a.ayvy-support__card:hover {
+  background: #f6edfc;
+  border-color: rgba(176, 110, 220, 0.45);
+  transform: translateY(-2px);
+}
+
+.ayvy-support__icon {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sup-purple);
+  color: #fff;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.ayvy-support__card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--sup-ink);
+}
+
+.ayvy-support__card p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--sup-muted);
+  font-weight: 500;
+}
+
+.ayvy-support__link {
+  margin-top: 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--sup-purple);
+}
+
+.ayvy-support__faq {
+  margin-bottom: 2.5rem;
+}
+
+.ayvy-support__faq-title {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--sup-ink);
+}
+
+.ayvy-support__faq-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.ayvy-support__faq-list details {
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--sup-line);
+  padding: 0.15rem 1rem;
+}
+
+.ayvy-support__faq-list summary {
+  cursor: pointer;
+  padding: 0.9rem 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--sup-ink);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ayvy-support__faq-list summary::-webkit-details-marker {
+  display: none;
+}
+
+.ayvy-support__faq-list summary::after {
+  content: "+";
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--sup-purple);
+  flex-shrink: 0;
+}
+
+.ayvy-support__faq-list details[open] summary::after {
+  content: "−";
+}
+
+.ayvy-support__faq-list details p {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--sup-muted);
+  font-weight: 500;
+}
+
+.ayvy-support__foot {
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--sup-line);
+}
+
+.ayvy-support__foot p {
+  margin: 0.25rem 0;
+  font-size: 0.82rem;
+  color: var(--sup-muted);
+  font-weight: 500;
+}
+
+.ayvy-support__foot strong {
+  color: var(--sup-ink);
+  font-weight: 700;
+}
+
+.footer-ayvy {
+  background: #191b23;
+  color: #fff;
+  padding: 2.5rem 1.25rem;
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.footer-ayvy .footer-box h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.footer-ayvy .footer-box p {
+  margin: 0.25rem 0;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+}
+
+@media (max-width: 800px) {
+  .ayvy-support__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ayvy-support {
+    padding: 3rem 1rem 2rem;
+  }
+}
