@@ -31,13 +31,13 @@ public class Pedido {
     @Column(name = "status", nullable = false)
     private StatusPedido status = StatusPedido.aguardando_pagamento;
 
-    @Column(name = "valor_subtotal", nullable = false)
+    @Column(name = "valor_subtotal", nullable = false, precision = 12, scale = 2)
     private BigDecimal valorSubtotal = BigDecimal.ZERO;
 
-    @Column(name = "valor_frete", nullable = false)
+    @Column(name = "valor_frete", nullable = false, precision = 12, scale = 2)
     private BigDecimal valorFrete = BigDecimal.ZERO;
 
-    @Column(name = "valor_total", nullable = false)
+    @Column(name = "valor_total", nullable = false, precision = 12, scale = 2)
     private BigDecimal valorTotal = BigDecimal.ZERO;
 
     @Column(name = "observacao", length = 500)
