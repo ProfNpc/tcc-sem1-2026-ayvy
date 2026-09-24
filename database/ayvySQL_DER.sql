@@ -4,6 +4,8 @@
 -- Extra: tabelas/colunas necessárias para o que já funciona na API
 -- Compatível com DBeaver (sem GO)
 -- =====================================================================
+DROP DATABASE ayvy;
+GO
 CREATE DATABASE ayvy;
 GO
 USE ayvy;
@@ -16,7 +18,7 @@ CREATE TABLE usuarios (
     id               INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     papel            VARCHAR(50) NOT NULL,
     nome             VARCHAR(150) NOT NULL,
-    nome_usuario     VARCHAR(80) NULL UNIQUE,
+    nome_usuario     VARCHAR(80) NULL , --foi retirado o UNIQUE dessa coluna, pois impedia a criação de novos uuários
     email            VARCHAR(191) NOT NULL UNIQUE,
     senha_hash       VARCHAR(255) NOT NULL,
     telefone         VARCHAR(20) NULL,
@@ -260,3 +262,6 @@ INSERT INTO categorias (nome, slug, ativo) VALUES
     (N'Streetwear', N'streetwear', 1),
     (N'Acessórios', N'acessorios', 1),
     (N'Calçados', N'calcados', 1);
+
+
+  SELECT * FROM usuarios;

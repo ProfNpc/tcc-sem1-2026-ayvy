@@ -30,8 +30,7 @@ public class Usuario {
     @Column(name = "nome", nullable = false)
     private String nome;
 
-    /** Handle público (ex.: miluzinha). Opcional; único quando preenchido. */
-    @Column(name = "nome_usuario", unique = true, length = 80)
+    @Column(name = "nome_usuario", length = 80)
     private String nomeUsuario;
 
     @Column(name = "email", nullable = false, unique = true)

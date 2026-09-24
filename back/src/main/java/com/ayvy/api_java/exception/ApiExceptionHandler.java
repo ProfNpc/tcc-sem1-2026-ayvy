@@ -41,7 +41,7 @@ public class ApiExceptionHandler {
             } else if (lower.contains("not-null") && lower.contains("lojista")) {
                 message = "Loja (lojista) é obrigatória para o produto";
             } else if (lower.contains("duplicate") || lower.contains("unique")) {
-                message = "Registro duplicado (e-mail, CPF, CNPJ ou slug já existente)";
+                 message = "Registro duplicado — verifique constraint: " + raw;
             }
         }
 
