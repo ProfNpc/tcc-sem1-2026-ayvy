@@ -4,8 +4,6 @@
 -- Extra: tabelas/colunas necessárias para o que já funciona na API
 -- Compatível com DBeaver (sem GO)
 -- =====================================================================
-DROP DATABASE ayvy;
-GO
 CREATE DATABASE ayvy;
 GO
 USE ayvy;
