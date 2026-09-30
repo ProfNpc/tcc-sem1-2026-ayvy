@@ -10,6 +10,7 @@ public interface ClienteRepository extends JpaRepository<Cliente, Integer> {
 
     Optional<Cliente> findByUsuario_Id(Integer usuarioId);
 
+    Optional<Cliente> findByCpf(String cpf);
    //'Transactional' = se der qualquer erro essa função não é executada
    // já que é uma operação sensível
 //   @Transactional

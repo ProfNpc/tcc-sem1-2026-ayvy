@@ -1,5 +1,6 @@
 package com.ayvy.api_java.config;
 
+
 import com.ayvy.api_java.infrastructure.entities.*;
 import com.ayvy.api_java.infrastructure.enums.PapelUsuario;
 import com.ayvy.api_java.infrastructure.enums.StatusLoja;
@@ -18,11 +19,14 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
- * Popula clientes, lojistas, categorias e produtos de exemplo em ambiente de
- * desenvolvimento — só roda se ainda não existir nenhum lojista no banco.
+ * Popula clientes, lojistas, categorias e produtos de exemplo em ambiente
+ * de desenvolvimento.
+ *
+ * O seed pode ser executado várias vezes sem duplicar os registros.
+ * Cada dado é criado somente se ainda não existir no banco.
  */
 @Component
-@Order(2) // roda depois do AdminBootstrap
+@Order(2)
 public class DevSeedBootstrap implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DevSeedBootstrap.class);
@@ -58,24 +62,10 @@ public class DevSeedBootstrap implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
 
-        /*
-         * Se já existem lojistas, consideramos que o banco já foi populado
-         * pelo seed de desenvolvimento.
-         */
-        if (!lojistaRepository.findAll().isEmpty()) {
-            log.info("DevSeedBootstrap: dados de desenvolvimento já existem. Seed ignorado.");
-            return;
-        }
-
         // ============================================================
         // CATEGORIAS
         // ============================================================
 
-        /*
-         * Busca a categoria pelo slug antes de criar.
-         *
-         * Isso evita erro de UNIQUE caso a categoria já exista no banco.
-         */
         Categoria roupas = categoria("Roupas", "roupas");
         Categoria calcados = categoria("Calçados", "calcados");
         Categoria acessorios = categoria("Acessórios", "acessorios");
@@ -384,18 +374,13 @@ public class DevSeedBootstrap implements ApplicationRunner {
                 "leticia1.jpeg"
         );
 
-        log.info(
-                "DevSeedBootstrap: 5 lojistas, 20 produtos e 4 clientes de exemplo criados."
-        );
+        log.info("DevSeedBootstrap: seed finalizado. Registros existentes foram reutilizados e registros ausentes foram criados.");
     }
 
-    /**
-     * Busca uma categoria existente pelo slug.
-     *
-     * Se ela não existir, cria uma nova.
-     *
-     * Isso evita violação da constraint UNIQUE do slug.
-     */
+    // ============================================================
+    // CATEGORIA
+    // ============================================================
+
     private Categoria categoria(String nome, String slug) {
 
         Optional<Categoria> categoriaExistente =
@@ -416,12 +401,18 @@ public class DevSeedBootstrap implements ApplicationRunner {
                 .ativo(true)
                 .build();
 
+        log.info(
+                "DevSeedBootstrap: criando categoria '{}'.",
+                slug
+        );
+
         return categoriaRepository.saveAndFlush(novaCategoria);
     }
 
-    /**
-     * Cria um lojista, seu usuário e seu endereço principal.
-     */
+    // ============================================================
+    // LOJISTA
+    // ============================================================
+
     private Lojista criarLojista(
             String email,
             String nomeLoja,
@@ -434,16 +425,64 @@ public class DevSeedBootstrap implements ApplicationRunner {
             String uf,
             String cep) {
 
-        Usuario usuario = usuarioRepository.saveAndFlush(
-                Usuario.builder()
-                        .papel(PapelUsuario.lojista)
-                        .nome(nomeLoja)
-                        .email(email)
-                        .senha(passwordEncoder.encode(SENHA_PADRAO_LOJISTA))
-                        .status(StatusUsuario.ativo)
-                        .build()
-        );
+        /*
+         * Primeiro procuramos o usuário pelo e-mail.
+         *
+         * Se ele já existir, reutilizamos o usuário existente.
+         * Isso evita criar uma segunda conta para o mesmo lojista.
+         */
+        Optional<Usuario> usuarioExistente =
+                usuarioRepository.findByEmail(email);
 
+        Usuario usuario;
+
+        if (usuarioExistente.isPresent()) {
+
+            usuario = usuarioExistente.get();
+
+            log.info(
+                    "DevSeedBootstrap: usuário lojista '{}' já existe. Reutilizando.",
+                    email
+            );
+
+        } else {
+
+            usuario = usuarioRepository.saveAndFlush(
+                    Usuario.builder()
+                            .papel(PapelUsuario.lojista)
+                            .nome(nomeLoja)
+                            .email(email)
+                            .senha(passwordEncoder.encode(SENHA_PADRAO_LOJISTA))
+                            .status(StatusUsuario.ativo)
+                            .build()
+            );
+
+            log.info(
+                    "DevSeedBootstrap: usuário lojista '{}' criado.",
+                    email
+            );
+        }
+
+        /*
+         * Procuramos o lojista pelo slug.
+         */
+        Optional<Lojista> lojistaExistente =
+                lojistaRepository.findBySlug(slug);
+
+        if (lojistaExistente.isPresent()) {
+
+            log.info(
+                    "DevSeedBootstrap: lojista '{}' já existe. Reutilizando.",
+                    slug
+            );
+
+            return lojistaExistente.get();
+        }
+
+        /*
+         * Caso o usuário já existisse, mas o lojista ainda não,
+         * criamos somente o registro de lojista.
+         */
         Lojista lojista = lojistaRepository.saveAndFlush(
                 Lojista.builder()
                         .usuario(usuario)
@@ -455,28 +494,42 @@ public class DevSeedBootstrap implements ApplicationRunner {
         );
 
         /*
-         * O endereço principal é utilizado pelo FreteService
-         * como endereço de origem da loja.
+         * Cria o endereço somente se ainda não existir
+         * um endereço principal para esse usuário.
          */
-        enderecoRepository.saveAndFlush(
-                Endereco.builder()
-                        .usuario(usuario)
-                        .logradouro(logradouro)
-                        .numero(numero)
-                        .bairro(bairro)
-                        .cidade(cidade)
-                        .uf(uf)
-                        .cep(cep)
-                        .principal(true)
-                        .build()
+        if (enderecoRepository.findByUsuarioIdAndPrincipalTrue(usuario.getId()).isEmpty()) {
+
+            enderecoRepository.saveAndFlush(
+                    Endereco.builder()
+                            .usuario(usuario)
+                            .logradouro(logradouro)
+                            .numero(numero)
+                            .bairro(bairro)
+                            .cidade(cidade)
+                            .uf(uf)
+                            .cep(cep)
+                            .principal(true)
+                            .build()
+            );
+
+            log.info(
+                    "DevSeedBootstrap: endereço principal da loja '{}' criado.",
+                    nomeLoja
+            );
+        }
+
+        log.info(
+                "DevSeedBootstrap: lojista '{}' criado.",
+                nomeLoja
         );
 
         return lojista;
     }
 
-    /**
-     * Cria um produto vinculado ao lojista e à categoria.
-     */
+    // ============================================================
+    // PRODUTO
+    // ============================================================
+
     private void criarProduto(
             Lojista lojista,
             Categoria categoria,
@@ -484,6 +537,24 @@ public class DevSeedBootstrap implements ApplicationRunner {
             String slug,
             String preco,
             String nomeArquivoImagem) {
+
+        /*
+         * O slug identifica o produto do seed.
+         *
+         * Se o produto já existir, não criamos outro.
+         */
+        Optional<Produto> produtoExistente =
+                produtoRepository.findBySlug(slug);
+
+        if (produtoExistente.isPresent()) {
+
+            log.info(
+                    "DevSeedBootstrap: produto '{}' já existe. Reutilizando.",
+                    slug
+            );
+
+            return;
+        }
 
         produtoRepository.saveAndFlush(
                 Produto.builder()
@@ -499,11 +570,17 @@ public class DevSeedBootstrap implements ApplicationRunner {
                         .statusProduto(StatusProduto.ativo)
                         .build()
         );
+
+        log.info(
+                "DevSeedBootstrap: produto '{}' criado.",
+                nome
+        );
     }
 
-    /**
-     * Cria um cliente e seu usuário.
-     */
+    // ============================================================
+    // CLIENTE
+    // ============================================================
+
     private void criarCliente(
             String nomeCompleto,
             String email,
@@ -511,24 +588,95 @@ public class DevSeedBootstrap implements ApplicationRunner {
             String cpf,
             String avatarArquivo) {
 
-        Usuario usuario = usuarioRepository.saveAndFlush(
-                Usuario.builder()
-                        .papel(PapelUsuario.cliente)
-                        .nome(nomeCompleto)
-                        .email(email)
-                        .senha(passwordEncoder.encode(senha))
-                        .status(StatusUsuario.ativo)
-                        .avatarUrl(
-                                "/uploads/usuarios/" + avatarArquivo
-                        )
-                        .build()
-        );
+        /*
+         * Primeiro verificamos se já existe um usuário com esse e-mail.
+         */
+        Optional<Usuario> usuarioExistente =
+                usuarioRepository.findByEmail(email);
 
+        Usuario usuario;
+
+        if (usuarioExistente.isPresent()) {
+
+            usuario = usuarioExistente.get();
+
+            log.info(
+                    "DevSeedBootstrap: usuário cliente '{}' já existe. Reutilizando.",
+                    email
+            );
+
+        } else {
+
+            usuario = usuarioRepository.saveAndFlush(
+                    Usuario.builder()
+                            .papel(PapelUsuario.cliente)
+                            .nome(nomeCompleto)
+                            .email(email)
+                            .senha(passwordEncoder.encode(senha))
+                            .status(StatusUsuario.ativo)
+                            .avatarUrl(
+                                    "/uploads/usuarios/" + avatarArquivo
+                            )
+                            .build()
+            );
+
+            log.info(
+                    "DevSeedBootstrap: usuário cliente '{}' criado.",
+                    email
+            );
+        }
+
+        /*
+         * Verificamos primeiro se já existe um Cliente
+         * vinculado a este usuário.
+         *
+         * Isso evita o erro de UNIQUE em usuario_id.
+         */
+        Optional<Cliente> clientePorUsuario =
+                clienteRepository.findByUsuario_Id(usuario.getId());
+
+        if (clientePorUsuario.isPresent()) {
+
+            log.info(
+                    "DevSeedBootstrap: cliente do usuário '{}' já existe. Reutilizando.",
+                    email
+            );
+
+            return;
+        }
+
+        /*
+         * Caso não exista um cliente para este usuário,
+         * verificamos também se o CPF já está cadastrado.
+         */
+        Optional<Cliente> clientePorCpf =
+                clienteRepository.findByCpf(cpf);
+
+        if (clientePorCpf.isPresent()) {
+
+            log.info(
+                    "DevSeedBootstrap: cliente com CPF '{}' já existe. Reutilizando.",
+                    cpf
+            );
+
+            return;
+        }
+
+        /*
+         * Se não existe cliente pelo usuário nem pelo CPF,
+         * criamos um novo registro.
+         */
         clienteRepository.saveAndFlush(
                 Cliente.builder()
                         .usuario(usuario)
                         .cpf(cpf)
                         .build()
         );
+
+        log.info(
+                "DevSeedBootstrap: cliente '{}' criado.",
+                nomeCompleto
+        );
     }
 }
+
