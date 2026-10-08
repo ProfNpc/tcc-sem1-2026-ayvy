@@ -16,6 +16,7 @@
 .brand-container {
   overflow: hidden;
   width: 100%;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
 
@@ -40,22 +41,9 @@
 
 @keyframes brand-scroll {
   from {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translateX(-50%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .brand-track {
-    animation: none;
-    flex-wrap: wrap;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .brand-container {
-    mask-image: none;
+    transform: translate3d(-50%, 0, 0);
   }
 }

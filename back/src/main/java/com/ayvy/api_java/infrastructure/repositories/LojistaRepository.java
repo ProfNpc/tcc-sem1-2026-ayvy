@@ -11,4 +11,6 @@ public interface LojistaRepository extends JpaRepository<Lojista, Integer> {
     java.util.Optional<Lojista> findByUsuario_Id(Integer usuarioId);
 
     Optional<Lojista> findBySlug(String slug);
+
+    boolean existsBySigla(String sigla);
 }

@@ -4,8 +4,8 @@
   top: 0;
   right: -420px;
   width: min(420px, 100vw);
-  height: 100vh;
-  height: 100dvh;
+  height: calc(100vh / var(--app-zoom, 1));
+  height: calc(100dvh / var(--app-zoom, 1));
   background: #fff;
   box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
   transition: right 0.3s ease;

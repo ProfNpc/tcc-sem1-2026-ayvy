@@ -10,8 +10,10 @@ import {
   checkoutPedido,
   criarEndereco,
   criarPagamento,
+  getPedidoItens,
   listEnderecos,
 } from "../../services/pedidosApi";
+import { numeroPedidoLabel } from "../../utils/pedidoNumero";
 import { formatCardExpiry, formatCardNumber, formatCep } from "../../utils/cartHelpers";
 import { listPaymentMethods } from "../../utils/paymentMethodsStore";
 import useCepLookup from "../../hooks/useCepLookup";
@@ -409,6 +411,8 @@ export default function Checkout() {
         return {
           produtoId: Number.isFinite(produtoId) && produtoId > 0 ? produtoId : null,
           quantidade: line.quantity || 1,
+          cor: line.color || null,
+          tamanho: line.size || null,
         };
       })
       .filter((i) => i.produtoId != null);
@@ -471,7 +475,8 @@ export default function Checkout() {
         /* status pode permanecer aguardando_pagamento */
       }
 
-      const orderId = `#AY-${pedido.id}`;
+      const itensPedido = await getPedidoItens(pedido.id).catch(() => []);
+      const orderId = numeroPedidoLabel(itensPedido, pedido.id);
       clear();
       setDrawerOpen(false);
       navigate(

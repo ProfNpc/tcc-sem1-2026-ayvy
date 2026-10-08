@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import Footer from "../../components/Footer";
 import FloatingChat from "../../components/FloatingChat";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
@@ -11,6 +10,7 @@ import {
   verificarFavorito,
 } from "../../services/favoritosApi";
 import { findProductAsync, normalizeSlugParam } from "../../utils/lojistaData";
+import { isShopOwner } from "../../utils/mockAuthUsers";
 import { enrichProduct, enrichShop, getColorImageIndex, getImageForColor, renderStars } from "../../utils/productHelpers";
 import "./style.css";
 
@@ -111,6 +111,7 @@ function ProdutoDetail({ slug, shop, product }) {
   const favKey = `${slug}:${product.id}`;
   const apiProdutoId = product.apiId ?? (Number.isFinite(Number(product.id)) ? Number(product.id) : null);
   const isFavorite = favorites.includes(favKey);
+  const canEdit = isShopOwner(user, slug) && apiProdutoId != null;
 
   useEffect(() => {
     if (!apiProdutoId) return;
@@ -239,6 +240,16 @@ function ProdutoDetail({ slug, shop, product }) {
                 </button>
               </>
             )}
+            {canEdit ? (
+              <Link
+                to={`/loja/${slug}/produto/${apiProdutoId}/editar`}
+                className="produto-edit-btn"
+                aria-label="Editar produto"
+                title="Editar produto"
+              >
+                <i className="fas fa-pen" />
+              </Link>
+            ) : null}
             <img
               src={product.images[activeImage] || product.images[0]}
               alt={product.title}
@@ -496,7 +507,6 @@ function ProdutoDetail({ slug, shop, product }) {
         </div>
       </section>
 
-      <Footer />
       <FloatingChat
         shopName={shop.name}
         shopAvatar={shop.avatar}

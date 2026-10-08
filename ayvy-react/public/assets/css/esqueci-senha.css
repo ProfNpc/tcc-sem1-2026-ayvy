@@ -16,7 +16,7 @@ body {
   display: flex; /* Centraliza o conteúdo */
   justify-content: center; /* Centraliza horizontalmente */
   align-items: center; /* Centraliza verticalmente */
-  min-height: 100vh; /* Garante altura total da tela */
+  min-height: calc(100vh / var(--app-zoom, 1)); /* Garante altura total da tela */
   background: url(../img/imagem-ayvy-clara.png); /* Fundo padrão */
   background-size: cover; /* Imagem cobre a tela toda */
   background-position: center; /* Centraliza a imagem de fundo */

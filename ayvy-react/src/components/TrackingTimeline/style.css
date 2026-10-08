@@ -1,0 +1,200 @@
+.trk {
+  --trk-purple: #7b3fbf;
+  --trk-grey: #d9cfe6;
+}
+
+.trk-track {
+  position: relative;
+}
+
+/* Trecho percorrido pelo caminhão entre duas etapas */
+.trk-progress {
+  position: absolute;
+  top: 15px;
+  height: 3px;
+  background: var(--trk-purple);
+  border-radius: 3px;
+  z-index: 0;
+  transition: width 1s linear;
+}
+
+/* Caminhão que anda pela linha depois do despacho */
+.trk-truck {
+  position: absolute;
+  top: -3px;
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  margin-left: -19px;
+  border-radius: 50%;
+  background: var(--trk-purple);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  box-shadow: 0 0 0 5px rgba(123, 63, 191, 0.16);
+  transition: left 1s linear;
+  animation: trk-pulse 1.8s ease-in-out infinite;
+}
+
+.trk-truck.is-moving i {
+  animation: trk-bump 0.5s ease-in-out infinite;
+}
+
+.trk-line {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.trk-line li {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+/* Tracinhos entre as etapas */
+.trk-line li + li::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  right: calc(50% + 18px);
+  left: calc(-50% + 18px);
+  border-top: 3px dashed var(--trk-grey);
+}
+
+.trk-line li.is-done::before,
+.trk-line li.is-current::before {
+  border-top-style: solid;
+  border-top-color: var(--trk-purple);
+}
+
+.trk-dot {
+  position: relative;
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 2px solid var(--trk-grey);
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+.trk-line li.is-done .trk-dot {
+  background: var(--trk-purple);
+  border-color: var(--trk-purple);
+}
+
+.trk-line li.is-current .trk-dot {
+  background: var(--trk-purple);
+  border-color: var(--trk-purple);
+  font-size: 0.85rem;
+  box-shadow: 0 0 0 5px rgba(123, 63, 191, 0.16);
+  animation: trk-pulse 1.8s ease-in-out infinite;
+}
+
+.trk-line li.is-current .trk-dot i {
+  animation: trk-drive 1.2s ease-in-out infinite;
+}
+
+.trk-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #a597b8;
+  padding: 0 0.15rem;
+}
+
+.trk-line li.is-done .trk-label {
+  color: #4b3a5e;
+}
+
+.trk-line li.is-current .trk-label {
+  color: var(--trk-purple);
+  font-weight: 800;
+}
+
+.trk-legenda {
+  margin: 0.75rem 0 0;
+  font-size: 0.82rem;
+  color: #5b4a70;
+  text-align: center;
+}
+
+.trk-cancelado {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #b42318;
+}
+
+@keyframes trk-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(123, 63, 191, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(123, 63, 191, 0.06);
+  }
+}
+
+@keyframes trk-bump {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes trk-drive {
+  0%,
+  100% {
+    transform: translateX(-1px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+}
+
+@media (max-width: 560px) {
+  .trk-label {
+    font-size: 0.62rem;
+  }
+
+  .trk-dot {
+    width: 26px;
+    height: 26px;
+  }
+
+  .trk-line li + li::before {
+    top: 12px;
+    right: calc(50% + 15px);
+    left: calc(-50% + 15px);
+  }
+
+  .trk-progress {
+    top: 12px;
+  }
+
+  .trk-truck {
+    top: -3px;
+    width: 32px;
+    height: 32px;
+    margin-left: -16px;
+    font-size: 0.8rem;
+  }
+}

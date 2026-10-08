@@ -1,6 +1,6 @@
 .panel-shell {
   display: flex;
-  min-height: 100vh;
+  min-height: calc(100vh / var(--app-zoom, 1));
   background: #f4f5f7;
   color: #222;
   font-family: inherit;

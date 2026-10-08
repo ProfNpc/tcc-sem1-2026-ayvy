@@ -216,6 +216,12 @@ a.ayvy-support__card:hover {
   font-weight: 500;
 }
 
+.footer-ayvy .footer-box .footer-copy {
+  margin-top: 0.9rem;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
 @media (max-width: 800px) {
   .ayvy-support__grid {
     grid-template-columns: 1fr;

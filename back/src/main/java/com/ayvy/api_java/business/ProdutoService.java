@@ -96,6 +96,12 @@ public class ProdutoService {
         if (produto.getCategoria() != null) {
             produtoEntity.setCategoria(produto.getCategoria());
         }
+        if (produto.getCores() != null) {
+            produtoEntity.setCores(produto.getCores());
+        }
+        if (produto.getTamanhos() != null) {
+            produtoEntity.setTamanhos(produto.getTamanhos());
+        }
 
         return repository.saveAndFlush(produtoEntity);
     }

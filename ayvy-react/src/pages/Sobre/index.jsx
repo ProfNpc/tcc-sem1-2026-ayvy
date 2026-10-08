@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import Footer from "../../components/Footer";
 import TeamMemberRow from "../../components/TeamMemberRow";
 import useExternalStylesOnce from "../../hooks/useExternalStylesOnce";
 import { SOBRE_FONT_HREFS } from "../../utils/sobrePageStyles";
@@ -166,7 +165,7 @@ export default function Sobre() {
 
       <section className="nu-group sobre-reveal">
         <figure className="nu-group__figure">
-          <img src="/assets/img/foto-equipe-ayvy.jpeg" alt="Equipe AYVY reunida" />
+          <img src="/assets/img/foto-grupo-atualizada.jpeg" alt="Equipe AYVY reunida" />
           <figcaption>
             <strong>Equipe AYVY reunida</strong>
             <span>Colaboradores extras: José Neto e Pedro Talles</span>
@@ -174,7 +173,6 @@ export default function Sobre() {
         </figure>
       </section>
 
-      <Footer />
     </div>
   );
 }

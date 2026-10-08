@@ -36,5 +36,19 @@ public class PedidoProdutos {
     @Column(name = "preco_unitario")
     private Double precoUnitario;
 
+    @Column(name = "cor", length = 60)
+    private String cor;
+
+    @Column(name = "tamanho", length = 30)
+    private String tamanho;
+
+    /** Sequência do pedido dentro da loja: o 1º pedido da loja é 1, o 2º é 2... */
+    @Column(name = "numero_pedido_loja")
+    private Integer numeroPedidoLoja;
+
+    /** Código exibido e pesquisável do pedido na loja: sigla da loja + sequência (ex.: "LU-1"). */
+    @Column(name = "codigo_pedido_loja", length = 20)
+    private String codigoPedidoLoja;
+
 
 }

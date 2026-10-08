@@ -21,6 +21,7 @@ export default function Card({
   linkLabel = "Ver Loja",
   ownerMode = false,
   onDelete,
+  editTo,
 }) {
   if (variant === "product") {
     const to = `/loja/${shopSlug}/p/${productId}`;
@@ -50,14 +51,27 @@ export default function Card({
               </div>
             </div>
           </Link>
-          <button
-            type="button"
-            className="card-product-shopee__delete"
-            aria-label={`Excluir ${title}`}
-            onClick={onDelete}
-          >
-            <i className="fas fa-trash-alt" aria-hidden />
-          </button>
+          <div className="card-product-shopee__owner-actions">
+            {editTo ? (
+              <Link
+                to={editTo}
+                className="card-product-shopee__owner-btn card-product-shopee__owner-btn--edit"
+                aria-label={`Editar ${title}`}
+                title="Editar produto"
+              >
+                <i className="fas fa-pen" aria-hidden />
+              </Link>
+            ) : null}
+            <button
+              type="button"
+              className="card-product-shopee__owner-btn card-product-shopee__delete"
+              aria-label={`Excluir ${title}`}
+              title="Remover da vitrine"
+              onClick={onDelete}
+            >
+              <i className="fas fa-trash-alt" aria-hidden />
+            </button>
+          </div>
         </div>
       );
     }

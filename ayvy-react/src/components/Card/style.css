@@ -19,22 +19,41 @@
   box-shadow: 0 6px 16px rgba(176, 110, 220, 0.12);
 }
 
-.card-product-shopee__delete {
+.card-product-shopee__owner-actions {
   position: absolute;
   top: 6px;
   right: 6px;
   z-index: 2;
+  display: flex;
+  gap: 6px;
+}
+
+.card-product-shopee__owner-btn {
   width: 30px;
   height: 30px;
   border: none;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.95);
-  color: #c0392b;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.card-product-shopee__owner-btn--edit {
+  color: var(--ayvy-purple, #b06edc);
+}
+
+.card-product-shopee__owner-btn--edit:hover {
+  background: #fff;
+  color: #8a4fb8;
+}
+
+.card-product-shopee__delete {
+  color: #c0392b;
 }
 
 .card-product-shopee__delete:hover {

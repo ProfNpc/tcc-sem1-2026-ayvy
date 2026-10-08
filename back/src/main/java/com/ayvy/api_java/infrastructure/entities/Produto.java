@@ -1,5 +1,6 @@
 package com.ayvy.api_java.infrastructure.entities;
 
+import com.ayvy.api_java.infrastructure.converters.StringListConverter;
 import com.ayvy.api_java.infrastructure.enums.StatusProduto;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -56,6 +58,14 @@ public class Produto {
     @JsonAlias("caminho")
     @Column(name = "imagem_principal_url")
     private String imagemPrincipalUrl;
+
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "cores", length = 500)
+    private List<String> cores;
+
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "tamanhos", length = 300)
+    private List<String> tamanhos;
 
     @Builder.Default
     @Column(name = "visualizacoes_total", nullable = false)

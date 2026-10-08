@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import Card from "../../components/Card";
-import Footer from "../../components/Footer";
+import ConfirmDialog from "../../components/ConfirmDialog";
 import FloatingChat from "../../components/FloatingChat";
+import TrackingTimeline from "../../components/TrackingTimeline";
+import DespacharModal from "./DespacharModal";
 import { useAuth } from "../../context/AuthContext";
 import { formatBRL } from "../../utils/cartHelpers";
 import { isShopOwner } from "../../utils/mockAuthUsers";
@@ -10,17 +12,123 @@ import { normalizeSlugParam, resolveShopsMap } from "../../utils/lojistaData";
 import { enrichProduct, enrichShop } from "../../utils/productHelpers";
 import {
   cancelarPedidoLojista,
-  enviarPedidoLojista,
+  confirmarRecebimentoLojista,
+  despacharPedidoLojista,
   excluirProdutoApi,
   inativarProdutoApi,
   listPedidosDoLojista,
   listProdutosDoLojista,
   mapApiProdutoToCard,
   publicarProdutoApi,
+  separarPedidoLojista,
 } from "../../services/lojistaApi";
+import {
+  atualizarNotificacao,
+  listNotificacoesDoUsuario,
+} from "../../services/notificacoesApi";
 import "./style.css";
 
 const FOLLOW_KEY = "ayvy.following.v1";
+
+const ORDERS_POLL_MS = 15000;
+
+const STATUS_LABEL = {
+  aguardando_pagamento: "Aguardando pagamento",
+  pendente: "Pendente",
+  pago: "Pago",
+  em_separacao: "Preparando",
+  enviado: "Despachado",
+  entregue: "Entregue",
+  cancelado: "Cancelado",
+  reembolsado: "Reembolsado",
+};
+
+const ETAPA_LABEL = {
+  recebido: "Pedido recebido",
+  preparando: "Preparando",
+  despachado: "Despachado",
+  coletado: "Coletado",
+  em_rota: "Em rota de transporte",
+  entregue: "Entregue",
+};
+
+function statusPillLabel(order) {
+  if (order.status === "enviado" || order.status === "pago" || order.status === "em_separacao") {
+    return ETAPA_LABEL[order.etapaEnvio] || STATUS_LABEL[order.status];
+  }
+  return STATUS_LABEL[order.status] || order.status;
+}
+
+function OrderActions({ order, onCancel, onReceived, onPrepare, onDispatch }) {
+  const { status, etapaEnvio } = order;
+  if (status === "cancelado" || status === "reembolsado") return null;
+
+  if (status === "entregue") {
+    return (
+      <div className="loja-order-actions">
+        <span className="loja-order-done">
+          <i className="fas fa-check-circle" aria-hidden /> Entrega confirmada pelo cliente
+        </span>
+      </div>
+    );
+  }
+
+  const podeCancelar = ["aguardando_pagamento", "pago", "em_separacao", "pendente"].includes(status);
+
+  let proximo = null;
+  if (status === "pago" && etapaEnvio !== "recebido") {
+    proximo = (
+      <button type="button" className="loja-order-btn loja-order-btn--primary" onClick={onReceived}>
+        <i className="fas fa-inbox" aria-hidden /> Confirmar pedido recebido
+      </button>
+    );
+  } else if (status === "pago") {
+    proximo = (
+      <button type="button" className="loja-order-btn loja-order-btn--primary" onClick={onPrepare}>
+        <i className="fas fa-box-open" aria-hidden /> Começar preparo
+      </button>
+    );
+  } else if (status === "em_separacao") {
+    proximo = (
+      <button type="button" className="loja-order-btn loja-order-btn--primary" onClick={onDispatch}>
+        <i className="fas fa-shipping-fast" aria-hidden /> Marcar como despachado
+      </button>
+    );
+  } else if (status === "enviado") {
+    proximo = (
+      <button type="button" className="loja-order-btn" disabled>
+        <i className="fas fa-check" aria-hidden /> Despachado
+      </button>
+    );
+    if (etapaEnvio === "entregue") {
+      proximo = (
+        <>
+          {proximo}
+          <span className="loja-order-waiting">
+            <i className="far fa-clock" aria-hidden /> Aguardando o cliente confirmar a entrega
+          </span>
+        </>
+      );
+    }
+  } else if (status === "aguardando_pagamento" || status === "pendente") {
+    proximo = (
+      <button type="button" className="loja-order-btn" disabled>
+        <i className="far fa-clock" aria-hidden /> Aguardando pagamento
+      </button>
+    );
+  }
+
+  return (
+    <div className="loja-order-actions">
+      {podeCancelar ? (
+        <button type="button" className="loja-order-btn loja-order-btn--danger" onClick={onCancel}>
+          Cancelar pedido
+        </button>
+      ) : null}
+      {proximo}
+    </div>
+  );
+}
 
 function readFollowing() {
   try {
@@ -60,6 +168,75 @@ export default function Loja() {
   const [ownerDrafts, setOwnerDrafts] = useState([]);
   const [shopOrders, setShopOrders] = useState([]);
   const [ownerLoading, setOwnerLoading] = useState(false);
+  const [dispatchOrder, setDispatchOrder] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
+
+  const [avisosEntrega, setAvisosEntrega] = useState([]);
+
+  const lojistaId = isOwner ? user?.lojistaId : null;
+  const donoUsuarioId = isOwner ? user?.id : null;
+
+  const reloadAvisosEntrega = useCallback(async () => {
+    if (!donoUsuarioId) {
+      setAvisosEntrega([]);
+      return;
+    }
+    try {
+      const notifs = await listNotificacoesDoUsuario(donoUsuarioId);
+      setAvisosEntrega(
+        (notifs || []).filter(
+          (n) =>
+            n.tipo === "pedido_loja" &&
+            !n.lida &&
+            String(n.titulo || "").startsWith("Entrega confirmada"),
+        ),
+      );
+    } catch {
+      /* mantém os avisos atuais */
+    }
+  }, [donoUsuarioId]);
+
+  const reloadOrders = useCallback(async () => {
+    if (!lojistaId) return;
+    try {
+      const [pedidos] = await Promise.all([listPedidosDoLojista(lojistaId), reloadAvisosEntrega()]);
+      setShopOrders(pedidos);
+    } catch {
+      /* mantém a lista atual */
+    }
+  }, [lojistaId, reloadAvisosEntrega]);
+
+  useEffect(() => {
+    const primeiro = setTimeout(reloadAvisosEntrega, 0);
+    return () => clearTimeout(primeiro);
+  }, [reloadAvisosEntrega]);
+
+  function avisoEntregaDoPedido(order) {
+    return avisosEntrega.find((n) => String(n.titulo || "").includes(order.id));
+  }
+
+  async function marcarAvisoVisto(aviso) {
+    setAvisosEntrega((prev) => prev.filter((n) => n.id !== aviso.id));
+    try {
+      await atualizarNotificacao(aviso.id, {
+        titulo: aviso.titulo,
+        mensagem: aviso.mensagem,
+        tipo: aviso.tipo,
+        lida: true,
+      });
+    } catch {
+      reloadAvisosEntrega();
+    }
+  }
+
+  const hasOrderInTransit = shopOrders.some((o) => o.status === "enviado");
+
+  useEffect(() => {
+    if (!hasOrderInTransit) return undefined;
+    const timer = setInterval(reloadOrders, ORDERS_POLL_MS);
+    return () => clearInterval(timer);
+  }, [hasOrderInTransit, reloadOrders]);
 
   useEffect(() => {
     let cancelled = false;
@@ -119,8 +296,8 @@ export default function Loja() {
     () =>
       shopOrders.filter((o) =>
         ["aguardando_pagamento", "pago", "em_separacao", "pendente"].includes(o.status),
-      ).length,
-    [shopOrders],
+      ).length + avisosEntrega.length,
+    [shopOrders, avisosEntrega],
   );
 
   if (!shopsMap) {
@@ -195,23 +372,41 @@ export default function Loja() {
     }
   }
 
-  async function handleCancelOrder(order) {
-    if (!window.confirm("Cancelar este pedido do cliente?")) return;
+  async function handleConfirmReceived(order) {
     try {
-      await cancelarPedidoLojista(order.apiId, user?.id);
-      refresh();
+      await confirmarRecebimentoLojista(order.apiId, user?.id);
+      await reloadOrders();
     } catch (e) {
-      alert(e.message || "Falha ao cancelar");
+      alert(e.message || "Falha ao confirmar o recebimento");
     }
   }
 
-  async function handleSendOrder(order) {
+  async function handleSeparateOrder(order) {
     try {
-      await enviarPedidoLojista(order.apiId, user?.id);
-      alert("Pedido marcado como enviado na API.");
-      refresh();
+      await separarPedidoLojista(order.apiId, user?.id);
+      await reloadOrders();
     } catch (e) {
-      alert(e.message || "Falha ao enviar");
+      alert(e.message || "Falha ao iniciar o preparo");
+    }
+  }
+
+  async function handleDispatch(envio) {
+    await despacharPedidoLojista(dispatchOrder.apiId, user?.id, envio);
+    setDispatchOrder(null);
+    await reloadOrders();
+  }
+
+  async function handleConfirmAction() {
+    if (!confirmAction) return;
+    setConfirmBusy(true);
+    try {
+      await cancelarPedidoLojista(confirmAction.order.apiId, user?.id);
+      setConfirmAction(null);
+      await reloadOrders();
+    } catch (e) {
+      alert(e.message || "Não foi possível atualizar o pedido");
+    } finally {
+      setConfirmBusy(false);
     }
   }
 
@@ -318,6 +513,7 @@ export default function Loja() {
                   shopSlug={slug}
                   ownerMode={isOwner}
                   onDelete={() => handleDeleteProduct(p.apiId || p.id)}
+                  editTo={`/loja/${slug}/produto/${p.apiId || p.id}/editar`}
                 />
               );
             })}
@@ -385,15 +581,46 @@ export default function Loja() {
                 com produtos seus, o pedido aparece aqui.
               </p>
             ) : (
-              shopOrders.map((order) => (
-                <article key={order.id} className="loja-order-card">
+              shopOrders.map((order) => {
+                const avisoEntrega = avisoEntregaDoPedido(order);
+                return (
+                <article
+                  key={order.id}
+                  className={`loja-order-card${avisoEntrega ? " loja-order-card--aviso" : ""}`}
+                >
+                  {order.status === "entregue" ? (
+                    <div className={`loja-order-notice${avisoEntrega ? " is-new" : ""}`} role="status">
+                      <span className="loja-order-notice__icon" aria-hidden>
+                        <i className="fas fa-bell" />
+                      </span>
+                      <div className="loja-order-notice__text">
+                        <strong>
+                          Entrega confirmada pelo cliente
+                          {avisoEntrega ? <span className="loja-order-notice__badge">Nova</span> : null}
+                        </strong>
+                        <span>
+                          {order.cliente?.nome || "O cliente"} confirmou que recebeu o pedido
+                          {order.envio?.entregueEm ? ` em ${order.envio.entregueEm}` : ""}.
+                        </span>
+                      </div>
+                      {avisoEntrega ? (
+                        <button
+                          type="button"
+                          className="loja-order-notice__ok"
+                          onClick={() => marcarAvisoVisto(avisoEntrega)}
+                        >
+                          Ok, visto
+                        </button>
+                      ) : null}
+                    </div>
+                  ) : null}
                   <div className="loja-order-card__top">
                     <div>
                       <strong className="loja-order-id">{order.id}</strong>
                       <span className="loja-order-when">{order.criadoEm}</span>
                     </div>
                     <span className={`loja-order-status loja-order-status--${order.status}`}>
-                      {order.status}
+                      {statusPillLabel(order)}
                     </span>
                   </div>
 
@@ -428,41 +655,91 @@ export default function Loja() {
                         <img src={item.image} alt="" />
                         <div>
                           <strong>{item.name}</strong>
-                          <span>Qtd {item.quantity || 1}</span>
+                          <span>
+                            Qtd {item.quantity || 1}
+                            {item.color ? ` · ${item.color}` : ""}
+                            {item.size ? ` · ${item.size}` : ""}
+                          </span>
                         </div>
                         <em>{formatBRL(item.lineTotal || 0)}</em>
                       </li>
                     ))}
                   </ul>
 
-                  {order.status !== "cancelado" &&
-                  order.status !== "enviado" &&
-                  order.status !== "entregue" ? (
-                    <div className="loja-order-actions">
-                      <button
-                        type="button"
-                        className="loja-order-btn loja-order-btn--danger"
-                        onClick={() => handleCancelOrder(order)}
-                      >
-                        Cancelar pedido
-                      </button>
-                      <button
-                        type="button"
-                        className="loja-order-btn loja-order-btn--primary"
-                        onClick={() => handleSendOrder(order)}
-                      >
-                        Enviar pedido
-                      </button>
+                  <div className="loja-order-shipping">
+                    <div className="loja-order-shipping__head">
+                      <i className="fas fa-truck" aria-hidden />
+                      <strong>Envio</strong>
                     </div>
-                  ) : null}
+                    <TrackingTimeline
+                      etapa={order.etapaEnvio}
+                      envioIniciadoEm={order.envioIniciadoEm}
+                      onEtapaChange={reloadOrders}
+                    />
+                    {order.envio?.localPostagem || order.envio?.enviadoEm || order.envio?.entregueEm ? (
+                      <div className="loja-order-shipping__info">
+                        {order.envio?.localPostagem ? (
+                          <span>
+                            <i className="fas fa-map-marker-alt" aria-hidden /> Pacote deixado em:{" "}
+                            {order.envio.localPostagem}
+                          </span>
+                        ) : null}
+                        {order.envio?.codigoRastreio ? (
+                          <span>
+                            <i className="fas fa-barcode" aria-hidden />{" "}
+                            {order.envio.transportadora ? `${order.envio.transportadora} · ` : ""}
+                            <strong>{order.envio.codigoRastreio}</strong>
+                          </span>
+                        ) : null}
+                        {order.envio?.enviadoEm ? (
+                          <span>
+                            <i className="far fa-clock" aria-hidden /> Despachado em {order.envio.enviadoEm}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <OrderActions
+                    order={order}
+                    onCancel={() => setConfirmAction({ type: "cancelar", order })}
+                    onReceived={() => handleConfirmReceived(order)}
+                    onPrepare={() => handleSeparateOrder(order)}
+                    onDispatch={() => setDispatchOrder(order)}
+                  />
                 </article>
-              ))
+                );
+              })
             )}
           </div>
         )}
       </section>
 
-      <Footer />
+      {dispatchOrder ? (
+        <DespacharModal
+          order={dispatchOrder}
+          paymentLabel={paymentLabel}
+          onClose={() => setDispatchOrder(null)}
+          onConfirm={handleDispatch}
+        />
+      ) : null}
+
+      <ConfirmDialog
+        open={!!confirmAction}
+        title="Cancelar este pedido?"
+        message={
+          confirmAction
+            ? `O pedido ${confirmAction.order.id} será cancelado e o cliente será avisado.`
+            : ""
+        }
+        confirmLabel="Sim, cancelar"
+        cancelLabel="Voltar"
+        danger
+        busy={confirmBusy}
+        onCancel={() => setConfirmAction(null)}
+        onConfirm={handleConfirmAction}
+      />
+
       {!isOwner ? (
         <FloatingChat
           shopName={shop.name}

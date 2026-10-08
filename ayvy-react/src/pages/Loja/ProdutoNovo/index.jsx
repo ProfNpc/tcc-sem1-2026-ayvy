@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
-import Footer from "../../../components/Footer";
 import { useAuth } from "../../../context/AuthContext";
 import { isShopOwner } from "../../../utils/mockAuthUsers";
 import { normalizeSlugParam } from "../../../utils/lojistaData";
 import {
+  atualizarProdutoLojista,
+  carregarProdutoParaEdicao,
   listCategorias,
   salvarProdutoLojista,
 } from "../../../services/lojistaApi";
@@ -25,17 +26,23 @@ const EMPTY_FORM = {
 };
 
 export default function LojaProdutoNovo() {
-  const { slug: raw } = useParams();
+  const { slug: raw, productId } = useParams();
   const slug = normalizeSlugParam(raw || "");
+  const isEdit = Boolean(productId);
   const { user } = useAuth();
   const navigate = useNavigate();
   const lojaPath = `/loja/${slug}`;
 
   const [form, setForm] = useState(EMPTY_FORM);
   const [images, setImages] = useState([]);
+  const [originalImages, setOriginalImages] = useState([]);
   const [colorInput, setColorInput] = useState("");
+  const [sizeInput, setSizeInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [categorias, setCategorias] = useState([]);
+  const [loadingEdit, setLoadingEdit] = useState(isEdit);
+  const [loadError, setLoadError] = useState("");
+  const [editStatus, setEditStatus] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -50,6 +57,35 @@ export default function LojaProdutoNovo() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!isEdit) return undefined;
+    let cancelled = false;
+    (async () => {
+      setLoadingEdit(true);
+      setLoadError("");
+      try {
+        const data = await carregarProdutoParaEdicao(productId);
+        if (cancelled) return;
+        const donoId = data.produto?.lojista?.id;
+        if (user?.lojistaId && donoId != null && Number(donoId) !== Number(user.lojistaId)) {
+          setLoadError("Este produto não pertence à sua loja.");
+          return;
+        }
+        setForm(data.form);
+        setImages(data.images);
+        setOriginalImages(data.images);
+        setEditStatus(String(data.produto?.status || "").toLowerCase());
+      } catch (err) {
+        if (!cancelled) setLoadError(err.message || "Não foi possível carregar o produto.");
+      } finally {
+        if (!cancelled) setLoadingEdit(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isEdit, productId, user?.lojistaId]);
 
   if (!isShopOwner(user, slug)) {
     return <Navigate to={lojaPath} replace />;
@@ -124,14 +160,23 @@ export default function LojaProdutoNovo() {
     }
   }
 
-  function toggleChip(listName, value) {
+  function toggleSize(value) {
     setForm((prev) => {
-      const list = prev[listName];
-      const next = list.includes(value)
-        ? list.filter((v) => v !== value)
-        : [...list, value];
-      return { ...prev, [listName]: next };
+      const next = prev.sizes.includes(value)
+        ? prev.sizes.filter((v) => v !== value)
+        : [...prev.sizes, value];
+      return { ...prev, sizes: next };
     });
+  }
+
+  function addSize() {
+    const name = sizeInput.trim();
+    if (!name) return;
+    const exists = form.sizes.some((s) => s.toLowerCase() === name.toLowerCase());
+    if (!exists) {
+      setForm((prev) => ({ ...prev, sizes: [...prev.sizes, name] }));
+    }
+    setSizeInput("");
   }
 
   function addColor() {
@@ -151,11 +196,13 @@ export default function LojaProdutoNovo() {
     }));
   }
 
-  function handleColorKeyDown(e) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addColor();
-    }
+  function onEnter(fn) {
+    return (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        fn();
+      }
+    };
   }
 
   function handleImagesChange(e) {
@@ -165,17 +212,14 @@ export default function LojaProdutoNovo() {
       file,
       preview: URL.createObjectURL(file),
     }));
-    setImages((prev) => {
-      prev.forEach((img) => URL.revokeObjectURL(img.preview));
-      return [...prev, ...next].slice(0, 6);
-    });
+    setImages((prev) => [...prev, ...next].slice(0, 6));
     e.target.value = "";
   }
 
   function removeImage(id) {
     setImages((prev) => {
       const item = prev.find((i) => i.id === id);
-      if (item) URL.revokeObjectURL(item.preview);
+      if (item?.file) URL.revokeObjectURL(item.preview);
       return prev.filter((i) => i.id !== id);
     });
   }
@@ -194,10 +238,49 @@ export default function LojaProdutoNovo() {
       alert("Adicione pelo menos uma foto.");
       return;
     }
-    await persist(
-      "ativo",
-      "Produto publicado na API! Ele aparece em Meus produtos.",
-      "produtos",
+    if (!isEdit) {
+      await persist(
+        "ativo",
+        "Produto publicado na API! Ele aparece em Meus produtos.",
+        "produtos",
+      );
+      return;
+    }
+    setSaving(true);
+    try {
+      await atualizarProdutoLojista({
+        produtoId: productId,
+        form,
+        images,
+        originalImages,
+        categoriaId: form.categoryId || null,
+      });
+      const publico = !editStatus || editStatus === "ativo";
+      navigate(publico ? `${lojaPath}/p/${productId}` : lojaPath, { replace: true });
+    } catch (err) {
+      alert(err.message || "Não foi possível salvar as alterações.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const sizeOptions = [
+    ...TAMANHOS_PADRAO,
+    ...form.sizes.filter((s) => !TAMANHOS_PADRAO.includes(s)),
+  ];
+
+  if (isEdit && (loadingEdit || loadError)) {
+    return (
+      <div className="produto-novo-page">
+        <div className="produto-novo-wrap">
+          <Link to={lojaPath} className="produto-novo-back">
+            <i className="fas fa-arrow-left" aria-hidden /> Minha loja
+          </Link>
+          <p className="produto-novo-sub" style={{ marginTop: "1rem" }}>
+            {loadError || "Carregando produto…"}
+          </p>
+        </div>
+      </div>
     );
   }
 
@@ -209,9 +292,11 @@ export default function LojaProdutoNovo() {
             <Link to={lojaPath} className="produto-novo-back">
               <i className="fas fa-arrow-left" aria-hidden /> Minha loja
             </Link>
-            <h1>Cadastrar produto</h1>
+            <h1>{isEdit ? "Editar produto" : "Cadastrar produto"}</h1>
             <p className="produto-novo-sub">
-              Os dados são salvos na API (rascunho ou publicação).
+              {isEdit
+                ? "Altere fotos, preço, cores e tamanhos. As mudanças são salvas na API."
+                : "Os dados são salvos na API (rascunho ou publicação)."}
             </p>
           </div>
         </header>
@@ -360,7 +445,7 @@ export default function LojaProdutoNovo() {
               <i className="fas fa-palette" aria-hidden /> Variações
             </h2>
             <p className="produto-novo-hint">
-              Cores e tamanhos ficam só no front por enquanto (sem coluna no banco).
+              Clique no X para tirar uma cor e no tamanho para ligar ou desligar.
             </p>
 
             <div className="produto-novo-chips-group">
@@ -387,41 +472,68 @@ export default function LojaProdutoNovo() {
                 <input
                   type="text"
                   className="produto-novo-color-input"
-                  placeholder="Ex.: Verde musgo…"
+                  placeholder="Nova cor (Enter para adicionar)"
                   value={colorInput}
                   onChange={(e) => setColorInput(e.target.value)}
-                  onKeyDown={handleColorKeyDown}
+                  onKeyDown={onEnter(addColor)}
                   maxLength={40}
                 />
+                <button
+                  type="button"
+                  className="produto-novo-chip"
+                  onClick={addColor}
+                >
+                  Adicionar
+                </button>
               </div>
             </div>
 
             <div className="produto-novo-chips-group">
               <span className="produto-novo-chips-label">Tamanhos</span>
               <div className="produto-novo-chips">
-                {TAMANHOS_PADRAO.map((tam) => (
+                {sizeOptions.map((tam) => (
                   <button
                     key={tam}
                     type="button"
                     className={`produto-novo-chip${form.sizes.includes(tam) ? " is-on" : ""}`}
-                    onClick={() => toggleChip("sizes", tam)}
+                    onClick={() => toggleSize(tam)}
                   >
                     {tam}
                   </button>
                 ))}
               </div>
+              <div className="produto-novo-color-add" style={{ marginTop: "0.65rem" }}>
+                <input
+                  type="text"
+                  className="produto-novo-color-input"
+                  placeholder="Outro tamanho (ex.: 38)"
+                  value={sizeInput}
+                  onChange={(e) => setSizeInput(e.target.value)}
+                  onKeyDown={onEnter(addSize)}
+                  maxLength={20}
+                />
+                <button
+                  type="button"
+                  className="produto-novo-chip"
+                  onClick={addSize}
+                >
+                  Adicionar
+                </button>
+              </div>
             </div>
           </section>
 
           <footer className="produto-novo-footer">
-            <button
-              type="button"
-              className="produto-novo-btn produto-novo-btn--ghost"
-              onClick={handleDraftSave}
-              disabled={saving}
-            >
-              Salvar rascunho
-            </button>
+            {!isEdit ? (
+              <button
+                type="button"
+                className="produto-novo-btn produto-novo-btn--ghost"
+                onClick={handleDraftSave}
+                disabled={saving}
+              >
+                Salvar rascunho
+              </button>
+            ) : null}
             <Link to={lojaPath} className="produto-novo-btn produto-novo-btn--ghost">
               Cancelar
             </Link>
@@ -430,13 +542,18 @@ export default function LojaProdutoNovo() {
               className="produto-novo-btn produto-novo-btn--primary"
               disabled={saving}
             >
-              {saving ? "Publicando…" : "Publicar produto"}
+              {isEdit
+                ? saving
+                  ? "Salvando…"
+                  : "Salvar alterações"
+                : saving
+                  ? "Publicando…"
+                  : "Publicar produto"}
             </button>
           </footer>
         </form>
       </div>
 
-      <Footer />
     </div>
   );
 }

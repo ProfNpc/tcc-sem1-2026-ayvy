@@ -950,6 +950,7 @@
 .ck-success {
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   padding-top: 3rem;
 }
 
@@ -1200,6 +1201,75 @@
 .mp-pay i {
   color: var(--ck-purple);
   margin-right: 0.3rem;
+}
+
+.mp-tracking {
+  margin: 0 0 0.9rem;
+  padding: 0.85rem 1rem 1rem;
+  border-radius: 12px;
+  background: #faf6fd;
+  border: 1px solid #ece0f6;
+}
+
+.mp-tracking__title {
+  margin: 0 0 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #2a2438;
+}
+
+.mp-tracking__title i {
+  color: var(--ck-purple);
+  margin-right: 0.35rem;
+}
+
+.mp-tracking__code {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+  color: #4a4458;
+  text-align: center;
+}
+
+.mp-tracking__code i {
+  color: #7b3fbf;
+}
+
+.mp-tracking__code strong {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  letter-spacing: 0.08em;
+  color: #2a2438;
+}
+
+.mp-tracking__confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.8rem;
+}
+
+.mp-tracking__confirm .ck-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.mp-tracking__confirm .ck-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mp-tracking__confirm small {
+  font-size: 0.75rem;
+  color: #6b6480;
+}
+
+.mp-tracking__done {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #166534;
+  text-align: center;
 }
 
 .mp-foot {

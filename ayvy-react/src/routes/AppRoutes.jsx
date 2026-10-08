@@ -91,6 +91,14 @@ export default function AppRoutes() {
             </RequireAuth>
           }
         />
+        <Route
+          path="loja/:slug/produto/:productId/editar"
+          element={
+            <RequireAuth>
+              <LojaProdutoNovo key="editar" />
+            </RequireAuth>
+          }
+        />
       </Route>
 
       <Route

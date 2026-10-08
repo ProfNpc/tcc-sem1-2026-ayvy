@@ -19,15 +19,18 @@ public class LojistaService {
     private final LojistaRepository repository;
     private final UsuarioService usuarioService;
     private final UploadService uploadService;
+    private final SiglaLojaService siglaLojaService;
 
     public LojistaService(
             LojistaRepository repository,
             UsuarioService usuarioService,
-            UploadService uploadService
+            UploadService uploadService,
+            SiglaLojaService siglaLojaService
     ) {
         this.repository = repository;
         this.usuarioService = usuarioService;
         this.uploadService = uploadService;
+        this.siglaLojaService = siglaLojaService;
     }
 
     public void aprovarLojista(Integer id) {
@@ -56,6 +59,7 @@ public class LojistaService {
                 .usuario(usuario)
                 .nomeLoja(request.getNomeLoja())
                 .slug(request.getSlug())
+                .sigla(siglaLojaService.gerarSiglaUnica(request.getNomeLoja()))
                 .cnpj(request.getCnpj())
                 .bannerUrl(request.getBannerUrl())
                 .logoUrl(request.getLogoUrl())

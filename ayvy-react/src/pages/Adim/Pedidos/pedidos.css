@@ -143,6 +143,163 @@
   color: #1a1628 !important;
 }
 
+.admin-pedido-card .admin-order-status {
+  flex-shrink: 0;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: #eef0f4;
+  color: #4a5160;
+  text-transform: none;
+}
+
+.admin-pedido-card .admin-order-status--aguardando_pagamento {
+  background: #fff4e5;
+  color: #b26a00;
+}
+
+.admin-pedido-card .admin-order-status--pago {
+  background: #e8f7ee;
+  color: #1e8449;
+}
+
+.admin-pedido-card .admin-order-status--em_separacao {
+  background: #f3eaf9;
+  color: #7b3fa8;
+}
+
+.admin-pedido-card .admin-order-status--enviado {
+  background: #e7f1fb;
+  color: #1f6fb2;
+}
+
+.admin-pedido-card .admin-order-status--entregue {
+  background: #dcf5e6;
+  color: #146c3a;
+}
+
+.admin-pedido-card .admin-order-status--cancelado,
+.admin-pedido-card .admin-order-status--reembolsado {
+  background: #fdecec;
+  color: #b00020;
+}
+
+.admin-pedido-valor small {
+  font-weight: 500;
+  color: #888;
+}
+
+.admin-pedido-tracking {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #ece8f3;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.admin-pedido-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+
+.admin-pedido-hist {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--ayvy-purple, #b06edc);
+  background: #fff;
+  border-radius: 0 10px 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.admin-pedido-hist li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.admin-pedido-hist-when {
+  color: #888;
+  min-width: 9.5rem;
+}
+
+.admin-pedido-hist-actor {
+  color: #9a8fb0;
+  font-style: italic;
+}
+
+.admin-pedido-hist-vazio,
+.admin-pedido-hist-erro {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.admin-pedido-hist-erro {
+  color: #b00020;
+}
+
+.admin-atividades {
+  margin-bottom: 1.25rem;
+}
+
+.admin-atividades h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.admin-atividades-badge {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--ayvy-purple, #b06edc);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.admin-atividades-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.admin-atividades-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  background: #faf9fc;
+  border: 1px solid #ece8f3;
+  font-size: 0.86rem;
+  color: #555;
+}
+
+.admin-atividades-list li strong {
+  color: #1a1628;
+}
+
+.admin-atividades-list li.is-nova {
+  border-color: var(--ayvy-purple, #b06edc);
+  background: #f8f1fd;
+}
+
+@media (max-width: 1100px) {
+  .admin-pedido-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 900px) {
   .admin-pedido-grid {
     grid-template-columns: 1fr;

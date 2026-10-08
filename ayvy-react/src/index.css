@@ -11,6 +11,51 @@ body {
   margin: 0;
 }
 
+/*
+ * Escala proporcional para telas maiores que a de referência do layout (~1440–1536px,
+ * como notebooks Mac e Windows com escala 125%). Em monitores 1080p/1440p/4K com escala
+ * 100% (comum no Windows e no Linux) a página inteira cresce na mesma proporção, em vez
+ * de ficar pequena no meio da tela. Alturas em vh usam calc(100vh / var(--app-zoom)).
+ */
+:root {
+  --app-zoom: 1;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (min-width: 1700px) {
+  :root {
+    --app-zoom: 1.1;
+  }
+}
+
+@media (min-width: 1880px) {
+  :root {
+    --app-zoom: 1.2;
+  }
+}
+
+@media (min-width: 2300px) {
+  :root {
+    --app-zoom: 1.4;
+  }
+}
+
+@media (min-width: 3000px) {
+  :root {
+    --app-zoom: 1.75;
+  }
+}
+
+html {
+  zoom: var(--app-zoom);
+}
+
+img,
+video {
+  max-width: 100%;
+}
+
 #root {
   min-height: 100%;
 }

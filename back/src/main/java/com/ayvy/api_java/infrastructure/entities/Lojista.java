@@ -29,6 +29,10 @@ public class Lojista {
     @Column(name = "slug", nullable = false, unique = true)
     private String slug;
 
+    /** Sigla usada no código dos pedidos da loja (ex.: "LU" → LU-1). Única entre as lojas. */
+    @Column(name = "sigla", length = 10)
+    private String sigla;
+
     @Column(name = "cnpj", nullable = false, unique = true, columnDefinition = "CHAR(14)")
     private String cnpj;
 

@@ -1,0 +1,102 @@
+.cdlg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(30, 20, 45, 0.35);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: cdlg-fade 0.18s ease-out;
+}
+
+.cdlg {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 1.4rem 1.5rem 1.25rem;
+  box-shadow: 0 -6px 30px rgba(30, 20, 45, 0.18);
+  margin-bottom: 1.5rem;
+  animation: cdlg-up 0.22s ease-out;
+}
+
+.cdlg h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #2a2438;
+}
+
+.cdlg p {
+  margin: 0.45rem 0 0;
+  font-size: 0.88rem;
+  color: #6f6480;
+}
+
+.cdlg-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+.cdlg-btn {
+  border: 1.5px solid #e3d8ef;
+  background: #fff;
+  color: #5b4a70;
+  border-radius: 10px;
+  padding: 0.6rem 1.15rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.cdlg-btn:hover:not(:disabled) {
+  background: #f7f2fb;
+}
+
+.cdlg-btn--primary {
+  background: #7b3fbf;
+  border-color: #7b3fbf;
+  color: #fff;
+  min-width: 96px;
+}
+
+.cdlg-btn--primary:hover:not(:disabled) {
+  background: #6a32a8;
+}
+
+.cdlg-btn--danger {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+
+.cdlg-btn--danger:hover:not(:disabled) {
+  background: #a93226;
+}
+
+.cdlg-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes cdlg-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cdlg-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

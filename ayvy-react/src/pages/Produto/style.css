@@ -48,6 +48,30 @@
   display: block;
 }
 
+.produto-edit-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #7b3fbf;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.produto-edit-btn:hover {
+  background: #7b3fbf;
+  color: #fff;
+}
+
 .produto-gallery-nav {
   position: absolute;
   top: 50%;

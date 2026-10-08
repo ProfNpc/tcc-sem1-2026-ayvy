@@ -6,8 +6,9 @@ import {
   fetchAdminMetrics,
 } from "../../utils/adminMetrics";
 import { ADMIN_NAV } from "../../utils/adminDashboardMock";
-import { listTodosPedidos } from "../../services/pedidosApi";
+import { getPedidoItens, listTodosPedidos } from "../../services/pedidosApi";
 import { formatBRL } from "../../utils/cartHelpers";
+import { numeroPedidoLabel } from "../../utils/pedidoNumero";
 import "./style.css";
 import "./admin-crud.css";
 
@@ -30,17 +31,19 @@ export default function AdminHome() {
       ]);
       setMetrics(data.metrics);
       setRecentLojistas(data.recentLojistas);
+      const recentes = (pedidos || [])
+        .slice()
+        .sort((a, b) => String(b.criadoEm || "").localeCompare(String(a.criadoEm || "")))
+        .slice(0, 5);
       setRecentOrders(
-        (pedidos || [])
-          .slice()
-          .sort((a, b) => String(b.criadoEm || "").localeCompare(String(a.criadoEm || "")))
-          .slice(0, 5)
-          .map((p) => ({
-            id: `#AY-${p.id}`,
+        await Promise.all(
+          recentes.map(async (p) => ({
+            id: numeroPedidoLabel(await getPedidoItens(p.id).catch(() => []), p.id),
             loja: p.usuario?.nome || "Cliente",
             valor: formatBRL(Number(p.valorTotal) || 0),
             status: String(p.status || "").toLowerCase(),
           })),
+        ),
       );
       setApiOk(true);
     } catch {

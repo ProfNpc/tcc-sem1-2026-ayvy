@@ -66,6 +66,8 @@ export async function loadShopsFromApi() {
       stock: (p.estoque ?? 0) > 0 ? "disponivel" : "indisponivel",
       slug: p.slug,
       categoria: p.categoria?.nome || "",
+      ...(Array.isArray(p.cores) ? { colors: p.cores } : {}),
+      ...(Array.isArray(p.tamanhos) ? { sizes: p.tamanhos } : {}),
     });
   }
 

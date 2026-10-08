@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import Footer from "../Footer";
 import Header from "../Header";
 import "./style.css";
 
@@ -31,7 +32,12 @@ export default function MainLayout() {
   return (
     <>
       <Header />
-      <Outlet />
+      <div className="main-layout">
+        <div className="main-layout-page">
+          <Outlet />
+        </div>
+        <Footer />
+      </div>
     </>
   );
 }

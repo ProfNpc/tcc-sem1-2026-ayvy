@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import Banner from "../../components/Banner";
 import BrandSlider from "../../components/BrandSlider";
 import Card from "../../components/Card";
-import Footer from "../../components/Footer";
+import { SupportSection } from "../../components/Footer";
 import { listLojistasApi, listProdutosApi } from "../../services/shopApi";
 import { listCategorias, mapApiProdutoToCard } from "../../services/lojistaApi";
 import { HOME_BRANDS } from "../../utils/homeContent";
@@ -239,7 +239,7 @@ export default function Home() {
   const searching = Boolean(searchResults);
 
   return (
-    <>
+    <div className="home-page">
       <Banner imageSrc={BANNER_IMG} imageAlt="AYVY Logo">
         <div className="search-overlay-center" id="search-section">
           <h1 className="main-title">
@@ -304,11 +304,19 @@ export default function Home() {
                           to={`/loja/${slug}`}
                           className="home-shop-result-card"
                         >
-                          <img src={logo} alt="" />
-                          <div>
+                          <span className="home-shop-result-avatar">
+                            <img src={logo} alt="" />
+                          </span>
+                          <div className="home-shop-result-info">
                             <strong>{loja.nomeLoja}</strong>
-                            <span>@{slug}</span>
+                            <span className="home-shop-result-handle">@{slug}</span>
+                            {loja.descricao ? (
+                              <span className="home-shop-result-desc">{loja.descricao}</span>
+                            ) : null}
                           </div>
+                          <span className="home-shop-result-cta">
+                            Ver loja <i className="fas fa-chevron-right" />
+                          </span>
                         </Link>
                       </li>
                     );
@@ -347,7 +355,7 @@ export default function Home() {
         </div>
       </main>
 
-      <Footer variant="support" />
-    </>
+      <SupportSection />
+    </div>
   );
 }

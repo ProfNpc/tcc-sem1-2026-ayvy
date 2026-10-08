@@ -31,5 +31,7 @@ private List<ItemCarrinhoRequest> itens;
     public static class ItemCarrinhoRequest {
         private Integer produtoId;
         private Integer quantidade;
+        private String cor;
+        private String tamanho;
     }
 }

@@ -2,6 +2,7 @@ package com.ayvy.api_java.controller;
 
 import com.ayvy.api_java.business.PedidoService;
 import com.ayvy.api_java.dto.CheckoutRequest;
+import com.ayvy.api_java.dto.EnvioRequest;
 import com.ayvy.api_java.infrastructure.entities.HistoricoCompras;
 import com.ayvy.api_java.infrastructure.entities.Pedido;
 import com.ayvy.api_java.infrastructure.entities.PedidoEnderecoEntrega;
@@ -36,6 +37,11 @@ public class PedidoController {
     @GetMapping("/{id}")
     public ResponseEntity<Pedido> buscarPedidoPorId(@PathVariable int id){
         return ResponseEntity.ok(pedidoService.buscarPedidoPorId(id));
+    }
+
+    @GetMapping("/codigo/{codigo}")
+    public ResponseEntity<Pedido> buscarPedidoPorCodigo(@PathVariable String codigo){
+        return ResponseEntity.ok(pedidoService.buscarPedidoPorCodigo(codigo));
     }
 
     @GetMapping("/{id}/endereco-entrega")
@@ -73,6 +79,22 @@ public class PedidoController {
                                                   @RequestParam StatusPedido novoStatus,
                                                   @RequestParam(required = false) Integer actorUsuarioId) {
         return ResponseEntity.ok(pedidoService.atualizarStatus(id, novoStatus, actorUsuarioId));
+    }
+
+    @PutMapping("/{id}/recebido")
+    public ResponseEntity<Pedido> confirmarRecebimento(@PathVariable Integer id,
+                                                       @RequestParam(required = false) Integer actorUsuarioId) {
+        return ResponseEntity.ok(pedidoService.confirmarRecebimento(id, actorUsuarioId));
+    }
+
+    @PutMapping("/{id}/envio")
+    public ResponseEntity<Pedido> registrarEnvio(@PathVariable Integer id, @RequestBody EnvioRequest request) {
+        return ResponseEntity.ok(pedidoService.registrarEnvio(id, request));
+    }
+
+    @PutMapping("/{id}/entrega-confirmada")
+    public ResponseEntity<Pedido> confirmarEntrega(@PathVariable Integer id, @RequestParam Integer usuarioId) {
+        return ResponseEntity.ok(pedidoService.confirmarEntregaPeloCliente(id, usuarioId));
     }
 
     @GetMapping("/{id}/historico")

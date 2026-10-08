@@ -19,84 +19,71 @@ const FAQ = [
   },
 ];
 
-/**
- * Rodapé.
- * - variant "support": único bloco Suporte AYVY (use só na home)
- * - variant "simple": rodapé institucional curto
- */
-export default function Footer({ variant = "simple" }) {
-  if (variant === "support") {
-    return (
-      <footer className="site-footer ayvy-support" id="support-section">
-        <div className="ayvy-support__inner">
-          <header className="ayvy-support__head">
-            <h2 className="ayvy-support__title">Suporte AYVY</h2>
-            <p className="ayvy-support__lead">
-              Dúvidas sobre pedidos, lojas ou sua conta? Estamos aqui para ajudar —
-              com clareza e rapidez.
-            </p>
-          </header>
+/** Seção "Suporte AYVY" (contatos + FAQ), exibida na home acima do rodapé padrão. */
+export function SupportSection() {
+  return (
+    <section className="ayvy-support" id="support-section">
+      <div className="ayvy-support__inner">
+        <header className="ayvy-support__head">
+          <h2 className="ayvy-support__title">Suporte AYVY</h2>
+          <p className="ayvy-support__lead">
+            Dúvidas sobre pedidos, lojas ou sua conta? Estamos aqui para ajudar —
+            com clareza e rapidez.
+          </p>
+        </header>
 
-          <div className="ayvy-support__grid">
-            <a className="ayvy-support__card" href="mailto:suporte@ayvy.com.br">
-              <span className="ayvy-support__icon" aria-hidden>
-                <i className="fas fa-envelope" />
-              </span>
-              <h3>E-mail</h3>
-              <p>suporte@ayvy.com.br</p>
-              <span className="ayvy-support__link">Enviar mensagem</span>
-            </a>
+        <div className="ayvy-support__grid">
+          <a className="ayvy-support__card" href="mailto:suporte@ayvy.com.br">
+            <span className="ayvy-support__icon" aria-hidden>
+              <i className="fas fa-envelope" />
+            </span>
+            <h3>E-mail</h3>
+            <p>suporte@ayvy.com.br</p>
+            <span className="ayvy-support__link">Enviar mensagem</span>
+          </a>
 
-            <a className="ayvy-support__card" href="tel:+551141994220">
-              <span className="ayvy-support__icon" aria-hidden>
-                <i className="fas fa-phone" />
-              </span>
-              <h3>Telefone</h3>
-              <p>(11) 4199-4220</p>
-              <span className="ayvy-support__link">Ligar agora</span>
-            </a>
+          <a className="ayvy-support__card" href="tel:+551141994220">
+            <span className="ayvy-support__icon" aria-hidden>
+              <i className="fas fa-phone" />
+            </span>
+            <h3>Telefone</h3>
+            <p>(11) 4199-4220</p>
+            <span className="ayvy-support__link">Ligar agora</span>
+          </a>
 
-            <div className="ayvy-support__card ayvy-support__card--static">
-              <span className="ayvy-support__icon" aria-hidden>
-                <i className="fas fa-map-marker-alt" />
-              </span>
-              <h3>Campus FIEB</h3>
-              <p>
-                R. Interna Grupo Bandeirante, 138
-                <br />
-                Jardim Belval, Barueri - SP
-              </p>
-            </div>
-          </div>
-
-          <section className="ayvy-support__faq" aria-label="Perguntas frequentes">
-            <h3 className="ayvy-support__faq-title">Perguntas frequentes</h3>
-            <ul className="ayvy-support__faq-list">
-              {FAQ.map((item) => (
-                <li key={item.q}>
-                  <details>
-                    <summary>{item.q}</summary>
-                    <p>{item.a}</p>
-                  </details>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <div className="ayvy-support__foot">
+          <div className="ayvy-support__card ayvy-support__card--static">
+            <span className="ayvy-support__icon" aria-hidden>
+              <i className="fas fa-map-marker-alt" />
+            </span>
+            <h3>Campus FIEB</h3>
             <p>
-              <strong>ITB Brasílio Flores de Azevedo (FIEB)</strong>
-            </p>
-            <p>
-              © {new Date().getFullYear()} AYVY — plataforma de visibilidade para o seu
-              negócio.
+              R. Interna Grupo Bandeirante, 138
+              <br />
+              Jardim Belval, Barueri - SP
             </p>
           </div>
         </div>
-      </footer>
-    );
-  }
 
+        <section className="ayvy-support__faq" aria-label="Perguntas frequentes">
+          <h3 className="ayvy-support__faq-title">Perguntas frequentes</h3>
+          <ul className="ayvy-support__faq-list">
+            {FAQ.map((item) => (
+              <li key={item.q}>
+                <details>
+                  <summary>{item.q}</summary>
+                  <p>{item.a}</p>
+                </details>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </section>
+  );
+}
+
+/** Rodapé padrão do site — renderizado uma única vez pelo MainLayout. */
+export default function Footer() {
   return (
     <footer className="footer-ayvy">
       <div className="footer-box">
@@ -106,6 +93,9 @@ export default function Footer({ variant = "simple" }) {
           - SP
         </p>
         <p>Tel: (11) 4199-4220</p>
+        <p className="footer-copy">
+          © {new Date().getFullYear()} AYVY — plataforma de visibilidade para o seu negócio.
+        </p>
       </div>
     </footer>
   );

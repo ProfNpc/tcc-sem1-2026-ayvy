@@ -24,10 +24,29 @@ export function getPedidoEndereco(id) {
   return apiJson(`/pedidos/${id}/endereco-entrega`);
 }
 
+export function getPedidoHistorico(id) {
+  return apiJson(`/pedidos/${id}/historico`);
+}
+
 export function atualizarStatusPedido(id, status, actorUsuarioId) {
   const params = new URLSearchParams({ novoStatus: status });
   if (actorUsuarioId != null) params.set("actorUsuarioId", String(actorUsuarioId));
   return apiJson(`/pedidos/${id}/status?${params}`, { method: "PUT" });
+}
+
+export function confirmarRecebimentoPedido(id, actorUsuarioId) {
+  const params = new URLSearchParams();
+  if (actorUsuarioId != null) params.set("actorUsuarioId", String(actorUsuarioId));
+  return apiJson(`/pedidos/${id}/recebido?${params}`, { method: "PUT" });
+}
+
+export function confirmarEntregaCliente(id, usuarioId) {
+  const params = new URLSearchParams({ usuarioId: String(usuarioId) });
+  return apiJson(`/pedidos/${id}/entrega-confirmada?${params}`, { method: "PUT" });
+}
+
+export function registrarEnvioPedido(id, payload) {
+  return apiJson(`/pedidos/${id}/envio`, { method: "PUT", body: payload });
 }
 
 export function calcularFrete({ cepDestino, itens }) {

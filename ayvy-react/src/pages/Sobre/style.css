@@ -58,7 +58,7 @@
 /* —— HERO —— */
 .nu-hero {
   position: relative;
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh / var(--app-zoom, 1) - 70px);
   display: flex;
   align-items: flex-end;
   color: #fff;
@@ -362,7 +362,7 @@ body.page-sobre .footer-ayvy .footer-box p {
 
 @media (max-width: 800px) {
   .nu-hero {
-    min-height: calc(100vh - 60px);
+    min-height: calc(100vh / var(--app-zoom, 1) - 60px);
   }
 
   body.page-sobre .membro-row,
