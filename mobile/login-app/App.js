@@ -37,12 +37,14 @@ export default function App() {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
+    overflow: 'hidden', // nada pode passar da janela: evita a barra de rolagem lateral
     alignItems: 'center',
     backgroundColor: Platform.OS === 'web' ? '#e9e4ea' : colors.background,
   },
   frame: {
     flex: 1,
     width: '100%',
+    overflow: 'hidden',
     backgroundColor: colors.background,
     ...Platform.select({
       web: {
