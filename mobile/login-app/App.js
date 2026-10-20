@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CartProvider } from './CartContext';
 import LoginScreen from './LoginScreen';
@@ -9,11 +9,16 @@ import { MAX_APP_WIDTH, colors } from './theme';
 export default function App() {
   const [session, setSession] = useState(null);
 
+  // No navegador o app às vezes não herda a altura da página e fica "encolhido" no canto.
+  // Dar à raiz o tamanho exato da janela resolve; no celular isso não é necessário.
+  const { width, height } = useWindowDimensions();
+  const webSize = Platform.OS === 'web' ? { width, height } : null;
+
   return (
     // SafeAreaProvider mede as barras do aparelho (status e navegação) para as telas usarem.
     <SafeAreaProvider>
       {/* "backdrop" ocupa a janela toda; "frame" é a coluna do app (no navegador, do tamanho de um celular e centralizada). */}
-      <View style={styles.backdrop}>
+      <View style={[styles.backdrop, webSize]}>
         <View style={styles.frame}>
           {session ? (
             // Ao sair, o CartProvider é desmontado e o carrinho zera sozinho.

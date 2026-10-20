@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  ImageBackground,
+  Image,
   KeyboardAvoidingView,
   Pressable,
   ScrollView,
@@ -45,15 +45,18 @@ export default function LoginScreen({ onLogin }) {
   }
 
   return (
-    <ImageBackground
-      source={width > height
-        ? require('./assets/fundo-horizontal-ayvy.png')
-        : require('./assets/fundo-celular-ayvy.png')}
-      resizeMode="cover"
-      style={styles.background}
-    >
+    <View style={styles.background}>
+      {/* Imagem de fundo esticada por cima do container. Antes era um ImageBackground, que no navegador
+          usava o tamanho original do arquivo e estragava o layout. */}
+      <Image
+        source={width > height
+          ? require('./assets/fundo-horizontal-ayvy.png')
+          : require('./assets/fundo-celular-ayvy.png')}
+        resizeMode="cover"
+        style={styles.backgroundImage}
+      />
       <StatusBar style="light" />
-      <View pointerEvents="none" style={styles.scrim} />
+      <View style={styles.scrim} />
       {/* "padding" também no Android: com a tela de ponta a ponta, é o que sobe o formulário acima do teclado. */}
       <KeyboardAvoidingView behavior="padding" style={styles.keyboardArea}>
         <ScrollView
@@ -118,15 +121,21 @@ export default function LoginScreen({ onLogin }) {
           <Text style={styles.apiInfo}>API: {API_BASE_URL}</Text>
         </ScrollView>
       </KeyboardAvoidingView>
-    </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  background: { flex: 1, backgroundColor: '#48214d' },
+  background: { flex: 1, backgroundColor: '#48214d', overflow: 'hidden' },
+  backgroundImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
   scrim: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(15, 7, 19, 0.42)',
+    pointerEvents: 'none',
   },
   keyboardArea: { flex: 1 },
   content: {
