@@ -7,6 +7,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * Transforma erros em JSON padrão { "detail": "mensagem" } (ResponseStatusException e violação de banco → 409).
+ * O front lê esse "detail" em ayvy-react/src/services/api.js e mostra a mensagem na tela.
+ */
 @RestControllerAdvice
 public class ApiExceptionHandler {
 

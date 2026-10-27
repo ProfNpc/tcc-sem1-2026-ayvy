@@ -13,6 +13,12 @@ import com.ayvy.api_java.dto.LoginRequest;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Rotas de /usuarios: cadastro (POST), login (POST /login), CRUD do admin e recuperação de senha
+ * (POST /recuperar-senha e /redefinir-senha).
+ * Front: ayvy-react/src/services/authApi.js (login/cadastro), senhaApi.js (esqueci a senha), adminApi.js (CRUD).
+ * Regras: UsuarioService e RecuperacaoSenhaService.
+ */
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {

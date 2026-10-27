@@ -16,6 +16,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * POST /frete/calcular: valor do frete pela distância entre o CEP da loja e o CEP do cliente.
+ * Front: pedidosApi.calcularFrete (CartContext / Carrinho / Checkout). Regras: FreteService.
+ */
 @RestController
 @RequestMapping("/frete")
 public class FreteController {

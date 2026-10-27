@@ -14,6 +14,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+/**
+ * Regras de usuário: cadastro com senha em BCrypt, login (autenticar), atualização, desativação e exclusão.
+ * Chamado por UsuarioController. Ao excluir, apaga também os códigos de recuperação de senha do usuário.
+ */
 @Service
 public class UsuarioService {
 

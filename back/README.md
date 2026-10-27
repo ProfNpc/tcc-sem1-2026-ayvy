@@ -97,9 +97,62 @@ Detalhes: [postman/README.md](./postman/README.md) · [README-GUIA §11 — Post
 
 ## Front React
 
-Consome esta API via `ayvy-react/src/services/adminApi.js`
+Consome esta API via `ayvy-react/src/services/*.js` (tabela completa "função do front → endpoint → service" no [README da raiz](../README.md#2-como-front-e-back-conversam-o-caminho-de-uma-chamada))
 
 Detalhes: [README-GUIA §10 — ligação com o React](./README-GUIA.md#10-ligação-com-o-front-react) · [Guia do admin](../ayvy-react/src/pages/Adim/README-ADMIN.md)
+
+---
+
+## Mapa do código (camadas)
+
+Pacote base: `src/main/java/com/ayvy/api_java/`
+
+| Pasta | Para que serve | Exemplo |
+|---|---|---|
+| `controller/` | Recebe o HTTP: URL, parâmetros e corpo. Não tem regra de negócio | `PedidoController` → `/pedidos` |
+| `business/` | **Regras de negócio** (validações, cálculos, notificações) | `PedidoService.finalizarCheckout` |
+| `infrastructure/entities/` | Tabelas do banco como classes JPA | `Pedido` → tabela `pedidos` |
+| `infrastructure/repositories/` | Consultas ao banco (Spring Data JPA) | `PedidoProdutosRepository.findByCodigoPedidoLoja` |
+| `infrastructure/enums/` | Status e papéis | `StatusPedido`, `PapelUsuario` |
+| `infrastructure/geo/` | CEP → coordenadas e distância (frete) | `CepGeoLocalizacaoClient`, `CalculadoraDistancia` |
+| `dto/` | Formato do JSON de entrada de alguns endpoints | `CheckoutRequest`, `EnvioRequest`, `RecuperarSenhaRequest` |
+| `config/` | Segurança, CORS, `/uploads` e dados iniciais (bootstraps) | `WebConfig`, `SecurityFilterChainConfig` |
+| `exception/` | Erros viram `{ "detail": "mensagem" }` para o front | `ApiExceptionHandler` |
+
+### Bootstraps (rodam sozinhos ao subir, em ordem)
+
+| Ordem | Classe | O que faz |
+|---|---|---|
+| 2 | `DevSeedBootstrap` | lojas, produtos e clientes de exemplo (só cria o que falta) |
+| 3 | `PedidoNumeroLojaBootstrap` | preenche sigla da loja e código `LU-1` de pedidos antigos |
+| 4 | `CategoriaArvoreBootstrap` | árvore de categorias, junta repetidas e move produtos do seed |
+| sem `@Order` (por último) | `AdminBootstrap` | garante a conta admin |
+
+## Endpoints de pedidos, envio e senha (fluxo completo)
+
+| Método e caminho | Quem usa no site | Service |
+|---|---|---|
+| `POST /pedidos/checkout` | Checkout (cliente) | `PedidoService.finalizarCheckout` |
+| `GET /pedidos?usuarioId=` · `GET /pedidos/all` | Meus pedidos · Loja/Admin | `PedidoService` |
+| `GET /pedidos/{id}/itens` · `/endereco-entrega` · `/historico` | telas de pedido · admin | `PedidoService` |
+| `GET /pedidos/codigo/{codigo}` | busca por `LU-1` | `PedidoService.buscarPedidoPorCodigo` |
+| `PUT /pedidos/{id}/status?novoStatus=` | pago (checkout), preparo/cancelar (lojista), admin | `PedidoService.atualizarStatus` |
+| `PUT /pedidos/{id}/recebido` | lojista "Confirmar pedido recebido" | `PedidoService.confirmarRecebimento` |
+| `PUT /pedidos/{id}/envio` | lojista "Marcar como despachado" (local, transportadora, rastreio) | `PedidoService.registrarEnvio` |
+| `PUT /pedidos/{id}/entrega-confirmada?usuarioId=` | cliente "Confirmar entrega" | `PedidoService.confirmarEntregaPeloCliente` |
+| `POST /frete/calcular` | carrinho/checkout | `FreteService` |
+| `POST /usuarios/recuperar-senha` | Esqueci a senha (e-mail ou SMS) | `RecuperacaoSenhaService` (+ `SmsService`) |
+| `POST /usuarios/redefinir-senha` | Esqueci a senha (código + nova senha) | `RecuperacaoSenhaService` |
+
+A etapa da linha de envio (`etapaEnvio`, `segundosDesdeEnvio`) é calculada em `Pedido.java`: 2 min andando e 3 min parado em cada etapa.
+
+## E-mail e SMS (recuperação de senha)
+
+Sem configuração, o código aparece no **console do Spring** (procure `RECUPERAÇÃO DE SENHA`).
+Para enviar de verdade, defina antes do `./mvnw spring-boot:run`:
+
+- **E-mail (Gmail):** `SPRING_MAIL_HOST=smtp.gmail.com`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD` (senha de app).
+- **SMS (Twilio):** `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`.
 
 ---
 

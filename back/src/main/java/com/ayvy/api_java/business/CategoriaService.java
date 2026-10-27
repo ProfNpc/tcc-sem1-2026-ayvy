@@ -10,6 +10,10 @@ import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Regras de categoria: gera slug, lista e atualiza (inclusive categoria pai, ícone e ordem).
+ * A árvore padrão do marketplace vem de config/CategoriaArvoreBootstrap.
+ */
 @Service
 public class CategoriaService {
 

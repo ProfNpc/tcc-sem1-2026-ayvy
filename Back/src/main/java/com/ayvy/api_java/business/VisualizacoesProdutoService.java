@@ -15,6 +15,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 
+/**
+ * Registra cada visualização de produto e soma o total (usado no ranking e em "Escolhas para você").
+ */
 @Service
 public class VisualizacoesProdutoService {
     private final VisualizacoesProdutoRepository repository;

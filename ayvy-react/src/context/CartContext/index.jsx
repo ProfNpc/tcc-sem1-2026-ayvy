@@ -1,3 +1,7 @@
+/**
+ * Carrinho do site (localStorage "ayvy.cart.v2") e cálculo de frete (POST /frete/calcular).
+ * Use com useCart(). importLines/updateLineOptions são usados na importação do carrinho do app (pages/Carrinho).
+ */
 import {
   createContext,
   useCallback,

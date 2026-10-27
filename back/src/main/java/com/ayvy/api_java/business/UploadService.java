@@ -15,6 +15,10 @@ import java.nio.file.Paths;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Salva imagens enviadas em back/uploads/<pasta>/ com nome único e devolve o caminho /uploads/...
+ * Também resolve o caminho físico para apagar arquivos. Usado por UploadController e ProdutoService.
+ */
 @Service
 public class UploadService {
 

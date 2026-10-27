@@ -15,6 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Cálculo do frete: para cada loja do pedido, distância entre o CEP do endereço principal do lojista
+ * e o CEP de destino (infrastructure/geo), convertida em faixas de preço.
+ * Usado no POST /frete/calcular e no checkout (PedidoService).
+ */
 @Service
 public class FreteService {
 

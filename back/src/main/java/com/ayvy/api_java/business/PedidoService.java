@@ -22,6 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Coração das compras. Faz:
+ * - checkout: valida estoque, calcula frete, grava pedido, itens (com código da loja ex.: LU-1) e endereço;
+ * - fluxo de envio: atualizarStatus, confirmarRecebimento, registrarEnvio (local/transportadora/rastreio),
+ * confirmarEntregaPeloCliente;
+ * - histórico (tabela historico_compras) e notificações para cliente, lojistas e admins.
+ * Chamado por PedidoController. A etapa da linha de envio é calculada em entities/Pedido.getEtapaEnvio().
+ */
 @Service
 
 public class PedidoService {

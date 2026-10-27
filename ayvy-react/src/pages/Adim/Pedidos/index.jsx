@@ -1,3 +1,7 @@
+/**
+ * Admin › Pedidos: todos os pedidos com cliente, loja, pagamento (só o tipo), envio, linha de envio,
+ * histórico (GET /pedidos/{id}/historico) e "Atividade recente" (notificações do admin). Atualiza a cada 15 s.
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import TrackingTimeline from "../../../components/TrackingTimeline";
 import { useAuth } from "../../../context/AuthContext";

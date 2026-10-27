@@ -7,6 +7,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Rotas de /categorias: lista a árvore (cada categoria traz categoriaPai, icone e ordem) e CRUD do admin.
+ * Front: categoriasApi.js (tela /categorias), lojistaApi.listCategorias (cadastro de produto), adminApi.js.
+ * A árvore padrão é criada por config/CategoriaArvoreBootstrap.
+ */
 @RestController
 @RequestMapping("/categorias")
 

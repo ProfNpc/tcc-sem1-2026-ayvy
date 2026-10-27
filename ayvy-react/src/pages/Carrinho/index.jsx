@@ -1,3 +1,7 @@
+/**
+ * Carrinho (/carrinho). Também importa o carrinho do app: /carrinho?itens=produtoId:quantidade,...
+ * (ver utils/cartImport.js). Itens importados de produto com opções pedem cor/tamanho antes de finalizar.
+ */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useCart } from "../../context/CartContext";

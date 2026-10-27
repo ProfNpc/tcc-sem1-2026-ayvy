@@ -22,6 +22,13 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+/**
+ * Recuperação de senha sem estar logado:
+ * 1. solicitarCodigo: gera código de 6 dígitos (vale 15 min, guarda só o hash em redefinicao_senha)
+ * e envia por e-mail (JavaMailSender) ou SMS (SmsService). Sem configuração, mostra no console.
+ * 2. redefinirSenha: confere o código (máx. 5 tentativas, uso único) e grava a nova senha em BCrypt.
+ * Front: ayvy-react/src/pages/EsqueciSenha + services/senhaApi.js. Configuração: application.properties.
+ */
 @Service
 public class RecuperacaoSenhaService {
 

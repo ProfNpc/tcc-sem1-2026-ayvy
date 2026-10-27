@@ -8,6 +8,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+/**
+ * Regras de pagamento: grava e atualiza tipo/status/valor. Chamado por PagamentoController.
+ */
 @Service
 
 public class PagamentoService {

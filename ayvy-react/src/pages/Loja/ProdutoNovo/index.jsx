@@ -1,3 +1,8 @@
+/**
+ * Cadastro e edição de produto do lojista (/loja/:slug/produto/novo e /:productId/editar).
+ * Fotos, nome, descrição, categoria (CategoriaPicker), preço, estoque, cores e tamanhos.
+ * Salva via services/lojistaApi.js (POST/PUT /produtos, /upload, /produtos/{id}/imagens).
+ */
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";

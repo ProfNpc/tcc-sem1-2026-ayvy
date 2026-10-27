@@ -1,3 +1,8 @@
+/**
+ * Tela /categorias (estilo SHEIN): lista lateral de categorias principais e, à direita, bolinhas de
+ * subcategorias, produtos e lojas. A categoria escolhida fica na URL (?c=slug, ?todos=1 para "Ver tudo").
+ * Dados: GET /categorias (categoriasApi) + GET /produtos (shopApi). Árvore: utils/categoriaArvore.js.
+ */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { listCategoriasApi } from "../../services/categoriasApi";

@@ -1,3 +1,7 @@
+/**
+ * Todas as URLs do site. Rotas com <RequireAuth> exigem login; /admin exige papel admin (<RequireRole>).
+ * Telas públicas ficam dentro do MainLayout (menu + rodapé padrão).
+ */
 import { Navigate, Route, Routes } from "react-router-dom";
 import AdminLayout from "../components/AdminLayout";
 import MainLayout from "../components/MainLayout";

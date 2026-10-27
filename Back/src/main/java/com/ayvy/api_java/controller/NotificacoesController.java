@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
+/**
+ * Rotas de /notificacoes: avisos do usuário (marcar como lida, excluir).
+ * As notificações de pedido são criadas pelo PedidoService (tipos: pedido, pedido_loja, pedido_admin).
+ * Front: notificacoesApi.js (tela Notificações, aviso no card da Loja e "Atividade recente" do admin).
+ */
 @RestController
 @RequestMapping("/notificacoes")
 

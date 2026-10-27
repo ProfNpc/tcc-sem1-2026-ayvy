@@ -1,3 +1,9 @@
+/**
+ * Tudo do painel do lojista (tela /loja/:slug quando o dono está logado):
+ * - produtos: criar, editar, publicar, inativar, excluir e fotos (/produtos, /produtos/{id}/imagens, /upload);
+ * - pedidos da loja: listar e avançar o envio (/pedidos/{id}/recebido, /status, /envio).
+ * Back: ProdutoController/ProdutoService e PedidoController/PedidoService.
+ */
 import {
   addProdutoImagem,
   createProduto,

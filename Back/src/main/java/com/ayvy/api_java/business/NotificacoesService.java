@@ -8,6 +8,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+/**
+ * CRUD de notificações (marcar lida, excluir). Chamado por NotificacoesController.
+ * As notificações de pedidos são criadas direto pelo PedidoService.
+ */
 @Service
 public class NotificacoesService {
 

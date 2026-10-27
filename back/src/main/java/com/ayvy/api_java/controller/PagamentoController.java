@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Rotas de /pagamentos: registra o tipo de pagamento do pedido (sem dados de cartão).
+ * Front: pedidosApi.criarPagamento (Checkout) e listPagamentos (admin e lojista mostram só o tipo).
+ */
 @RestController
 @RequestMapping("/pagamentos")
 

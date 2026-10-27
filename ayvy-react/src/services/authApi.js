@@ -1,3 +1,8 @@
+/**
+ * Login, cadastro e sessão.
+ * Endpoints: POST /usuarios/login, POST /usuarios, /clientes, /lojistas, /enderecos, GET /lojistas.
+ * Usado por: pages/Login, pages/Cadastro, context/AuthContext. Back: UsuarioController, ClienteController, LojistaController.
+ */
 import { apiJson } from "./api";
 
 /**

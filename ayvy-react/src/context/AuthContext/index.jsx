@@ -1,3 +1,8 @@
+/**
+ * Sessão do usuário logado (id, papel, loja). Guarda em localStorage "ayvy.auth".
+ * Use com useAuth(): { user, loggedIn, isAdmin, isLojista, isCliente, shopSlug, login, logout }.
+ * O login chama services/authApi.js (POST /usuarios/login).
+ */
 import { createContext, useCallback, useContext, useMemo, useSyncExternalStore } from "react";
 import {
   findLojistaByUsuarioId,

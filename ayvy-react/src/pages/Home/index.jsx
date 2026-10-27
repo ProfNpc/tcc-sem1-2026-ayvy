@@ -1,3 +1,7 @@
+/**
+ * Home (/): banner, busca de lojas/produtos, seções de produtos vindas da API e Suporte AYVY.
+ * Dados: services/shopApi.js (GET /lojistas, GET /produtos).
+ */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Banner from "../../components/Banner";

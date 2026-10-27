@@ -13,6 +13,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+/**
+ * Regras de favoritos (sem duplicar usuário + produto). Chamado por FavoritosController.
+ */
 @Service
 public class FavoritosService {
     private final FavoritosRepository repository;

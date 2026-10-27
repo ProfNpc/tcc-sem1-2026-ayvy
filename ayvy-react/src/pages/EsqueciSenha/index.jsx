@@ -1,3 +1,7 @@
+/**
+ * Recuperar senha sem login (/esqueci-senha): 1) e-mail + canal (E-mail/SMS) → 2) código + nova senha → 3) pronto.
+ * Chamadas: services/senhaApi.js. Sem e-mail/SMS configurado, o código aparece no console do Spring.
+ */
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";

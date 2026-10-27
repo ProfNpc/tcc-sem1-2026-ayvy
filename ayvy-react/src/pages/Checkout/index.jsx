@@ -1,3 +1,7 @@
+/**
+ * Checkout (/checkout, exige login): endereço, frete, pagamento e criação do pedido.
+ * Chamadas: POST /pedidos/checkout, POST /pagamentos, PUT /pedidos/{id}/status=pago (services/pedidosApi.js).
+ */
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";

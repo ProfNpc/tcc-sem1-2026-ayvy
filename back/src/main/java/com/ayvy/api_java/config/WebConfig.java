@@ -9,6 +9,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Serve as imagens de back/uploads em /uploads/** e libera o CORS para o site React (localhost:5173 e 5174).
+ */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 

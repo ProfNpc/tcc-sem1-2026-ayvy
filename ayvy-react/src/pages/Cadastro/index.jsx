@@ -1,3 +1,6 @@
+/**
+ * Cadastro (/cadastro) em 2 passos: POST /usuarios e depois POST /clientes ou /lojistas (services/authApi.js).
+ */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CadastroForm from "../../components/CadastroForm";

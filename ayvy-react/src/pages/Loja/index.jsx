@@ -1,3 +1,8 @@
+/**
+ * Tela da loja (/loja/:slug). Visitante vê a vitrine. O dono vê abas de produtos, rascunhos e Pedidos:
+ * confirmar recebido → começar preparo → despachar (DespacharModal) → aguardar o cliente confirmar a entrega.
+ * Dados: services/lojistaApi.js (produtos e pedidos da loja) e notificacoesApi.js (aviso de entrega confirmada).
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import Card from "../../components/Card";
