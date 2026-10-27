@@ -22,6 +22,19 @@ public class Categoria {
     @Column(name = "slug", nullable = false, unique = true)
     private String slug;
 
+    @Builder.Default
     @Column(name = "ativo", nullable = false)
     private Boolean ativo = true;
+
+    /** Categoria principal (ex.: "Moda Feminina"); nulo quando esta já é uma categoria principal. */
+    @ManyToOne
+    @JoinColumn(name = "categoria_pai_id")
+    private Categoria categoriaPai;
+
+    /** Ícone Font Awesome usado no site, ex.: "fa-person-dress". */
+    @Column(name = "icone", length = 40)
+    private String icone;
+
+    @Column(name = "ordem")
+    private Integer ordem;
 }

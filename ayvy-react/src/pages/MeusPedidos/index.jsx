@@ -1,3 +1,7 @@
+/**
+ * Meus pedidos do cliente (/meus-pedidos): status, linha de envio (TrackingTimeline), código de rastreio
+ * e botão Confirmar entrega (PUT /pedidos/{id}/entrega-confirmada). Atualiza sozinho a cada 15 s.
+ */
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ConfirmDialog from "../../components/ConfirmDialog";

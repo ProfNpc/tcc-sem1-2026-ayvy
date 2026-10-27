@@ -1,3 +1,7 @@
+/**
+ * Página do produto (/loja/:slug/p/:productId): galeria, cor/tamanho, adicionar ao carrinho, avaliações.
+ * O dono da loja vê o lápis para editar. Dados: utils/lojistaData.js (API) e favoritosApi.js.
+ */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import FloatingChat from "../../components/FloatingChat";

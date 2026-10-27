@@ -13,6 +13,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Regras da loja: cria o lojista com slug e sigla única (SiglaLojaService gera "LU" para "Loja Urbana").
+ * Chamado por LojistaController.
+ */
 @Service
 public class LojistaService {
 

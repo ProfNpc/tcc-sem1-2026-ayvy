@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Rotas de /lojistas: dados da loja (nome, slug, CNPJ, logo, banner, sigla). Criado depois do POST /usuarios.
+ * Front: authApi.criarLojista (Cadastro), shopApi.loadShopsFromApi (vitrine) e adminApi (painel). Regras: LojistaService.
+ */
 @RestController
 @RequestMapping("/lojistas")
 public class LojistaController {

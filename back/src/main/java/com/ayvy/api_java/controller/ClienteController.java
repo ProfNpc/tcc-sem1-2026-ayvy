@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Rotas de /clientes: perfil de negócio do cliente (CPF), criado depois do POST /usuarios (cadastro em 2 passos).
+ * Front: authApi.criarCliente (Cadastro) e adminApi (painel admin). Regras: ClienteService.
+ */
 @RestController
 @RequestMapping("/clientes")
 public class ClienteController {

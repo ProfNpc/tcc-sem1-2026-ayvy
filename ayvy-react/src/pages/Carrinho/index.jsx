@@ -1,8 +1,44 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+/**
+ * Carrinho (/carrinho). Também importa o carrinho do app: /carrinho?itens=produtoId:quantidade,...
+ * (ver utils/cartImport.js). Itens importados de produto com opções pedem cor/tamanho antes de finalizar.
+ */
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { listProdutosApi } from "../../services/shopApi";
+import { linhaPrecisaOpcoes, montarImportacao, parseItensParam } from "../../utils/cartImport";
 import { resolveShopsMap } from "../../utils/lojistaData";
 import "./style.css";
+
+function ImportNotice({ importacao, onClose }) {
+  if (!importacao) return null;
+  if (importacao.status === "carregando") {
+    return (
+      <div className="ck-import ck-import--loading" role="status">
+        <span className="ck-import__spinner" aria-hidden /> Trazendo os itens do app para o carrinho…
+      </div>
+    );
+  }
+  const temAvisos = importacao.avisos.length > 0;
+  const tipo = importacao.status === "erro" ? "erro" : temAvisos ? "aviso" : "ok";
+  return (
+    <div className={`ck-import ck-import--${tipo}`} role="status">
+      <div className="ck-import__body">
+        {importacao.titulo ? <strong>{importacao.titulo}</strong> : null}
+        {temAvisos ? (
+          <ul>
+            {importacao.avisos.map((a) => (
+              <li key={a}>{a}</li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+      <button type="button" className="ck-import__close" onClick={onClose} aria-label="Fechar aviso">
+        <i className="fas fa-times" />
+      </button>
+    </div>
+  );
+}
 
 function recommendProducts(shops, cart, limit = 5) {
   const inCart = new Set(cart.map((l) => String(l.productId || "")));
@@ -25,8 +61,14 @@ function recommendProducts(shops, cart, limit = 5) {
 
 export default function Carrinho() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const itensParam = searchParams.get("itens");
+  const importadoRef = useRef(null);
+  const [importacao, setImportacao] = useState(null);
   const {
     cart,
+    importLines,
+    updateLineOptions,
     subtotal,
     freight,
     shippingOptions,
@@ -59,10 +101,64 @@ export default function Carrinho() {
     };
   }, []);
 
+  useEffect(() => {
+    if (itensParam == null || importadoRef.current === itensParam) return;
+    importadoRef.current = itensParam;
+
+    const { itens, invalidos } = parseItensParam(itensParam);
+    const avisosFormato =
+      invalidos > 0
+        ? [
+            `${invalidos} ${invalidos === 1 ? "item do link estava" : "itens do link estavam"} em formato inválido e ${invalidos === 1 ? "foi ignorado" : "foram ignorados"}.`,
+          ]
+        : [];
+
+    if (itens.length === 0) {
+      setTimeout(() => {
+        setImportacao({
+          status: "pronto",
+          titulo: "Nenhum item do app pôde ser adicionado.",
+          avisos: avisosFormato,
+        });
+        navigate("/carrinho", { replace: true });
+      }, 0);
+      return;
+    }
+
+    setTimeout(() => setImportacao({ status: "carregando", avisos: [] }), 0);
+    (async () => {
+      try {
+        const produtos = await listProdutosApi();
+        const { linhas, avisos, adicionados } = montarImportacao(itens, produtos, cart);
+        if (linhas.length > 0) importLines(linhas);
+        const precisaOpcoes = linhas.some(linhaPrecisaOpcoes);
+        setImportacao({
+          status: "pronto",
+          titulo:
+            adicionados > 0
+              ? `${adicionados} ${adicionados === 1 ? "item do app foi adicionado" : "itens do app foram adicionados"} ao seu carrinho.${precisaOpcoes ? " Escolha cor e tamanho dos itens marcados antes de finalizar." : ""}`
+              : "Nenhum item do app pôde ser adicionado.",
+          avisos: [...avisosFormato, ...avisos],
+        });
+        navigate("/carrinho", { replace: true });
+      } catch (e) {
+        importadoRef.current = null;
+        setImportacao({
+          status: "erro",
+          titulo: "Não foi possível trazer os itens do app agora.",
+          avisos: [e?.message || "Verifique sua conexão e atualize a página para tentar de novo."],
+        });
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- importa uma vez por link
+  }, [itensParam]);
+
   const recomenda = useMemo(
     () => recommendProducts(shopsMap, cart),
     [shopsMap, cart],
   );
+
+  const linhasPendentes = cart.filter(linhaPrecisaOpcoes);
 
   function handleCalcularFrete(e) {
     e.preventDefault();
@@ -70,27 +166,33 @@ export default function Carrinho() {
   }
 
   function handleFinalizar() {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || linhasPendentes.length > 0) return;
     setDrawerOpen(false);
     navigate("/checkout");
   }
 
+  const aviso = <ImportNotice importacao={importacao} onClose={() => setImportacao(null)} />;
+
   if (cart.length === 0) {
     return (
       <div className="ck-page">
-        <div className="ck-empty">
-          <h1>Seu carrinho</h1>
-          <p>O carrinho está vazio.</p>
-          <Link to="/" className="ck-btn ck-btn--primary">
-            Continuar comprando
-          </Link>
-        </div>
+        {aviso}
+        {importacao?.status === "carregando" ? null : (
+          <div className="ck-empty">
+            <h1>Seu carrinho</h1>
+            <p>O carrinho está vazio.</p>
+            <Link to="/" className="ck-btn ck-btn--primary">
+              Continuar comprando
+            </Link>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
     <div className="ck-page">
+      {aviso}
       <div className="ck-cart-layout">
         <section className="ck-cart-main">
           <header className="ck-cart-head">
@@ -106,8 +208,9 @@ export default function Carrinho() {
               const slug = item.shopSlug || item.slug;
               const pid = item.productId || item.apiId;
               const to = slug && pid ? `/loja/${slug}/p/${pid}` : null;
+              const pendente = linhaPrecisaOpcoes(item);
               return (
-                <li key={item.id} className="ck-cart-line">
+                <li key={item.id} className={`ck-cart-line${pendente ? " ck-cart-line--pending" : ""}`}>
                   {to ? (
                     <Link to={to} className="ck-cart-line-media">
                       <img src={item.image} alt="" />
@@ -123,7 +226,41 @@ export default function Carrinho() {
                     ) : (
                       <strong>{item.name}</strong>
                     )}
-                    {(item.color || item.size) && (
+                    {pendente ? (
+                      <div className="ck-line-options">
+                        <span className="ck-line-options__label">
+                          <i className="fas fa-exclamation-circle" aria-hidden /> Escolha as opções
+                        </span>
+                        {item.colors?.length > 0 ? (
+                          <select
+                            aria-label={`Cor de ${item.name}`}
+                            value={item.color || ""}
+                            onChange={(e) => updateLineOptions(item.id, { color: e.target.value || null })}
+                          >
+                            <option value="">Cor…</option>
+                            {item.colors.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                        ) : null}
+                        {item.sizes?.length > 0 ? (
+                          <select
+                            aria-label={`Tamanho de ${item.name}`}
+                            value={item.size || ""}
+                            onChange={(e) => updateLineOptions(item.id, { size: e.target.value || null })}
+                          >
+                            <option value="">Tamanho…</option>
+                            {item.sizes.map((s) => (
+                              <option key={s} value={s}>
+                                {s}
+                              </option>
+                            ))}
+                          </select>
+                        ) : null}
+                      </div>
+                    ) : (item.color || item.size) && (
                       to ? (
                         <Link to={to} className="ck-cart-line-variant">
                           {[item.color, item.size].filter(Boolean).join(" · ")} · Alterar
@@ -134,7 +271,7 @@ export default function Carrinho() {
                         </span>
                       )
                     )}
-                    {to && !(item.color || item.size) ? (
+                    {to && !pendente && !(item.color || item.size) ? (
                       <Link to={to} className="ck-cart-line-variant">
                         Alterar opções
                       </Link>
@@ -199,9 +336,20 @@ export default function Carrinho() {
             <strong>{formatBRL(freight.cepConfirmed ? total : subtotal)}</strong>
           </div>
 
-          <button type="button" className="ck-btn ck-btn--primary ck-btn--block" onClick={handleFinalizar}>
+          <button
+            type="button"
+            className="ck-btn ck-btn--primary ck-btn--block"
+            onClick={handleFinalizar}
+            disabled={linhasPendentes.length > 0}
+          >
             Finalizar compra
           </button>
+          {linhasPendentes.length > 0 ? (
+            <p className="ck-error">
+              Escolha cor e tamanho {linhasPendentes.length === 1 ? "do item marcado" : "dos itens marcados"} para
+              finalizar.
+            </p>
+          ) : null}
           <Link to="/" className="ck-link-more">
             Escolher mais produtos
           </Link>

@@ -1,3 +1,7 @@
+/**
+ * Todas as URLs do site. Rotas com <RequireAuth> exigem login; /admin exige papel admin (<RequireRole>).
+ * Telas públicas ficam dentro do MainLayout (menu + rodapé padrão).
+ */
 import { Navigate, Route, Routes } from "react-router-dom";
 import AdminLayout from "../components/AdminLayout";
 import MainLayout from "../components/MainLayout";
@@ -17,6 +21,7 @@ import AdminPedidosList from "../pages/Adim/Pedidos";
 import AdminRelatorios from "../pages/Adim/Relatorios";
 import Cadastro from "../pages/Cadastro";
 import Carrinho from "../pages/Carrinho";
+import Categorias from "../pages/Categorias";
 import Checkout from "../pages/Checkout";
 import EsqueciSenha from "../pages/EsqueciSenha";
 import Favoritos from "../pages/Favoritos";
@@ -38,6 +43,7 @@ export default function AppRoutes() {
       <Route element={<MainLayout />}>
         <Route index element={<Home />} />
         <Route path="sobre" element={<Sobre />} />
+        <Route path="categorias" element={<Categorias />} />
         <Route
           path="perfil"
           element={

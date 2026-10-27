@@ -14,6 +14,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Rotas de /pedidos: checkout, listagens, itens, endereço, histórico e todo o fluxo de envio
+ * (status, /recebido, /envio, /entrega-confirmada) e busca pelo código da loja (/codigo/LU-1).
+ * Front: pedidosApi.js (cliente, checkout, admin) e lojistaApi.js (ações do lojista na aba Pedidos).
+ * Regras e notificações: PedidoService.
+ */
 @RestController
 @RequestMapping("/pedidos")
 

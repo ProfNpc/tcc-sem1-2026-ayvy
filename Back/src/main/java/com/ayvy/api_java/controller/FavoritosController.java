@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Rotas de /favoritos: favoritar, desfavoritar, listar e verificar se um produto é favorito.
+ * Front: favoritosApi.js (página do Produto e tela Favoritos).
+ */
 @RestController
 @RequestMapping("/favoritos")
 public class FavoritosController {

@@ -1,3 +1,7 @@
+/**
+ * Checkout (/checkout, exige login): endereço, frete, pagamento e criação do pedido.
+ * Chamadas: POST /pedidos/checkout, POST /pagamentos, PUT /pedidos/{id}/status=pago (services/pedidosApi.js).
+ */
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -13,6 +17,7 @@ import {
   getPedidoItens,
   listEnderecos,
 } from "../../services/pedidosApi";
+import { linhaPrecisaOpcoes } from "../../utils/cartImport";
 import { numeroPedidoLabel } from "../../utils/pedidoNumero";
 import { formatCardExpiry, formatCardNumber, formatCep } from "../../utils/cartHelpers";
 import { listPaymentMethods } from "../../utils/paymentMethodsStore";
@@ -248,7 +253,7 @@ export default function Checkout() {
     return <Navigate to="/login" replace state={{ from: "/checkout" }} />;
   }
 
-  if (cart.length === 0) {
+  if (cart.length === 0 || cart.some(linhaPrecisaOpcoes)) {
     return <Navigate to="/carrinho" replace />;
   }
 

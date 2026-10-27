@@ -10,6 +10,10 @@ import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Regras de categoria: gera slug, lista e atualiza (inclusive categoria pai, ícone e ordem).
+ * A árvore padrão do marketplace vem de config/CategoriaArvoreBootstrap.
+ */
 @Service
 public class CategoriaService {
 
@@ -56,6 +60,20 @@ public class CategoriaService {
         }
         if (categoria.getAtivo() != null) {
             categoriaEntity.setAtivo(categoria.getAtivo());
+        }
+        if (categoria.getCategoriaPai() != null && categoria.getCategoriaPai().getId() != null) {
+            Integer paiId = categoria.getCategoriaPai().getId();
+            if (paiId.equals(id)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Uma categoria não pode ser pai dela mesma");
+            }
+            categoriaEntity.setCategoriaPai(repository.findById(paiId).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoria pai não encontrada")));
+        }
+        if (categoria.getIcone() != null) {
+            categoriaEntity.setIcone(categoria.getIcone());
+        }
+        if (categoria.getOrdem() != null) {
+            categoriaEntity.setOrdem(categoria.getOrdem());
         }
 
         return repository.saveAndFlush(categoriaEntity);

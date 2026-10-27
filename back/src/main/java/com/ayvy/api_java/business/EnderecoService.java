@@ -8,6 +8,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+/**
+ * Regras de endereço (CRUD). Chamado por EnderecoController.
+ */
 @Service
 public class EnderecoService {
 

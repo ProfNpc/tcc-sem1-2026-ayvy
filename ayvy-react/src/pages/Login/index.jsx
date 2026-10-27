@@ -1,3 +1,6 @@
+/**
+ * Login (/login): autentica em POST /usuarios/login (via AuthContext) e redireciona conforme o papel.
+ */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import LoginForm from "../../components/LoginForm";

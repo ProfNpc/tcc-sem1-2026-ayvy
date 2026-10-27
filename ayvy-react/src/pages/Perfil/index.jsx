@@ -1,3 +1,6 @@
+/**
+ * Perfil do usuário logado (/perfil): dados, avatar, senha, endereços e cartões salvos (só no navegador).
+ */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";

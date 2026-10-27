@@ -33,6 +33,11 @@ export default function Navbar() {
                     <i className="fas fa-home" /> Início
                   </Link>
                 </li>
+                <li>
+                  <Link to="/categorias">
+                    <i className="fas fa-th-large" /> Categorias
+                  </Link>
+                </li>
                 <li style={{ display: isAdmin ? "" : "none" }}>
                   <Link to="/admin">
                     <i className="fas fa-shield-alt" /> Painel admin

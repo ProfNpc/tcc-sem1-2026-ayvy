@@ -13,6 +13,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.nio.file.Files;
 import java.util.List;
 
+/**
+ * Regras de produto: criar, atualizar (status, categoria, cores, tamanhos, estoque) e galeria de imagens.
+ * Chamado por ProdutoController. O estoque é baixado no checkout (PedidoService).
+ */
 @Service
 public class ProdutoService {
 

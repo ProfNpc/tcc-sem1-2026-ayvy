@@ -1,3 +1,7 @@
+/**
+ * Vitrine pública: lojas e produtos ativos da API (GET /lojistas, GET /produtos).
+ * Usado por: Home, Ranking, Categorias, Carrinho (importação do app) e utils/lojistaData.js.
+ */
 import { apiJson } from "./api";
 import { resolveImageUrl } from "../utils/imageUrl";
 

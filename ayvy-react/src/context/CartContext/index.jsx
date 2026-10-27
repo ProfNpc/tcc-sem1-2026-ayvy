@@ -1,3 +1,7 @@
+/**
+ * Carrinho do site (localStorage "ayvy.cart.v2") e cálculo de frete (POST /frete/calcular).
+ * Use com useCart(). importLines/updateLineOptions são usados na importação do carrinho do app (pages/Carrinho).
+ */
 import {
   createContext,
   useCallback,
@@ -118,6 +122,46 @@ export default function CartProvider({ children }) {
     },
     [cart],
   );
+
+  /** Adiciona várias linhas de uma vez (importação do app), somando com linhas iguais. */
+  const importLines = useCallback((incomingLines) => {
+    let next = [...cartSnapshot];
+    for (const incoming of incomingLines || []) {
+      const key = cartLineKey(incoming);
+      const idx = next.findIndex((line) => cartLineKey(line) === key);
+      if (idx >= 0) {
+        next = next.map((line, i) =>
+          i === idx
+            ? { ...line, quantity: (line.quantity || 1) + (incoming.quantity || 1) }
+            : line,
+        );
+      } else {
+        next = [...next, { ...incoming, id: crypto.randomUUID() }];
+      }
+    }
+    setCartAndNotify(next);
+  }, []);
+
+  /** Define cor/tamanho de uma linha; se já existir a mesma variante, junta as duas. */
+  const updateLineOptions = useCallback((lineId, options) => {
+    const current = cartSnapshot.find((line) => line.id === lineId);
+    if (!current) return;
+    const updated = { ...current, ...options };
+    const key = cartLineKey(updated);
+    const twin = cartSnapshot.find(
+      (line) => line.id !== lineId && cartLineKey(line) === key,
+    );
+    const next = twin
+      ? cartSnapshot
+          .filter((line) => line.id !== lineId)
+          .map((line) =>
+            line.id === twin.id
+              ? { ...line, quantity: (line.quantity || 1) + (current.quantity || 1) }
+              : line,
+          )
+      : cartSnapshot.map((line) => (line.id === lineId ? updated : line));
+    setCartAndNotify(next);
+  }, []);
 
   const removeLine = useCallback(
     (lineId) => {
@@ -302,6 +346,8 @@ export default function CartProvider({ children }) {
       total,
       toggle,
       addItem,
+      importLines,
+      updateLineOptions,
       updateQuantity,
       removeLine,
       clear,
@@ -326,6 +372,8 @@ export default function CartProvider({ children }) {
       total,
       toggle,
       addItem,
+      importLines,
+      updateLineOptions,
       updateQuantity,
       removeLine,
       clear,

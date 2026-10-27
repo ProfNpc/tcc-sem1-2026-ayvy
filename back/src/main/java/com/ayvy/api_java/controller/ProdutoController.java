@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Rotas de /produtos: CRUD de produtos e galeria de imagens (/produtos/{id}/imagens).
+ * Front: shopApi.js (vitrine e categorias), lojistaApi.js (cadastro/edição pelo lojista), adminApi.js.
+ * Regras: ProdutoService.
+ */
 @RestController
 @RequestMapping("/produtos")
 public class ProdutoController {

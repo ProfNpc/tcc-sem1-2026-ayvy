@@ -1,3 +1,7 @@
+/**
+ * Favoritos (/favoritos) e registro de visualização de produto (/visualizacoes).
+ * Usado por: pages/Produto e pages/Favoritos. Back: FavoritosController, VisualizacoesProdutoController.
+ */
 import { apiFetch, apiJson } from "./api";
 
 export function listFavoritos(usuarioId) {

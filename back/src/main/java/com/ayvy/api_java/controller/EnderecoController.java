@@ -7,6 +7,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Rotas de /enderecos: endereços dos usuários (o principal do lojista é a origem do frete).
+ * Front: authApi.criarEndereco (Cadastro), pedidosApi (Checkout e Perfil).
+ */
 @RestController
 @RequestMapping("/enderecos")
 public class EnderecoController {

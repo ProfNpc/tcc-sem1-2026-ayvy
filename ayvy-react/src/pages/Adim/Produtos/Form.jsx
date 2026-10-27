@@ -16,6 +16,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import AdminFormShell from "../../../components/Admin/AdminFormShell";
 import ImageUploadField from "../../../components/Admin/ImageUploadField";
 import ProdutoGaleriaField from "../../../components/Admin/ProdutoGaleriaField";
+import CategoriaOptions from "../../../components/CategoriaOptions";
 import {
   addProdutoImagem,
   createProduto,
@@ -240,11 +241,7 @@ export default function AdminProdutoForm() {
             onChange={(e) => setForm({ ...form, categoriaId: e.target.value })}
           >
             <option value="">Sem categoria</option>
-            {categorias.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nome}
-              </option>
-            ))}
+            <CategoriaOptions categorias={categorias} />
           </select>
         </div>
 

@@ -1,3 +1,6 @@
+/**
+ * Notificações do usuário logado (/notificacoes): marcar como lida e excluir (services/notificacoesApi.js).
+ */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";

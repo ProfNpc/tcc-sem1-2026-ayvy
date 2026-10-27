@@ -1,3 +1,7 @@
+/**
+ * Notificações do usuário logado (/notificacoes). O back não filtra por usuário, então listNotificacoesDoUsuario filtra aqui.
+ * Usado por: pages/Notificacoes, aviso "Entrega confirmada" na Loja e "Atividade recente" no admin.
+ */
 import { apiFetch, apiJson } from "./api";
 
 export function listNotificacoes() {

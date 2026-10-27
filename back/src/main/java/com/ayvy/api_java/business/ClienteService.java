@@ -11,6 +11,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+/**
+ * Regras do perfil de cliente (CPF único, vínculo 1:1 com usuarios). Chamado por ClienteController.
+ */
 @Service
 public class ClienteService {
 

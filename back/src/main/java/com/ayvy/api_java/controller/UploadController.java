@@ -8,6 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * POST /upload (multipart): salva a imagem em back/uploads/<pasta>/ e devolve o caminho /uploads/...
+ * O arquivo fica acessível em http://localhost:8082/uploads/... (config/WebConfig).
+ * Front: adminApi.uploadImage (usado pelo lojista e pelo admin). Regras: UploadService.
+ */
 @RestController
 @RequestMapping("/upload")
 public class UploadController {

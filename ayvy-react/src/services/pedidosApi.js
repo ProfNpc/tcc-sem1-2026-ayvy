@@ -1,3 +1,8 @@
+/**
+ * Pedidos, checkout, frete, pagamentos e endereços.
+ * Usado por: Checkout, MeusPedidos, Carrinho/CartContext (frete), painel admin (Adim/Pedidos) e lojistaApi.js.
+ * Back: PedidoController, FreteController, PagamentoController, EnderecoController.
+ */
 import { apiFetch, apiJson } from "./api";
 
 export function checkoutPedido(payload) {
