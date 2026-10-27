@@ -44,16 +44,18 @@ public class FavoritosService {
         return  repository.saveAndFlush(favoritos);
     }
 
+    // Se o produto não estava favoritado, não há o que desfazer: o resultado é o mesmo (não favorito),
+    // então não devolvemos erro. O controller responde 204 do mesmo jeito.
     public void desfavoritar (Integer usuarioId, Integer produtoId) {
-        Favoritos favoritos = repository.findByUsuarioIdAndProdutoId(usuarioId,produtoId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto não favoritado por esse usuário"));
-        repository.delete(favoritos);
+        repository.findByUsuarioIdAndProdutoId(usuarioId, produtoId)
+                .ifPresent(repository::delete);
     }
 
     public List<Favoritos> listarPorUsuario (Integer usuarioId) {
         return repository.findByUsuarioId(usuarioId);
     }
-//É favorito
+
+    //É favorito
     public Boolean favorito (Integer usuarioId, Integer produtoId) {
         return repository.findByUsuarioIdAndProdutoId(usuarioId,produtoId).isPresent();
     }

@@ -33,7 +33,9 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://localhost:5173",
                         "http://localhost:5174"
                 )
-                .allowedMethods("POST", "GET", "PUT", "OPTIONS", "DELETE")
+                .allowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*")
+                .allowedMethods("POST", "GET", "PUT", "OPTIONS", "DELETE","PATCH")
                 .allowedHeaders("*");
     }
+
 }
