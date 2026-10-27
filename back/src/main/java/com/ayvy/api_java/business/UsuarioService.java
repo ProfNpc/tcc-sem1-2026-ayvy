@@ -5,6 +5,7 @@ import com.ayvy.api_java.infrastructure.enums.PapelUsuario;
 import com.ayvy.api_java.infrastructure.enums.StatusUsuario;
 import com.ayvy.api_java.infrastructure.repositories.ClienteRepository;
 import com.ayvy.api_java.infrastructure.repositories.LojistaRepository;
+import com.ayvy.api_java.infrastructure.repositories.RedefinicaoSenhaRepository;
 import com.ayvy.api_java.infrastructure.repositories.UsuarioRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,18 +22,21 @@ public class UsuarioService {
     private final LojistaRepository lojistaRepository;
     private final UploadService uploadService;
     private final PasswordEncoder passwordEncoder;
+    private final RedefinicaoSenhaRepository redefinicaoSenhaRepository;
 
     public UsuarioService(
             UsuarioRepository repository,
             ClienteRepository clienteRepository,
             LojistaRepository lojistaRepository,
             UploadService uploadService,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            RedefinicaoSenhaRepository redefinicaoSenhaRepository) {
         this.repository = repository;
         this.clienteRepository = clienteRepository;
         this.lojistaRepository = lojistaRepository;
         this.uploadService = uploadService;
         this.passwordEncoder = passwordEncoder;
+        this.redefinicaoSenhaRepository = redefinicaoSenhaRepository;
     }
 
     /**
@@ -65,6 +69,7 @@ public class UsuarioService {
 
     public void deletarUsuario(Integer id) {
         Usuario usuario = buscarUsuarioPorId(id);
+        redefinicaoSenhaRepository.deleteAll(redefinicaoSenhaRepository.findByUsuarioId(id));
         repository.delete(usuario);
     }
 

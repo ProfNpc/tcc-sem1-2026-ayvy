@@ -17,6 +17,7 @@ import AdminPedidosList from "../pages/Adim/Pedidos";
 import AdminRelatorios from "../pages/Adim/Relatorios";
 import Cadastro from "../pages/Cadastro";
 import Carrinho from "../pages/Carrinho";
+import Categorias from "../pages/Categorias";
 import Checkout from "../pages/Checkout";
 import EsqueciSenha from "../pages/EsqueciSenha";
 import Favoritos from "../pages/Favoritos";
@@ -38,6 +39,7 @@ export default function AppRoutes() {
       <Route element={<MainLayout />}>
         <Route index element={<Home />} />
         <Route path="sobre" element={<Sobre />} />
+        <Route path="categorias" element={<Categorias />} />
         <Route
           path="perfil"
           element={

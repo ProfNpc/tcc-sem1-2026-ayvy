@@ -1,6 +1,8 @@
 package com.ayvy.api_java.controller;
 
+import com.ayvy.api_java.business.RecuperacaoSenhaService;
 import com.ayvy.api_java.business.UsuarioService;
+import com.ayvy.api_java.dto.RecuperarSenhaRequest;
 import com.ayvy.api_java.infrastructure.entities.Usuario;
 import com.ayvy.api_java.infrastructure.enums.StatusUsuario;
 import org.springframework.http.HttpStatus;
@@ -9,15 +11,32 @@ import org.springframework.web.bind.annotation.*;
 import com.ayvy.api_java.dto.LoginRequest;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final RecuperacaoSenhaService recuperacaoSenhaService;
 
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(UsuarioService usuarioService, RecuperacaoSenhaService recuperacaoSenhaService) {
         this.usuarioService = usuarioService;
+        this.recuperacaoSenhaService = recuperacaoSenhaService;
+    }
+
+    @PostMapping("/recuperar-senha")
+    public ResponseEntity<Map<String, String>> recuperarSenha(@RequestBody RecuperarSenhaRequest request) {
+        recuperacaoSenhaService.solicitarCodigo(request.getEmail(), request.getCanal());
+        return ResponseEntity.ok(Map.of("mensagem", "sms".equalsIgnoreCase(request.getCanal())
+                ? "Se houver uma conta com esse e-mail, enviamos o código por SMS para o telefone cadastrado (ou por e-mail, se não houver telefone)."
+                : "Se houver uma conta com esse e-mail, enviamos um código para redefinir a senha."));
+    }
+
+    @PostMapping("/redefinir-senha")
+    public ResponseEntity<Map<String, String>> redefinirSenha(@RequestBody RecuperarSenhaRequest request) {
+        recuperacaoSenhaService.redefinirSenha(request.getEmail(), request.getCodigo(), request.getNovaSenha());
+        return ResponseEntity.ok(Map.of("mensagem", "Senha alterada com sucesso."));
     }
 
     @PostMapping

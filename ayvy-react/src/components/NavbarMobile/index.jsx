@@ -57,6 +57,11 @@ export default function NavbarMobile({
                   <i className="fas fa-home" /> Início
                 </Link>
               </li>
+              <li>
+                <Link to="/categorias" onClick={() => setMobileOpen(false)}>
+                  <i className="fas fa-th-large" /> Categorias
+                </Link>
+              </li>
               <li style={{ display: isAdmin ? "" : "none" }}>
                 <Link to="/admin" onClick={() => setMobileOpen(false)}>
                   <i className="fas fa-shield-alt" /> Painel admin

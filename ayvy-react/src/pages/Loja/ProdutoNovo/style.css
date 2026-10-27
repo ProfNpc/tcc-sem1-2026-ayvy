@@ -363,6 +363,28 @@
   margin-bottom: 0.65rem;
 }
 
+.produto-novo-cat .produto-novo-chip i {
+  margin-right: 0.15rem;
+  opacity: 0.8;
+}
+
+.produto-novo-cat .produto-novo-chips-group + .produto-novo-chips-group {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #ece6f2;
+}
+
+.produto-novo-cat-resumo {
+  margin: 0.9rem 0 0;
+  font-size: 0.82rem;
+  color: #8a8296;
+}
+
+.produto-novo-cat-resumo.is-ok {
+  color: #15803d;
+  font-weight: 600;
+}
+
 .produto-novo-chip--tag {
   display: inline-flex;
   align-items: center;

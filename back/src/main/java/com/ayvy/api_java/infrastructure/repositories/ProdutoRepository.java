@@ -16,4 +16,8 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
 
     Optional<Produto> findBySlug(String slug);
 
+    boolean existsByCategoriaId(Integer categoriaId);
+
+    List<Produto> findByCategoriaId(Integer categoriaId);
+
 }

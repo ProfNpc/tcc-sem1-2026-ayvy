@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
+import CategoriaPicker, { categoriaCompleta } from "./CategoriaPicker";
 import { isShopOwner } from "../../../utils/mockAuthUsers";
 import { normalizeSlugParam } from "../../../utils/lojistaData";
 import {
@@ -238,6 +239,10 @@ export default function LojaProdutoNovo() {
       alert("Adicione pelo menos uma foto.");
       return;
     }
+    if (!categoriaCompleta(categorias, form.categoryId)) {
+      alert("Escolha a categoria principal e a subcategoria do produto.");
+      return;
+    }
     if (!isEdit) {
       await persist(
         "ativo",
@@ -369,20 +374,21 @@ export default function LojaProdutoNovo() {
               />
             </label>
 
-            <label className="produto-novo-field">
-              <span>Categoria</span>
-              <select
-                value={form.categoryId}
-                onChange={(e) => updateField("categoryId", e.target.value)}
-              >
-                <option value="">Selecione</option>
-                {categorias.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nome}
-                  </option>
-                ))}
-              </select>
-            </label>
+          </section>
+
+          <section className="produto-novo-card">
+            <h2>
+              <i className="fas fa-th-large" aria-hidden /> Categoria
+            </h2>
+            <p className="produto-novo-hint">
+              Escolha onde o produto aparece em Categorias. Ex.: Jaqueta de couro feminina → Moda
+              Feminina › Casacos e jaquetas femininas.
+            </p>
+            <CategoriaPicker
+              categorias={categorias}
+              value={form.categoryId}
+              onChange={(id) => updateField("categoryId", id)}
+            />
           </section>
 
           <section className="produto-novo-card">

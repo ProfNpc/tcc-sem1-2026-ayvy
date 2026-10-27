@@ -13,6 +13,7 @@ import {
   getPedidoItens,
   listEnderecos,
 } from "../../services/pedidosApi";
+import { linhaPrecisaOpcoes } from "../../utils/cartImport";
 import { numeroPedidoLabel } from "../../utils/pedidoNumero";
 import { formatCardExpiry, formatCardNumber, formatCep } from "../../utils/cartHelpers";
 import { listPaymentMethods } from "../../utils/paymentMethodsStore";
@@ -248,7 +249,7 @@ export default function Checkout() {
     return <Navigate to="/login" replace state={{ from: "/checkout" }} />;
   }
 
-  if (cart.length === 0) {
+  if (cart.length === 0 || cart.some(linhaPrecisaOpcoes)) {
     return <Navigate to="/carrinho" replace />;
   }
 

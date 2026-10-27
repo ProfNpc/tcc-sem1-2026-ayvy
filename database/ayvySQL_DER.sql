@@ -97,10 +97,16 @@ CREATE TABLE lojistas (
 -- Tabela: categorias
 -- ---------------------------------------------------------------------
 CREATE TABLE categorias (
-    id     INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-    nome   VARCHAR(100) NOT NULL,
-    slug   VARCHAR(100) NOT NULL UNIQUE,
-    ativo  BIT NOT NULL CONSTRAINT DF_categorias_ativo DEFAULT 1
+    id                INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    nome              VARCHAR(100) NOT NULL,
+    slug              VARCHAR(100) NOT NULL UNIQUE,
+    ativo             BIT NOT NULL CONSTRAINT DF_categorias_ativo DEFAULT 1,
+    -- categoria principal (ex.: Moda Feminina); NULL quando já é principal
+    categoria_pai_id  INT NULL,
+    icone             VARCHAR(40) NULL,
+    ordem             INT NULL,
+    CONSTRAINT fk_categorias_pai
+        FOREIGN KEY (categoria_pai_id) REFERENCES categorias(id)
 );
 
 -- ---------------------------------------------------------------------
@@ -264,6 +270,21 @@ CREATE TABLE visualizacoes_produtos (
     CONSTRAINT fk_visualizacoes_produtos
         FOREIGN KEY (produto_id) REFERENCES produtos(id),
     CONSTRAINT fk_visualizacoes_usuarios
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- ---------------------------------------------------------------------
+-- Tabela: redefinicao_senha (códigos de recuperação de senha, só o hash)
+-- ---------------------------------------------------------------------
+CREATE TABLE redefinicao_senha (
+    id            INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    usuario_id    INT NOT NULL,
+    codigo_hash   VARCHAR(100) NOT NULL,
+    expira_em     DATETIME2 NOT NULL,
+    usado_em      DATETIME2 NULL,
+    tentativas    INT NOT NULL CONSTRAINT DF_redefinicao_senha_tentativas DEFAULT 0,
+    criado_em     DATETIME2 NOT NULL CONSTRAINT DF_redefinicao_senha_criado_em DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT fk_redefinicao_senha_usuarios
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
