@@ -50,7 +50,7 @@ export default function LoginScreen({ onLogin }) {
           usava o tamanho original do arquivo e estragava o layout. */}
       <Image
         source={width > height
-          ? require('./assets/fundo-horizontal-ayvy.png')
+          ? require('./assets/imagem-ayvy-clara.png')
           : require('./assets/fundo-celular-ayvy.png')}
         resizeMode="cover"
         style={styles.backgroundImage}

@@ -5,7 +5,8 @@ import { formatPrice } from './format';
 import { colors } from './theme';
 
 // onAdd(product) deve devolver true quando o produto foi mesmo adicionado ao carrinho.
-export default function ProductCard({ product, favorite, onToggleFavorite, onAdd }) {
+// "style" é opcional: a tela da loja usa para mudar a largura do card (o padrão é 164).
+export default function ProductCard({ product, favorite, onToggleFavorite, onAdd, style }) {
   const [justAdded, setJustAdded] = useState(false);
   const timer = useRef(null);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -22,7 +23,7 @@ export default function ProductCard({ product, favorite, onToggleFavorite, onAdd
   }
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, style]}>
       {image ? (
         <Image source={{ uri: image }} style={styles.image} resizeMode="cover" />
       ) : (
