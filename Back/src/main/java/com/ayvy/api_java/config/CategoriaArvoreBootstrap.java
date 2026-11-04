@@ -142,8 +142,8 @@ public class CategoriaArvoreBootstrap implements ApplicationRunner {
 
     /** Produtos de exemplo do DevSeedBootstrap que ficaram na categoria genérica "Roupas". */
     private static final Map<String, String> SUBCATEGORIA_DO_SEED = Map.ofEntries(
-            Map.entry("blusa-roxa", "jaquetas-corta-ventos"),
-            Map.entry("camisa-branca", "camisetas-masculinas"),
+            Map.entry("blusa-roxa", "casacos-jaquetas-femininas"),
+            Map.entry("camisa-branca", "camisas-masculinas"),
             Map.entry("blazer-alfaiataria", "blazers-alfaiataria-feminina"),
             Map.entry("tricot", "tricos-malhas-femininos"),
             Map.entry("vestido-floral", "vestidos-femininos"),

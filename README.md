@@ -40,6 +40,7 @@ Na primeira subida, a API cria sozinha (classes em `back/.../config/`):
 | `DevSeedBootstrap` | lojas, produtos e clientes de exemplo |
 | `CategoriaArvoreBootstrap` | árvore de categorias (Moda Feminina → Vestidos…) |
 | `PedidoNumeroLojaBootstrap` | sigla da loja e código do pedido (ex.: `LU-1`) |
+| `DemoDataBootstrap` | completa perfis de lojas, endereços, produtos, favoritos e pedidos fictícios |
 
 ---
 
@@ -142,6 +143,7 @@ Tela React (pages/…)
 
 - **Admin:** ver `back/.../config/AdminBootstrap.java`.
 - **Lojistas e clientes de exemplo:** ver `back/.../config/DevSeedBootstrap.java`.
+- **Complemento dos dados de demonstração:** `back/.../config/DemoDataBootstrap.java` (pedidos, favoritos, endereços, imagens e produtos).
   - Lojistas: `lojaurbana@ayvy.com.br`, `sneakhouse@ayvy.com.br`, entre outros. A senha padrão está em `SENHA_PADRAO_LOJISTA`.
   - Clientes: `heloisa@ayvy.com.br`, `emilly@ayvy.com.br`, entre outros. A senha é o nome de usuário (ex.: `heloisaayvy`).
 

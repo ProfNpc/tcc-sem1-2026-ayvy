@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -335,6 +336,9 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                             "Produto " + itemReq.getProdutoId() + " não encontrado"));
 
+            validarOpcaoSelecionada(itemReq.getTamanho(), produto.getTamanhos(), "tamanho", produto);
+            validarOpcaoSelecionada(itemReq.getCor(), produto.getCores(), "cor", produto);
+
             if (produto.getEstoque() < itemReq.getQuantidade()) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "Estoque insuficiente para " + produto.getNome());
@@ -423,7 +427,24 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
         repository.saveAndFlush(pedidoAtualizado);
     }*/
 
-        private void registrarHistorico(Pedido pedido, String evento, String descricao, Integer actorUsuarioId){
+    
+    private void validarOpcaoSelecionada(String selecionada, List<String> opcoes, String tipo, Produto produto) {
+        if (opcoes == null || opcoes.isEmpty()) return;
+        if (selecionada == null || selecionada.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Selecione " + tipo + " para " + produto.getNome());
+        }
+        String valor = selecionada.trim().toLowerCase(Locale.ROOT);
+        boolean disponivel = opcoes.stream().filter(o -> o != null)
+                .anyMatch(o -> o.trim().toLowerCase(Locale.ROOT).equals(valor));
+        if (!disponivel) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    tipo.substring(0, 1).toUpperCase(Locale.ROOT) + tipo.substring(1)
+                            + " não disponível para " + produto.getNome());
+        }
+    }
+
+    private void registrarHistorico(Pedido pedido, String evento, String descricao, Integer actorUsuarioId){
             Usuario actor = null;
             if (actorUsuarioId != null) {
                 actor = usuarioRepository.findById(actorUsuarioId).orElse(null);

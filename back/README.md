@@ -126,7 +126,23 @@ Pacote base: `src/main/java/com/ayvy/api_java/`
 | 2 | `DevSeedBootstrap` | lojas, produtos e clientes de exemplo (só cria o que falta) |
 | 3 | `PedidoNumeroLojaBootstrap` | preenche sigla da loja e código `LU-1` de pedidos antigos |
 | 4 | `CategoriaArvoreBootstrap` | árvore de categorias, junta repetidas e move produtos do seed |
+| 5 | `DemoDataBootstrap` | completa perfis de lojistas, endereços de clientes, catálogo, favoritos e pedidos fictícios (idempotente) |
 | sem `@Order` (por último) | `AdminBootstrap` | garante a conta admin |
+
+## Dados de demonstração (DemoDataBootstrap)
+
+Ao iniciar a API em perfil diferente de `prod`, o `DemoDataBootstrap` complementa os registros existentes sem alterar fotos de contas de clientes. O seed fica desativado quando `spring.profiles.active=prod`:
+
+- adiciona avatar de demonstração às contas de lojistas sem foto e gera logo/banner próprios para as cinco lojas seed;
+- garante um endereço principal com apelido `Casa` para cada cliente seed e um endereço adicional `Chácara` em Pirenópolis/GO para `heloisa@ayvy.com.br`;
+- acrescenta 20 produtos ao catálogo seed, com fotos locais, categorias, cores e tamanhos coerentes (numeração para calçados; letras para roupas; tamanho `Único` para bolsas);
+- completa descrição, cor e lista de tamanhos dos produtos antigos quando esses campos estão vazios;
+- completa a lista até cinco favoritos por cliente e um pedido por combinação cliente/loja (20 pedidos para o conjunto seed), distribuídos entre entregue, em andamento e cancelado;
+- identifica os pedidos pelo marcador `AYVY_DEMO_SEED_V1`, evitando duplicação em reinicializações.
+
+**Importante sobre estoque:** a tabela `produtos` já possui `estoque`, e o checkout já valida e reduz esse total. `tamanhos` e `cores` são listas de opções (e o checkout agora rejeita uma opção que não pertença à lista), não variações com estoque independente. Assim, o catálogo demonstra tamanhos corretos, mas ainda não controla, por exemplo, 2 unidades P e 5 unidades M separadamente. Isso exige uma entidade/tabela de variações e ajuste do checkout/carrinho antes de ser apresentado como controle de estoque por tamanho/cor.
+
+Os endereços e pedidos criados pelo bootstrap são dados fictícios para demonstração. O frete histórico dos pedidos seed é ilustrativo; para comparar fretes, use o cálculo da API com os CEPs cadastrados.
 
 ## Endpoints de pedidos, envio e senha (fluxo completo)
 
