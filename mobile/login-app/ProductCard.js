@@ -1,3 +1,6 @@
+/**
+ * Card de produto do app: foto, nome, preço, coração de favorito e botão de adicionar ao carrinho.
+ */
 import { useEffect, useRef, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { resolveImageUrl } from './api';

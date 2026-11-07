@@ -1,3 +1,6 @@
+/**
+ * Admin › Lojistas: lista (GET /lojistas), editar e excluir. Formulário em ./Form.jsx.
+ */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteLojista, listLojistas } from "../../../services/adminApi";

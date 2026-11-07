@@ -1,3 +1,6 @@
+/**
+ * Formulário de login (e-mail + senha) usado em pages/Login. A página chama o AuthContext.login.
+ */
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./style.css";

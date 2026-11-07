@@ -5,6 +5,9 @@ import lombok.*;
 
 import java.time.LocalDate;
 
+/**
+ * Tabela clientes: perfil de negócio do cliente (CPF), 1:1 com usuarios.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

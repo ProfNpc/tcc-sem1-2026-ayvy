@@ -1,3 +1,7 @@
+/**
+ * Janela branca de confirmação (Sim / Cancelar) no rodapé da tela, no lugar do window.confirm.
+ * Usada em: Loja (cancelar pedido), MeusPedidos (confirmar entrega), MeuEstoque (remover linha).
+ */
 import { useEffect } from "react";
 import "./style.css";
 

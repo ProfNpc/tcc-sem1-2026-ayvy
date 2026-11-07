@@ -1,3 +1,8 @@
+/**
+ * Escolha da categoria no cadastro de produto, em botões: 1) categoria principal 2) subcategoria.
+ * Também é usado para a "categoria adicional" (obrigatorio=false, ocultarIds esconde a principal).
+ * categoriaCompleta() diz se já foi escolhida uma categoria final (exigido para publicar).
+ */
 import { useMemo, useState } from "react";
 import { montarArvoreCategorias } from "../../../utils/categoriaArvore";
 
@@ -5,8 +10,21 @@ import { montarArvoreCategorias } from "../../../utils/categoriaArvore";
  * Escolha da categoria em dois passos (principal → subcategoria), com botões
  * no mesmo estilo dos tamanhos. `value` é o id salvo no produto.
  */
-export default function CategoriaPicker({ categorias, value, onChange }) {
-  const arvore = useMemo(() => montarArvoreCategorias(categorias), [categorias]);
+export default function CategoriaPicker({
+  categorias,
+  value,
+  onChange,
+  obrigatorio = true,
+  ocultarIds = [],
+}) {
+  const ocultarChave = ocultarIds.join(",");
+  const arvore = useMemo(() => {
+    const ocultar = new Set(ocultarChave ? ocultarChave.split(",").map(Number) : []);
+    return montarArvoreCategorias(categorias)
+      .map((p) => ({ ...p, filhas: p.filhas.filter((f) => !ocultar.has(f.id)) }))
+      .filter((p) => !(p.filhas.length === 0 && ocultar.has(p.id)));
+  }, [categorias, ocultarChave]);
+  const marca = obrigatorio ? " *" : "";
   const [principalEscolhida, setPrincipalEscolhida] = useState(null);
 
   const idAtual = value ? Number(value) : null;
@@ -30,7 +48,7 @@ export default function CategoriaPicker({ categorias, value, onChange }) {
   return (
     <div className="produto-novo-cat">
       <div className="produto-novo-chips-group">
-        <span className="produto-novo-chips-label">Categoria principal *</span>
+        <span className="produto-novo-chips-label">Categoria principal{marca}</span>
         <div className="produto-novo-chips">
           {arvore.map((p) => (
             <button
@@ -47,7 +65,10 @@ export default function CategoriaPicker({ categorias, value, onChange }) {
 
       {principal && principal.filhas.length > 0 ? (
         <div className="produto-novo-chips-group">
-          <span className="produto-novo-chips-label">Subcategoria em {principal.nome} *</span>
+          <span className="produto-novo-chips-label">
+            Subcategoria em {principal.nome}
+            {marca}
+          </span>
           <div className="produto-novo-chips">
             {principal.filhas.map((f) => (
               <button

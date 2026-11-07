@@ -33,6 +33,7 @@ function mapProduto(p) {
     to: lojaSlug ? `/loja/${lojaSlug}/p/${p.id}` : null,
     categoriaId: p.categoria?.id ?? null,
     principalId: idPrincipal(p.categoria),
+    extrasIds: (p.categoriasExtras || []).flatMap((c) => [c.id, idPrincipal(c)]),
     categoriaNome: p.categoria?.nome || "",
     principalNome: p.categoria?.categoriaPai?.nome || p.categoria?.nome || "",
     visualizacoes: Number(p.visualizacoesTotal) || 0,
@@ -145,7 +146,7 @@ export default function Categorias() {
   const porCategoria = useMemo(() => {
     const mapa = new Map();
     for (const p of produtos) {
-      for (const id of new Set([p.categoriaId, p.principalId])) {
+      for (const id of new Set([p.categoriaId, p.principalId, ...p.extrasIds])) {
         if (id == null) continue;
         if (!mapa.has(id)) mapa.set(id, []);
         mapa.get(id).push(p);

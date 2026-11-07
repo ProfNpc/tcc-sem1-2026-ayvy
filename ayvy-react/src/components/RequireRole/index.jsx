@@ -1,3 +1,7 @@
+/**
+ * Protege rotas por papel (ex.: /admin só admin, /meu-estoque só lojista). Sem login → /login;
+ * papel errado → página inicial do papel (getPostLoginPath).
+ */
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getPostLoginPath } from "../../utils/mockAuthUsers";

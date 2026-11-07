@@ -1,3 +1,7 @@
+/**
+ * Carrossel infinito de marcas da home. A animação fica no style.css (keyframes brand-scroll).
+ * Atenção: não há bloqueio por "reduzir movimento" de propósito — no Windows isso deixava o carrossel parado.
+ */
 import "./style.css";
 
 export default function BrandSlider({ title, brands }) {

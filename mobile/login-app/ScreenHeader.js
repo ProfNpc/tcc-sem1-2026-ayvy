@@ -1,3 +1,6 @@
+/**
+ * Título padrão do topo das telas do app.
+ */
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from './theme';

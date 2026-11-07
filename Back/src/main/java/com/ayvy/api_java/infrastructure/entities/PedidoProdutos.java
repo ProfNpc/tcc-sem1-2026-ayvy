@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Tabela pedido_produtos: itens do pedido (produto, loja, quantidade, preço pago, cor, tamanho) e o
+ * código do pedido NA LOJA (numeroPedidoLoja / codigoPedidoLoja, ex.: LU-1).
+ */
 @Getter
 @Setter
 @AllArgsConstructor

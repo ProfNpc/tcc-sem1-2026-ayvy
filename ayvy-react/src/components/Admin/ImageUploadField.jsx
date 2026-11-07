@@ -1,3 +1,7 @@
+/**
+ * Campo de imagem única do admin: envia o arquivo para POST /upload (adminApi.uploadImage) e guarda o
+ * caminho /uploads/... devolvido pela API. Usado nos forms de usuário, lojista e produto.
+ */
 import { useState } from "react";
 import { uploadImage } from "../../services/adminApi";
 import { resolveImageUrl } from "../../utils/imageUrl";

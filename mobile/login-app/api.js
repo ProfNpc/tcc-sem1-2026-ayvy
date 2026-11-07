@@ -1,3 +1,8 @@
+/**
+ * Toda a comunicação do app com a API Spring Boot (EXPO_PUBLIC_API_BASE_URL no .env.local).
+ * Login, catálogo, favoritos, carrinho da conta (/carrinho), pedidos e resolveImageUrl.
+ * Atenção: no emulador Android "localhost" é o próprio emulador; por isso o padrão é 10.0.2.2.
+ */
 import { Platform } from 'react-native';
 
 const configuredBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -118,6 +123,19 @@ export function removeFavorite(userId, productId) {
     `/favoritos?usuarioId=${encodeURIComponent(userId)}&produtoId=${encodeURIComponent(productId)}`,
     { method: 'DELETE' },
   );
+}
+
+// ---------- Carrinho da conta (o mesmo do site) ----------
+export function getAccountCart(userId) {
+  return apiRequest(`/carrinho?usuarioId=${encodeURIComponent(userId)}`);
+}
+
+// Envia o carrinho inteiro: [{ produtoId, quantidade, cor, tamanho }].
+export function saveAccountCart(userId, items) {
+  return apiRequest(`/carrinho?usuarioId=${encodeURIComponent(userId)}`, {
+    method: 'PUT',
+    body: items,
+  });
 }
 
 // ---------- Pedidos (histórico de compras) ----------

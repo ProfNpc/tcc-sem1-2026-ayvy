@@ -1,3 +1,6 @@
+/**
+ * Cópia duplicada de HorizontalList.js. NÃO É USADO hoje (nenhum arquivo importa este). Fica só como referência/legado.
+ */
 import { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { colors } from './theme';

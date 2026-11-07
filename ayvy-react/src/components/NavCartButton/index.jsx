@@ -1,3 +1,6 @@
+/**
+ * Ícone do carrinho com o número de itens (contador do CartContext). Clique abre o CartDrawer.
+ */
 import { useCart } from "../../context/CartContext";
 
 /**

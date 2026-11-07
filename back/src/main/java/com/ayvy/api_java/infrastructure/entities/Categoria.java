@@ -3,6 +3,11 @@ package com.ayvy.api_java.infrastructure.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Tabela categorias. Árvore: categoriaPai nulo = categoria principal (ex.: Moda Feminina);
+ * preenchido = subcategoria (ex.: Vestidos). icone (Font Awesome) e ordem são usados no site.
+ * A árvore padrão é criada por config/CategoriaArvoreBootstrap.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

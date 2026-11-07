@@ -1,3 +1,7 @@
+/**
+ * Lojas e produtos para as telas públicas. resolveShopsMap() busca tudo da API (shopApi.loadShopsFromApi).
+ * Atenção: o objeto SHOPS no topo é legado e NÃO é usado nas telas (só a API vale).
+ */
 export const SHOPS = {
     rafaele_fashion: {
       name: "Bella Dama",

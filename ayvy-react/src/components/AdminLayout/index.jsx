@@ -1,3 +1,7 @@
+/**
+ * Layout do painel admin (/admin): barra lateral com o menu (utils/adminDashboardMock.js → ADMIN_NAV),
+ * nome do admin, "Ver site público" e Sair. As telas entram no <Outlet />.
+ */
 import { useEffect } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";

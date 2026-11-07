@@ -7,8 +7,10 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import CategoriaPicker, { categoriaCompleta } from "./CategoriaPicker";
+import SucessoModal from "./SucessoModal";
 import { isShopOwner } from "../../../utils/mockAuthUsers";
 import { normalizeSlugParam } from "../../../utils/lojistaData";
+import { formatBRL } from "../../../utils/cartHelpers";
 import {
   atualizarProdutoLojista,
   carregarProdutoParaEdicao,
@@ -17,7 +19,24 @@ import {
 } from "../../../services/lojistaApi";
 import "./style.css";
 
-const TAMANHOS_PADRAO = ["PP", "P", "M", "G", "GG", "Único"];
+const TAMANHOS_ROUPA = ["PP", "P", "M", "G", "GG", "XG", "Único"];
+const numeracao = (de, ate) => Array.from({ length: ate - de + 1 }, (_, i) => String(de + i));
+const TAMANHOS_CALCADO_INFANTIL = numeracao(13, 32);
+const TAMANHOS_CALCADO_ADULTO = numeracao(33, 46);
+const TAMANHOS_PADRAO = [...TAMANHOS_ROUPA, ...TAMANHOS_CALCADO_INFANTIL, ...TAMANHOS_CALCADO_ADULTO];
+const PALAVRAS_CALCADO = ["calcado", "tenis", "bota", "sandalia", "sapat", "chinelo", "rasteira"];
+const PALAVRAS_INFANTIL = ["infantil", "bebe", "menina", "menino", "sapatinho"];
+const PRECO_MAX_DIGITOS = 9;
+
+/** Máscara de dinheiro: os dígitos digitados viram centavos ("55000" → "550,00", "123456" → "1.234,56"). */
+function mascaraPreco(valor) {
+  const digitos = String(valor || "").replace(/\D/g, "").replace(/^0+/, "").slice(0, PRECO_MAX_DIGITOS);
+  if (!digitos) return "";
+  return (Number(digitos) / 100).toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 const EMPTY_FORM = {
   title: "",
@@ -26,7 +45,7 @@ const EMPTY_FORM = {
   price: "",
   discountPercent: "",
   stock: "",
-  sku: "",
+  extraCategoryIds: [],
   colors: [],
   sizes: [],
 };
@@ -44,6 +63,8 @@ export default function LojaProdutoNovo() {
   const [originalImages, setOriginalImages] = useState([]);
   const [colorInput, setColorInput] = useState("");
   const [sizeInput, setSizeInput] = useState("");
+  const [extraAberta, setExtraAberta] = useState(false);
+  const [sucesso, setSucesso] = useState(null);
   const [saving, setSaving] = useState(false);
   const [categorias, setCategorias] = useState([]);
   const [loadingEdit, setLoadingEdit] = useState(isEdit);
@@ -102,31 +123,29 @@ export default function LojaProdutoNovo() {
   }
 
   function handlePriceChange(raw) {
-    const cleaned = String(raw).replace(/[^\d,]/g, "");
-    const parts = cleaned.split(",");
-    if (parts.length <= 1) {
-      updateField("price", parts[0] ?? "");
-      return;
-    }
-    updateField("price", `${parts[0]},${parts[1].slice(0, 2)}`);
+    updateField("price", mascaraPreco(raw));
   }
 
-  async function persist(status, successMsg, redirectAba) {
+  function handleDiscountChange(raw) {
+    const digitos = String(raw || "").replace(/\D/g, "").slice(0, 2);
+    updateField("discountPercent", digitos ? String(Math.min(90, Number(digitos))) : "");
+  }
+
+  async function persist(status) {
     if (!user?.lojistaId) {
       alert("Sessão de lojista incompleta. Faça login novamente.");
       return;
     }
     setSaving(true);
     try {
-      await salvarProdutoLojista({
+      const criado = await salvarProdutoLojista({
         lojistaId: user.lojistaId,
         form,
         images,
         status,
         categoriaId: form.categoryId || null,
       });
-      alert(successMsg);
-      navigate(`${lojaPath}?aba=${redirectAba}`, { replace: true });
+      setSucesso({ tipo: status === "ativo" ? "publicado" : "rascunho", produtoId: criado?.id });
     } catch (err) {
       alert(err.message || "Não foi possível salvar o produto.");
     } finally {
@@ -150,15 +169,14 @@ export default function LojaProdutoNovo() {
     }
     setSaving(true);
     try {
-      await salvarProdutoLojista({
+      const criado = await salvarProdutoLojista({
         lojistaId: user.lojistaId,
         form: formDraft,
         images,
         status: "rascunho",
         categoriaId: form.categoryId || null,
       });
-      alert("Rascunho salvo na API! Você encontra em Minha loja → Rascunhos.");
-      navigate(`${lojaPath}?aba=rascunhos`, { replace: true });
+      setSucesso({ tipo: "rascunho", produtoId: criado?.id });
     } catch (err) {
       alert(err.message || "Não foi possível salvar o produto.");
     } finally {
@@ -249,11 +267,7 @@ export default function LojaProdutoNovo() {
       return;
     }
     if (!isEdit) {
-      await persist(
-        "ativo",
-        "Produto publicado na API! Ele aparece em Meus produtos.",
-        "produtos",
-      );
+      await persist("ativo");
       return;
     }
     setSaving(true);
@@ -274,10 +288,26 @@ export default function LojaProdutoNovo() {
     }
   }
 
-  const sizeOptions = [
-    ...TAMANHOS_PADRAO,
-    ...form.sizes.filter((s) => !TAMANHOS_PADRAO.includes(s)),
-  ];
+  const tamanhosExtras = form.sizes.filter((s) => !TAMANHOS_PADRAO.includes(s));
+  const categoriaAtual = categorias.find((c) => String(c.id) === String(form.categoryId));
+  const textoCategoria = [categoriaAtual?.slug, categoriaAtual?.categoriaPai?.slug].join(" ");
+  const ehCalcado = PALAVRAS_CALCADO.some((p) => textoCategoria.includes(p));
+  const ehInfantil = PALAVRAS_INFANTIL.some((p) => textoCategoria.includes(p));
+  const precoNumero = Number(String(form.price || "").replace(/\./g, "").replace(",", "."));
+  const descontoNumero = Math.min(90, Math.max(0, Math.round(Number(form.discountPercent) || 0)));
+  const precoComDesconto =
+    Number.isFinite(precoNumero) && precoNumero > 0 && descontoNumero > 0
+      ? (precoNumero * (100 - descontoNumero)) / 100
+      : null;
+  const grupoRoupa = { titulo: "Tamanhos de roupa", opcoes: TAMANHOS_ROUPA };
+  const grupoAdulto = { titulo: "Calçado adulto (33 ao 46)", opcoes: TAMANHOS_CALCADO_ADULTO };
+  const grupoInfantil = { titulo: "Calçado infantil (13 ao 32)", opcoes: TAMANHOS_CALCADO_INFANTIL };
+  const gruposTamanho = !ehCalcado
+    ? [grupoRoupa, grupoAdulto, grupoInfantil]
+    : ehInfantil
+      ? [grupoInfantil, grupoAdulto, grupoRoupa]
+      : [grupoAdulto, grupoInfantil, grupoRoupa];
+  if (tamanhosExtras.length) gruposTamanho.push({ titulo: "Outros tamanhos", opcoes: tamanhosExtras });
 
   if (isEdit && (loadingEdit || loadError)) {
     return (
@@ -394,6 +424,45 @@ export default function LojaProdutoNovo() {
               value={form.categoryId}
               onChange={(id) => updateField("categoryId", id)}
             />
+
+            <div className="produto-novo-cat-extra">
+              {extraAberta || form.extraCategoryIds.length > 0 ? (
+                <>
+                  <div className="produto-novo-cat-extra__head">
+                    <strong>Categoria adicional (opcional)</strong>
+                    <button
+                      type="button"
+                      className="produto-novo-cat-extra__remove"
+                      onClick={() => {
+                        updateField("extraCategoryIds", []);
+                        setExtraAberta(false);
+                      }}
+                    >
+                      <i className="fas fa-times" aria-hidden /> Remover
+                    </button>
+                  </div>
+                  <p className="produto-novo-hint">
+                    O produto também aparece nesta categoria. Ex.: tênis em Calçados › Tênis e em
+                    Streetwear › Tênis streetwear.
+                  </p>
+                  <CategoriaPicker
+                    categorias={categorias}
+                    value={form.extraCategoryIds[0] || ""}
+                    onChange={(id) => updateField("extraCategoryIds", id ? [id] : [])}
+                    obrigatorio={false}
+                    ocultarIds={form.categoryId ? [Number(form.categoryId)] : []}
+                  />
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="produto-novo-chip produto-novo-cat-extra__add"
+                  onClick={() => setExtraAberta(true)}
+                >
+                  <i className="fas fa-plus" aria-hidden /> Adicionar outra categoria (ex.: Streetwear)
+                </button>
+              )}
+            </div>
           </section>
 
           <section className="produto-novo-card">
@@ -403,30 +472,39 @@ export default function LojaProdutoNovo() {
 
             <div className="produto-novo-row">
               <label className="produto-novo-field">
-                <span>Preço (R$) *</span>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="0,00"
-                  value={form.price}
-                  onChange={(e) => handlePriceChange(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (["e", "E", "+", "-"].includes(e.key)) e.preventDefault();
-                  }}
-                />
+                <span>Preço *</span>
+                <span className="produto-novo-adorno">
+                  <span className="produto-novo-adorno__txt">R$</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0,00"
+                    value={form.price}
+                    onChange={(e) => handlePriceChange(e.target.value)}
+                  />
+                </span>
               </label>
               <label className="produto-novo-field">
-                <span>Desconto (%) — só vitrine</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={90}
-                  placeholder="0"
-                  value={form.discountPercent}
-                  onChange={(e) => updateField("discountPercent", e.target.value)}
-                />
+                <span>Desconto</span>
+                <span className="produto-novo-adorno produto-novo-adorno--fim">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={form.discountPercent}
+                    onChange={(e) => handleDiscountChange(e.target.value)}
+                  />
+                  <span className="produto-novo-adorno__txt">%</span>
+                </span>
               </label>
             </div>
+            {precoComDesconto != null ? (
+              <p className="produto-novo-desconto">
+                <i className="fas fa-tag" aria-hidden /> Com {descontoNumero}% de desconto o cliente
+                paga <strong>{formatBRL(precoComDesconto)}</strong>{" "}
+                <s>{formatBRL(precoNumero)}</s> — vale na vitrine e no checkout.
+              </p>
+            ) : null}
 
             <div className="produto-novo-row">
               <label className="produto-novo-field">
@@ -437,15 +515,6 @@ export default function LojaProdutoNovo() {
                   placeholder="10"
                   value={form.stock}
                   onChange={(e) => updateField("stock", e.target.value)}
-                />
-              </label>
-              <label className="produto-novo-field">
-                <span>SKU / código — só vitrine</span>
-                <input
-                  type="text"
-                  placeholder="Opcional"
-                  value={form.sku}
-                  onChange={(e) => updateField("sku", e.target.value)}
                 />
               </label>
             </div>
@@ -500,24 +569,28 @@ export default function LojaProdutoNovo() {
             </div>
 
             <div className="produto-novo-chips-group">
-              <span className="produto-novo-chips-label">Tamanhos</span>
-              <div className="produto-novo-chips">
-                {sizeOptions.map((tam) => (
-                  <button
-                    key={tam}
-                    type="button"
-                    className={`produto-novo-chip${form.sizes.includes(tam) ? " is-on" : ""}`}
-                    onClick={() => toggleSize(tam)}
-                  >
-                    {tam}
-                  </button>
-                ))}
-              </div>
+              {gruposTamanho.map((grupo) => (
+                <div key={grupo.titulo} className="produto-novo-tamanhos">
+                  <span className="produto-novo-chips-label">{grupo.titulo}</span>
+                  <div className="produto-novo-chips">
+                    {grupo.opcoes.map((tam) => (
+                      <button
+                        key={tam}
+                        type="button"
+                        className={`produto-novo-chip${form.sizes.includes(tam) ? " is-on" : ""}`}
+                        onClick={() => toggleSize(tam)}
+                      >
+                        {tam}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
               <div className="produto-novo-color-add" style={{ marginTop: "0.65rem" }}>
                 <input
                   type="text"
                   className="produto-novo-color-input"
-                  placeholder="Outro tamanho (ex.: 38)"
+                  placeholder="Outro tamanho (ex.: 34/35, 2 anos)"
                   value={sizeInput}
                   onChange={(e) => setSizeInput(e.target.value)}
                   onKeyDown={onEnter(addSize)}
@@ -565,6 +638,45 @@ export default function LojaProdutoNovo() {
         </form>
       </div>
 
+      {sucesso ? (
+        <SucessoModal
+          titulo={
+            sucesso.tipo === "publicado" ? "Produto cadastrado com sucesso!" : "Rascunho salvo com sucesso!"
+          }
+          mensagem={
+            sucesso.tipo === "publicado"
+              ? `"${form.title.trim()}" já está publicado e aparece na sua loja.`
+              : "Você pode terminar e publicar depois, na aba Rascunhos da sua loja."
+          }
+          imagem={images[0]?.preview}
+          acoes={
+            sucesso.tipo === "publicado"
+              ? [
+                  ...(sucesso.produtoId
+                    ? [
+                        {
+                          to: `${lojaPath}/p/${sucesso.produtoId}`,
+                          label: "Ver meu produto",
+                          icone: "fa-eye",
+                          primaria: true,
+                        },
+                      ]
+                    : []),
+                  { to: `${lojaPath}?aba=produtos`, label: "Voltar para minha loja", icone: "fa-store" },
+                ]
+              : [
+                  {
+                    to: `${lojaPath}?aba=rascunhos`,
+                    label: "Ver meus rascunhos",
+                    icone: "fa-file-alt",
+                    primaria: true,
+                  },
+                  { to: `${lojaPath}?aba=produtos`, label: "Voltar para minha loja", icone: "fa-store" },
+                ]
+          }
+          onClose={() => navigate(`${lojaPath}?aba=${sucesso.tipo === "publicado" ? "produtos" : "rascunhos"}`, { replace: true })}
+        />
+      ) : null}
     </div>
   );
 }

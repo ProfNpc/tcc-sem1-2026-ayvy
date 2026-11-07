@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Tabela produto_imagens: galeria de fotos do produto (caminho /uploads/... e ordem).
+ */
 @Getter
 @Setter
 @AllArgsConstructor

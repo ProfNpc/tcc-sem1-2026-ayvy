@@ -1,3 +1,7 @@
+/**
+ * Botão flutuante "Chat" com a loja (canto inferior direito) nas páginas da loja e do produto.
+ * Atenção: a raiz é position: fixed; regras de layout em flex não podem dar width: 100% nela.
+ */
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "../../context/CartContext";
 import "./style.css";

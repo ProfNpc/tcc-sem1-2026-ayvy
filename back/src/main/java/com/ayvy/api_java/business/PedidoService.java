@@ -45,8 +45,10 @@ public class PedidoService {
     private final NotificacoesRepository notificacoesRepository;
     private final LojistaRepository lojistaRepository;
     private final SiglaLojaService siglaLojaService;
+    private final EstoqueService estoqueService;
 
-    public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository, HistoricoComprasRepository historicoComprasRepository, FreteService freteService, NotificacoesRepository notificacoesRepository, LojistaRepository lojistaRepository, SiglaLojaService siglaLojaService) {
+    public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository, HistoricoComprasRepository historicoComprasRepository, FreteService freteService, NotificacoesRepository notificacoesRepository, LojistaRepository lojistaRepository, SiglaLojaService siglaLojaService, EstoqueService estoqueService) {
+        this.estoqueService = estoqueService;
         this.notificacoesRepository = notificacoesRepository;
         this.lojistaRepository = lojistaRepository;
         this.siglaLojaService = siglaLojaService;
@@ -110,11 +112,25 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
     }
 
     // UPDATE DE STATUS
+    @Transactional
     public Pedido atualizarStatus(Integer id, StatusPedido novoStatus, Integer actorUsuarioId) {
         Pedido pedido = buscarPedidoPorId(id);
 
         if (novoStatus == StatusPedido.entregue) {
             pedido.setEntregueEm(LocalDateTime.now());
+        }
+
+        StatusPedido anterior = pedido.getStatus();
+        boolean estavaDevolvido = anterior == StatusPedido.cancelado || anterior == StatusPedido.reembolsado;
+        boolean ficaDevolvido = novoStatus == StatusPedido.cancelado || novoStatus == StatusPedido.reembolsado;
+        if (ficaDevolvido && !estavaDevolvido) {
+            for (PedidoProdutos item : pedidoProdutosRepository.findByPedidoId(pedido.getId())) {
+                estoqueService.devolver(item.getProduto(), item.getTamanho(), item.getQuantidade());
+            }
+        } else if (estavaDevolvido && !ficaDevolvido) {
+            for (PedidoProdutos item : pedidoProdutosRepository.findByPedidoId(pedido.getId())) {
+                estoqueService.baixarParaVenda(item.getProduto(), item.getTamanho(), item.getQuantidade());
+            }
         }
 
         pedido.setStatus(novoStatus);
@@ -339,15 +355,9 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
             validarOpcaoSelecionada(itemReq.getTamanho(), produto.getTamanhos(), "tamanho", produto);
             validarOpcaoSelecionada(itemReq.getCor(), produto.getCores(), "cor", produto);
 
-            if (produto.getEstoque() < itemReq.getQuantidade()) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Estoque insuficiente para " + produto.getNome());
-            }
+            estoqueService.baixarParaVenda(produto, itemReq.getTamanho(), itemReq.getQuantidade());
 
-            produto.setEstoque(produto.getEstoque() - itemReq.getQuantidade());
-            produtoRepository.save(produto);
-
-            BigDecimal precoUnit = produto.getPreco();
+            BigDecimal precoUnit = produto.getPrecoFinal();
             subtotal = subtotal.add(precoUnit.multiply(BigDecimal.valueOf(itemReq.getQuantidade())));
 
             itens.add(PedidoProdutos.builder()

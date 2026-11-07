@@ -1,3 +1,6 @@
+/**
+ * Hook que consulta o CEP no ViaCEP (utils/viacep.js) e devolve os campos de endereço (Checkout/Perfil).
+ */
 import { useCallback, useRef, useState } from "react";
 import { formatCep } from "../utils/cartHelpers";
 import { fetchAddressByCep } from "../utils/viacep";

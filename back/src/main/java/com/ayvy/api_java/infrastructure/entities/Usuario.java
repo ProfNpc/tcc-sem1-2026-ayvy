@@ -10,6 +10,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Tabela usuarios: login de todos (admin, cliente, lojista). Senha em BCrypt e marcada WRITE_ONLY
+ * (nunca sai no JSON). papel e status controlam o acesso.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

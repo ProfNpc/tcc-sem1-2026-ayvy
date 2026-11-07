@@ -1,3 +1,6 @@
+/**
+ * Tela "Pedido realizado" (/pedido/sucesso?pedido=#LU-1) mostrada depois do checkout.
+ */
 import { Link, useSearchParams } from "react-router-dom";
 import "./style.css";
 

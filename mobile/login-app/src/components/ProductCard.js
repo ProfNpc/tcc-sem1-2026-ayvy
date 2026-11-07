@@ -1,3 +1,6 @@
+/**
+ * Versão antiga em src/. NÃO É USADO hoje (nenhum arquivo importa este). Fica só como referência/legado. O app usa os arquivos da raiz.
+ */
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { urlImagem } from '../services/api';
 import { formatarPreco } from '../utils/formatarPreco';

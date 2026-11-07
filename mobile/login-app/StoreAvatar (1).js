@@ -1,3 +1,6 @@
+/**
+ * Cópia duplicada de StoreAvatar.js. NÃO É USADO hoje (nenhum arquivo importa este). Fica só como referência/legado.
+ */
 import { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { resolveImageUrl } from './api';

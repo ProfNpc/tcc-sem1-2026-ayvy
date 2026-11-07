@@ -1,3 +1,8 @@
+/**
+ * Importação do carrinho do app pela URL /carrinho?itens=produtoId:quantidade,...
+ * parseItensParam lê e valida o link; montarImportacao cruza com GET /produtos (preço e estoque reais,
+ * nunca da URL) e gera os avisos; linhaPrecisaOpcoes marca linhas que ainda precisam de cor/tamanho.
+ */
 import { formatBRL } from "./cartHelpers";
 import { resolveImageUrl } from "./imageUrl";
 
@@ -105,7 +110,7 @@ export function montarImportacao(itens, produtosApi, carrinhoAtual) {
     linhas.push({
       name: nome,
       image: resolveImageUrl(p.imagemPrincipalUrl) || IMAGEM_PADRAO,
-      price: formatBRL(Number(p.preco) || 0),
+      price: formatBRL(Number(p.precoFinal ?? p.preco) || 0),
       quantity: qtd,
       productId: String(p.id),
       apiId: p.id,

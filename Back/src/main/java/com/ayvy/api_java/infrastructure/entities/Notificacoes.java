@@ -7,6 +7,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Tabela notificacoes: avisos de um usuário. tipo: pedido (cliente), pedido_loja (lojista),
+ * pedido_admin (admin), estoque (repor estoque). Criadas pelo PedidoService e pelo EstoqueService.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

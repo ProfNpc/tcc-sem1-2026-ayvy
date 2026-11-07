@@ -1,3 +1,7 @@
+/**
+ * Ponto de entrada do site: monta BrowserRouter → AuthProvider (login) → CartProvider (carrinho) → App.
+ * A ordem importa: o CartProvider usa o useAuth() para sincronizar o carrinho com a conta.
+ */
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";

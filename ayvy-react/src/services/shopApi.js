@@ -60,7 +60,7 @@ export async function loadShopsFromApi() {
       apiId: p.id,
       title: p.nome,
       name: p.nome,
-      price: formatPrice(Number(p.preco) || 0),
+      ...precosDoProduto(p),
       href: resolveImageUrl(p.imagemPrincipalUrl) || "",
       img: resolveImageUrl(p.imagemPrincipalUrl) || "",
       images: p.imagemPrincipalUrl
@@ -80,4 +80,20 @@ export async function loadShopsFromApi() {
 
 function formatPrice(value) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+/**
+ * Preço de vitrine com o desconto do lojista: `price` é o valor cobrado (precoFinal da API)
+ * e `originalPrice` o preço cheio, só quando há desconto.
+ */
+export function precosDoProduto(p) {
+  const cheio = Number(p.preco) || 0;
+  const desconto = Math.max(0, Math.min(90, Number(p.descontoPercentual) || 0));
+  const final = p.precoFinal != null ? Number(p.precoFinal) : cheio;
+  return {
+    price: formatPrice(final),
+    priceValue: final,
+    discountPercent: desconto,
+    ...(desconto > 0 ? { originalPrice: formatPrice(cheio) } : {}),
+  };
 }

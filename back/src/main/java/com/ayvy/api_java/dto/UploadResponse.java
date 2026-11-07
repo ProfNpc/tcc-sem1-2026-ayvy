@@ -3,6 +3,9 @@ package com.ayvy.api_java.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * Resposta do POST /upload: caminho /uploads/... salvo e URL completa.
+ */
 @Getter
 @AllArgsConstructor
 public class UploadResponse {

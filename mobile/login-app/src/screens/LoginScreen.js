@@ -1,3 +1,6 @@
+/**
+ * Versão antiga em src/. NÃO É USADO hoje (nenhum arquivo importa este). Fica só como referência/legado. O app usa LoginScreen.js da raiz.
+ */
 import { useState } from 'react';
 import {
   View,

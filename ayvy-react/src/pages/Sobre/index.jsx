@@ -1,3 +1,6 @@
+/**
+ * Página Sobre (/sobre): propósito da AYVY, equipe (TeamMemberRow) e foto do grupo.
+ */
 import { useEffect } from "react";
 import TeamMemberRow from "../../components/TeamMemberRow";
 import useExternalStylesOnce from "../../hooks/useExternalStylesOnce";

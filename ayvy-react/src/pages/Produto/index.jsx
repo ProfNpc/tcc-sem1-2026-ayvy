@@ -18,6 +18,7 @@ import { isShopOwner } from "../../utils/mockAuthUsers";
 import { enrichProduct, enrichShop, getColorImageIndex, getImageForColor, renderStars } from "../../utils/productHelpers";
 import "./style.css";
 
+/** Favoritos de visitante (sem login). Logado, o coração segue só a API /favoritos, a mesma do app. */
 const FAV_KEY = "ayvy.favorites.v1";
 
 function readFavorites() {
@@ -131,10 +132,13 @@ function ProdutoDetail({ slug, shop, product }) {
       if (!user?.id || !apiProdutoId) return;
       try {
         const yes = await verificarFavorito(user.id, apiProdutoId);
-        if (cancelled || !yes) return;
-        setFavorites((prev) => (prev.includes(favKey) ? prev : [...prev, favKey]));
+        if (cancelled) return;
+        setFavorites((prev) => {
+          const sem = prev.filter((k) => k !== favKey);
+          return yes ? [...sem, favKey] : sem;
+        });
       } catch {
-        /* ignore */
+        /* sem conexão: mantém o que já estava na tela */
       }
     })();
     return () => {
@@ -157,13 +161,16 @@ function ProdutoDetail({ slug, shop, product }) {
   };
 
   async function toggleFavorite() {
+    const anterior = favorites;
     const nextLocal = favorites.includes(favKey)
       ? favorites.filter((k) => k !== favKey)
       : [...favorites, favKey];
     setFavorites(nextLocal);
-    localStorage.setItem(FAV_KEY, JSON.stringify(nextLocal));
 
-    if (!user?.id || !apiProdutoId) return;
+    if (!user?.id || !apiProdutoId) {
+      localStorage.setItem(FAV_KEY, JSON.stringify(nextLocal));
+      return;
+    }
     try {
       if (nextLocal.includes(favKey)) {
         await favoritarProduto({ usuarioId: user.id, produtoId: apiProdutoId });
@@ -171,7 +178,7 @@ function ProdutoDetail({ slug, shop, product }) {
         await desfavoritarProduto(user.id, apiProdutoId);
       }
     } catch {
-      /* localStorage já atualizado */
+      setFavorites(anterior);
     }
   }
 
@@ -299,6 +306,12 @@ function ProdutoDetail({ slug, shop, product }) {
           </div>
 
           <div className="produto-preco-box">
+            {product.discountPercent > 0 && product.originalPrice ? (
+              <p className="produto-preco-de">
+                De <s>{product.originalPrice}</s>
+                <span className="produto-desconto-tag">-{product.discountPercent}%</span>
+              </p>
+            ) : null}
             <p className="produto-preco-pix">
               <strong>{product.pricePix}</strong>
               <span className="produto-pix-tag">no Pix</span>

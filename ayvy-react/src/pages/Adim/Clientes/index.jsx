@@ -1,3 +1,6 @@
+/**
+ * Admin › Clientes: lista (GET /clientes), editar e excluir. Formulário em ./Form.jsx.
+ */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteCliente, listClientes } from "../../../services/adminApi";

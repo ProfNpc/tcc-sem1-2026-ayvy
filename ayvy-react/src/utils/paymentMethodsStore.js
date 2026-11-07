@@ -1,3 +1,7 @@
+/**
+ * Cartões salvos SÓ no navegador (localStorage ayvy.payment-methods.v1), por usuário.
+ * Dados de cartão nunca vão para a API nem para o admin: o back só recebe o TIPO de pagamento.
+ */
 const KEY = "ayvy.payment-methods.v1";
 
 function storageKey(userId) {

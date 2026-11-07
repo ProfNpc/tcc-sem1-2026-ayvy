@@ -1,15 +1,23 @@
 /**
  * Carrinho do site (localStorage "ayvy.cart.v2") e cálculo de frete (POST /frete/calcular).
+ * Com o cliente logado, o carrinho também fica salvo na conta (GET/PUT /carrinho) e é o mesmo do app:
+ * ao entrar junta o carrinho do navegador com o da conta, salva a cada mudança e busca de novo
+ * quando a aba volta a ficar ativa (e a cada 20 s). Ao sair da conta, o carrinho do navegador é limpo.
  * Use com useCart(). importLines/updateLineOptions são usados na importação do carrinho do app (pages/Carrinho).
  */
 import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
+import { useAuth } from "../AuthContext";
+import { buscarCarrinhoDaConta, salvarCarrinhoDaConta } from "../../services/carrinhoApi";
+import { resolveImageUrl } from "../../utils/imageUrl";
 import {
   cartLineKey,
   cartSubtotal,
@@ -22,6 +30,11 @@ import { fetchAddressByCep } from "../../utils/viacep";
 import "./style.css";
 
 const CART_KEY = "ayvy.cart.v2";
+/** Id da conta com que o carrinho do navegador já foi juntado (vazio = carrinho de visitante). */
+const CART_OWNER_KEY = "ayvy.cart.owner";
+const ENVIO_ATRASO_MS = 600;
+const BUSCA_INTERVALO_MS = 20000;
+const IMAGEM_PADRAO = "/assets/img/ayvy-media-a.png";
 
 const EMPTY_FREIGHT = {
   cep: "",
@@ -75,8 +88,175 @@ function setCartAndNotify(next) {
   listeners.forEach((l) => l());
 }
 
+function listaLimpa(lista) {
+  return Array.isArray(lista) ? lista.map((v) => String(v).trim()).filter(Boolean) : [];
+}
+
+/** Item salvo na conta (GET /carrinho) → linha do carrinho do site. */
+function linhaDaConta(item) {
+  const p = item?.produto || {};
+  return {
+    name: p.nome || "Produto",
+    image: resolveImageUrl(p.imagemPrincipalUrl) || IMAGEM_PADRAO,
+    price: formatBRL(Number(p.precoFinal ?? p.preco) || 0),
+    quantity: item.quantidade || 1,
+    productId: String(p.id),
+    apiId: p.id,
+    shopSlug: String(p.lojista?.slug || "").trim().toLowerCase().replace(/-/g, "_"),
+    shopName: p.lojista?.nomeLoja || "",
+    stock: p.estoque,
+    colors: listaLimpa(p.cores),
+    sizes: listaLimpa(p.tamanhos),
+    color: item.cor || null,
+    size: item.tamanho || null,
+  };
+}
+
+/** Linha do site → formato do PUT /carrinho (linhas sem produto da API não vão para a conta). */
+function linhaParaConta(line) {
+  const produtoId = Number(line.apiId ?? line.productId);
+  if (!Number.isFinite(produtoId)) return null;
+  return {
+    produtoId,
+    quantidade: line.quantity || 1,
+    cor: line.color || null,
+    tamanho: line.size || null,
+  };
+}
+
+/** Junta o carrinho de visitante com o da conta: linhas iguais ficam com a maior quantidade. */
+function juntarCarrinhos(daConta, doNavegador) {
+  const resultado = daConta.map((l) => ({ ...l, id: crypto.randomUUID() }));
+  for (const local of doNavegador) {
+    const chave = cartLineKey(local);
+    const igual = resultado.find((l) => cartLineKey(l) === chave);
+    if (igual) {
+      igual.quantity = Math.max(igual.quantity || 1, local.quantity || 1);
+    } else {
+      resultado.push(local);
+    }
+  }
+  return resultado;
+}
+
+function lerDono() {
+  try {
+    return localStorage.getItem(CART_OWNER_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function gravarDono(valor) {
+  try {
+    if (valor) localStorage.setItem(CART_OWNER_KEY, valor);
+    else localStorage.removeItem(CART_OWNER_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Mantém o carrinho do navegador igual ao salvo na conta (o mesmo carrinho do app). */
+function useCarrinhoDaConta(usuarioId, cart) {
+  const ignorarEnvioRef = useRef(false);
+  const envioPendenteRef = useRef(null);
+  const usuarioAnteriorRef = useRef(usuarioId);
+
+  const aplicarDaConta = useCallback((linhas) => {
+    ignorarEnvioRef.current = true;
+    setCartAndNotify(linhas);
+  }, []);
+
+  const buscarDaConta = useCallback(async () => {
+    if (!usuarioId || envioPendenteRef.current) return;
+    try {
+      const itens = await buscarCarrinhoDaConta(usuarioId);
+      if (envioPendenteRef.current) return;
+      const daConta = (itens || []).map(linhaDaConta);
+      const semApi = cartSnapshot.filter((l) => !linhaParaConta(l));
+      aplicarDaConta(juntarCarrinhos(daConta, semApi));
+    } catch {
+      /* sem conexão: mantém o carrinho do navegador */
+    }
+  }, [usuarioId, aplicarDaConta]);
+
+  useEffect(() => {
+    const anterior = usuarioAnteriorRef.current;
+    usuarioAnteriorRef.current = usuarioId;
+    if (!usuarioId) {
+      if (anterior) {
+        gravarDono("");
+        setCartAndNotify([]);
+      }
+      return undefined;
+    }
+    let cancelado = false;
+    (async () => {
+      try {
+        const itens = await buscarCarrinhoDaConta(usuarioId);
+        if (cancelado) return;
+        const daConta = (itens || []).map(linhaDaConta);
+        const jaJuntado = lerDono() === String(usuarioId) && !envioPendenteRef.current;
+        const resultado = jaJuntado
+          ? juntarCarrinhos(daConta, cartSnapshot.filter((l) => !linhaParaConta(l)))
+          : juntarCarrinhos(daConta, cartSnapshot);
+        gravarDono(String(usuarioId));
+        aplicarDaConta(resultado);
+        if (!jaJuntado) {
+          await salvarCarrinhoDaConta(usuarioId, resultado.map(linhaParaConta).filter(Boolean));
+        }
+      } catch {
+        /* sem conexão: tenta de novo na próxima mudança ou quando a aba voltar */
+      }
+    })();
+    return () => {
+      cancelado = true;
+    };
+  }, [usuarioId, aplicarDaConta]);
+
+  useEffect(() => {
+    if (!usuarioId) return undefined;
+    if (ignorarEnvioRef.current) {
+      ignorarEnvioRef.current = false;
+      return undefined;
+    }
+    if (lerDono() !== String(usuarioId)) return undefined;
+    const timer = setTimeout(async () => {
+      try {
+        await salvarCarrinhoDaConta(usuarioId, cart.map(linhaParaConta).filter(Boolean));
+      } catch {
+        /* tenta de novo na próxima mudança */
+      } finally {
+        if (envioPendenteRef.current === timer) envioPendenteRef.current = null;
+      }
+    }, ENVIO_ATRASO_MS);
+    envioPendenteRef.current = timer;
+    return () => {
+      clearTimeout(timer);
+      if (envioPendenteRef.current === timer) envioPendenteRef.current = null;
+    };
+  }, [cart, usuarioId]);
+
+  useEffect(() => {
+    if (!usuarioId) return undefined;
+    function aoVoltar() {
+      if (document.visibilityState === "visible") buscarDaConta();
+    }
+    window.addEventListener("focus", aoVoltar);
+    document.addEventListener("visibilitychange", aoVoltar);
+    const intervalo = setInterval(aoVoltar, BUSCA_INTERVALO_MS);
+    return () => {
+      window.removeEventListener("focus", aoVoltar);
+      document.removeEventListener("visibilitychange", aoVoltar);
+      clearInterval(intervalo);
+    };
+  }, [usuarioId, buscarDaConta]);
+}
+
 export default function CartProvider({ children }) {
   const cart = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const { user } = useAuth();
+  useCarrinhoDaConta(user?.id ?? null, cart);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [freight, setFreight] = useState(EMPTY_FREIGHT);
 
@@ -123,8 +303,12 @@ export default function CartProvider({ children }) {
     [cart],
   );
 
-  /** Adiciona várias linhas de uma vez (importação do app), somando com linhas iguais. */
-  const importLines = useCallback((incomingLines) => {
+  /**
+   * Adiciona várias linhas de uma vez (importação do app), somando com linhas iguais.
+   * Com `manterMaior` (cliente logado, carrinho já sincronizado com o app) fica a maior quantidade,
+   * para não contar em dobro o que já veio pela conta.
+   */
+  const importLines = useCallback((incomingLines, { manterMaior = false } = {}) => {
     let next = [...cartSnapshot];
     for (const incoming of incomingLines || []) {
       const key = cartLineKey(incoming);
@@ -132,7 +316,12 @@ export default function CartProvider({ children }) {
       if (idx >= 0) {
         next = next.map((line, i) =>
           i === idx
-            ? { ...line, quantity: (line.quantity || 1) + (incoming.quantity || 1) }
+            ? {
+                ...line,
+                quantity: manterMaior
+                  ? Math.max(line.quantity || 1, incoming.quantity || 1)
+                  : (line.quantity || 1) + (incoming.quantity || 1),
+              }
             : line,
         );
       } else {

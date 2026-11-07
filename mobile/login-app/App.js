@@ -1,3 +1,7 @@
+/**
+ * Raiz do app: sem sessão mostra o LoginScreen; com sessão, CartProvider (carrinho da conta) + MainApp.
+ * No navegador (Expo web) a coluna do app fica do tamanho de um celular e centralizada.
+ */
 import { useState } from 'react';
 import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -21,8 +25,9 @@ export default function App() {
       <View style={[styles.backdrop, webSize]}>
         <View style={styles.frame}>
           {session ? (
-            // Ao sair, o CartProvider é desmontado e o carrinho zera sozinho.
-            <CartProvider>
+            // O carrinho fica salvo na conta (o mesmo do site). Ao sair, o CartProvider é desmontado
+            // e o carrinho some só do celular; ele volta ao entrar de novo.
+            <CartProvider user={session}>
               <MainApp user={session} onLogout={() => setSession(null)} />
             </CartProvider>
           ) : (

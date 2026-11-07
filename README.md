@@ -1,155 +1,101 @@
-# AYVY — TCC 2026 (marketplace de moda)
+# AYVY — TCC 2026 (marketplace de moda) · mapa geral
 
-Marketplace onde **lojistas** publicam produtos, **clientes** compram e o **admin** acompanha tudo.
-Este README é o **mapa geral**: o que existe, onde fica e como as partes conversam.
+Marketplace em que **lojistas** publicam produtos, **clientes** compram (pelo site ou pelo app) e o **admin** acompanha tudo.
+Este README é o **índice de tudo**. Cada assunto aponta para a **linha** do README da parte certa e para o código.
+No topo de cada arquivo de código há um comentário explicando para que ele serve.
 
-| Parte | Pasta | Tecnologia | Endereço local | Guia detalhado |
+| Parte | Pasta | Tecnologia | Endereço | Guia completo |
 |---|---|---|---|---|
-| Site (front) | `ayvy-react/` | React 19 + Vite | http://localhost:5173 | [ayvy-react/README.md](./ayvy-react/README.md) |
-| API (back) | `back/` | Spring Boot 4 (Java 25) | http://localhost:8082 | [back/README.md](./back/README.md) · [back/README-GUIA.md](./back/README-GUIA.md) |
-| Banco de dados | `database/` | SQL Server 2022 (Docker) | `localhost:1433`, banco `ayvy` | [database/README.md](./database/README.md) |
-| App (celular) | `mobile/login-app/` | Expo / React Native | Expo Go | [mobile/login-app/README.md](./mobile/login-app/README.md) |
-| Painel admin | `ayvy-react/src/pages/Adim/` | React | http://localhost:5173/admin | [README-ADMIN.md](./ayvy-react/src/pages/Adim/README-ADMIN.md) |
+| Site (front) | `ayvy-react/` | React 19 + Vite | http://localhost:5173 | [ayvy-react/README.md](ayvy-react/README.md) |
+| API (back) | `back/` | Spring Boot 4 (Java 25) | http://localhost:8082 | [back/README.md](back/README.md) · [README-GUIA](back/README-GUIA.md) |
+| Banco de dados | `database/` | SQL Server 2022 (Docker) | `localhost,1433` · banco `ayvy` | [database/README.md](database/README.md) |
+| App (celular) | `mobile/login-app/` | Expo / React Native | Expo Go ou navegador | [mobile/login-app/README.md](mobile/login-app/README.md) |
+| Painel admin | `ayvy-react/src/pages/Adim/` | React | http://localhost:5173/admin | [README-ADMIN.md](ayvy-react/src/pages/Adim/README-ADMIN.md) |
 
-Pastas `IMAGENS/` e `NÃO-UTILIZADO/` guardam material de apoio e código antigo; não fazem parte do sistema.
+`IMAGENS/` guarda as fotos dos produtos de exemplo, que a API copia para `back/uploads` ao subir. `NÃO-UTILIZADO/` é código antigo.
+
+## Índice
+
+1. [Como rodar tudo](#1-como-rodar-tudo)
+2. [Como as partes conversam](#2-como-as-partes-conversam)
+3. [Índice por assunto (onde está cada coisa)](#3-índice-por-assunto-onde-está-cada-coisa)
+4. [Onde mais dá erro](#4-onde-mais-dá-erro)
+5. [Contas de teste](#5-contas-de-teste)
+6. [Git (atalhos do grupo)](#6-git-atalhos-do-grupo)
 
 ---
 
-## 1. Como rodar tudo (ordem certa)
+## 1. Como rodar tudo
 
 ```bash
-# 1) Banco (SQL Server no Docker) — na raiz do repositório
-docker compose up -d
-# cria o container + a database "ayvy" (database/init-ayvy.sql)
-
-# 2) API — porta 8082 (cria/atualiza tabelas sozinha: ddl-auto=update)
-cd back
-./mvnw spring-boot:run
-
-# 3) Site — porta 5173
-cd ayvy-react
-npm install
-npm run dev
+docker compose up -d                  # 1) banco (na raiz)
+cd back && ./mvnw spring-boot:run     # 2) API na porta 8082 (cria as tabelas e os dados de exemplo)
+cd ayvy-react && npm install && npm run dev   # 3) site na porta 5173
+cd mobile/login-app && npm install && npx expo start   # 4) app (opcional)
 ```
 
-Na primeira subida, a API cria sozinha (classes em `back/.../config/`):
+Detalhes: site [README front §1](ayvy-react/README.md#L25) · API [README back §1](back/README.md#L23) · banco [README banco §2](database/README.md#L28) · app [README app §1](mobile/login-app/README.md#L19).
 
-| Bootstrap | O que faz |
+## 2. Como as partes conversam
+
+```
+Site (ayvy-react/src/services/*.js) ─┐
+                                     ├─ HTTP JSON → API Spring Boot (back/…/controller → business → repositories) → SQL Server
+App  (mobile/login-app/api.js)  ─────┘
+```
+
+- Site → API: [README front §2](ayvy-react/README.md#L37) (tabela de cada função e endpoint em [§8](ayvy-react/README.md#L141)).
+- Todas as rotas da API: [README back §4](back/README.md#L63).
+- App → API: [README app §5](mobile/login-app/README.md#L71).
+- Tabelas: [README banco §3](database/README.md#L34).
+
+## 3. Índice por assunto (onde está cada coisa)
+
+| Assunto | Parte | Explicação (README → linha) | Código principal |
+|---|---|---|---|
+| Rotas do site (todas as URLs) | Front | [front: Rotas](ayvy-react/README.md#L64) | [AppRoutes.jsx](ayvy-react/src/routes/AppRoutes.jsx#L41) |
+| Login e sessão | Front · Back | [front: AuthContext](ayvy-react/README.md#L127) · [back: login](back/README.md#L67) | [AuthContext](ayvy-react/src/context/AuthContext/index.jsx#L134) · [UsuarioService.autenticar](back/src/main/java/com/ayvy/api_java/business/UsuarioService.java#L196) |
+| Cadastro (2 passos) | Back | [README-GUIA §8](back/README-GUIA.md#L285) | [authApi.criarUsuario](ayvy-react/src/services/authApi.js#L19) |
+| Recuperar senha (e-mail/SMS/console) | Front · Back | [front: Esqueci a senha](ayvy-react/README.md#L102) · [back: E-mail e SMS](back/README.md#L160) | [RecuperacaoSenhaService](back/src/main/java/com/ayvy/api_java/business/RecuperacaoSenhaService.java#L68) |
+| Menu do topo e sanduíche | Front | [front: Componentes](ayvy-react/README.md#L110) | [Navbar](ayvy-react/src/components/Navbar/index.jsx#L16) |
+| Rodapé padrão / Suporte | Front | [front: Footer](ayvy-react/README.md#L112) | [Footer](ayvy-react/src/components/Footer/index.jsx#L86) |
+| Categorias (tela e árvore) | Front · Back · Banco | [front: Categorias](ayvy-react/README.md#L91) · [back: árvore](back/README.md#L126) · [banco: categorias](database/README.md#L43) | [Categorias/index.jsx](ayvy-react/src/pages/Categorias/index.jsx#L110) · [ARVORE](back/src/main/java/com/ayvy/api_java/config/CategoriaArvoreBootstrap.java#L32) |
+| Cadastro de produto (categoria, desconto, tamanhos) | Front · Back | [front: Cadastro de produto](ayvy-react/README.md#L94) · [back: ProdutoService](back/README.md#L98) | [ProdutoNovo](ayvy-react/src/pages/Loja/ProdutoNovo/index.jsx#L53) · [getPrecoFinal](back/src/main/java/com/ayvy/api_java/infrastructure/entities/Produto.java#L109) |
+| Loja do lojista e pedidos da loja | Front | [front: Loja](ayvy-react/README.md#L92) | [Loja/index.jsx](ayvy-react/src/pages/Loja/index.jsx#L157) |
+| Checkout (pedido, frete, pagamento) | Front · Back | [front: Checkout](ayvy-react/README.md#L99) · [back: Compra](back/README.md#L133) | [finalizarCheckout](back/src/main/java/com/ayvy/api_java/business/PedidoService.java#L343) |
+| Envio, rastreio e confirmar entrega | Front · Back | [front: Meus pedidos](ayvy-react/README.md#L100) · [back: Envio](back/README.md#L139) | [TrackingTimeline](ayvy-react/src/components/TrackingTimeline/index.jsx#L68) · [getEtapaEnvio](back/src/main/java/com/ayvy/api_java/infrastructure/entities/Pedido.java#L110) |
+| Código do pedido por loja (`LU-1`) | Back · Banco | [back: SiglaLojaService](back/README.md#L103) · [banco: pedido_produtos](database/README.md#L49) | [pedidoNumero.js](ayvy-react/src/utils/pedidoNumero.js#L5) |
+| Notificações (cliente, loja, admin) | Back | [back: PedidoService](back/README.md#L94) | [notificarAdmins](back/src/main/java/com/ayvy/api_java/business/PedidoService.java#L310) |
+| Meu estoque (planilha, reposição, gráfico) | Front · Back · Banco | [front: Meu estoque](ayvy-react/README.md#L101) · [back: Estoque](back/README.md#L146) · [banco: estoque_itens](database/README.md#L55) | [MeuEstoque](ayvy-react/src/pages/MeuEstoque/index.jsx#L58) · [EstoqueService.baixarParaVenda](back/src/main/java/com/ayvy/api_java/business/EstoqueService.java#L141) |
+| Carrinho igual no site e no app | Front · App · Back | [front: CartContext](ayvy-react/README.md#L131) · [app: carrinho e favoritos](mobile/login-app/README.md#L62) · [back: carrinho](back/README.md#L152) | [useCarrinhoDaConta](ayvy-react/src/context/CartContext/index.jsx#L160) · [CartContext do app](mobile/login-app/CartContext.js#L37) · [CarrinhoService](back/src/main/java/com/ayvy/api_java/business/CarrinhoService.java#L49) |
+| Favoritos iguais no site e no app | Front · App | [app: favoritos](mobile/login-app/README.md#L69) | [Produto.toggleFavorite](ayvy-react/src/pages/Produto/index.jsx#L163) · [app toggleFavorite](mobile/login-app/HomeScreen.js#L335) |
+| Importar carrinho pelo link do app | Front | [front: Utils](ayvy-react/README.md#L161) | [cartImport.js](ayvy-react/src/utils/cartImport.js#L65) |
+| Painel admin | Front | [front: Admin › Pedidos](ayvy-react/README.md#L103) · [guia do admin](ayvy-react/src/pages/Adim/README-ADMIN.md#L1) | [AdminPedidosList](ayvy-react/src/pages/Adim/Pedidos/index.jsx#L200) |
+| Fotos / uploads | Back | [back: ImagensSeedBootstrap](back/README.md#L128) | [UploadService](back/src/main/java/com/ayvy/api_java/business/UploadService.java#L52) |
+| Frete | Back | [back: FreteService](back/README.md#L101) | [calcularFreteTotal](back/src/main/java/com/ayvy/api_java/business/FreteService.java#L44) |
+| Escala da tela (Windows/Linux) | Front | [front: CSS e layout](ayvy-react/README.md#L170) | [index.css](ayvy-react/src/index.css#L21) |
+| Tabelas do banco | Banco | [banco: tabelas](database/README.md#L34) | [ayvySQL_DER.sql](database/ayvySQL_DER.sql#L15) |
+| Telas do app | App | [app: arquivos e telas](mobile/login-app/README.md#L43) | [App.js](mobile/login-app/App.js#L13) |
+| Endereço da API no app (`.env.local`) | App | [app: para onde aponta](mobile/login-app/README.md#L29) | [API_BASE_URL](mobile/login-app/api.js#L16) |
+
+## 4. Onde mais dá erro
+
+| Problema | Onde está explicado |
 |---|---|
-| `AdminBootstrap` | conta de administrador |
-| `DevSeedBootstrap` | lojas, produtos e clientes de exemplo |
-| `CategoriaArvoreBootstrap` | árvore de categorias (Moda Feminina → Vestidos…) |
-| `PedidoNumeroLojaBootstrap` | sigla da loja e código do pedido (ex.: `LU-1`) |
-| `DemoDataBootstrap` | completa perfis de lojas, endereços, produtos, favoritos e pedidos fictícios |
+| Site: "Não foi possível conectar à API", CORS, foto quebrada, comentário quebrando o build | [front §12](ayvy-react/README.md#L188) |
+| API: DevTools/PasswordEncoder, uploads, erro 409, PUT parcial, `UNIQUE` com NULL | [back §10](back/README.md#L166) |
+| Banco: DER × API, ordem do drop, senha do `sa` | [banco §6](database/README.md#L87) |
+| App: endereço da API, `.env.local`, conta errada | [app §6](mobile/login-app/README.md#L82) |
 
----
+## 5. Contas de teste
 
-## 2. Como front e back conversam (o caminho de uma chamada)
+| Papel | E-mail | Senha | Onde é criada |
+|---|---|---|---|
+| Admin | `admin@ayvy.com.br` | `admin123` | [AdminBootstrap](back/src/main/java/com/ayvy/api_java/config/AdminBootstrap.java#L22) |
+| Lojista (ex.: Loja Urbana) | `lojaurbana@ayvy.com.br` | `senha123` | [DevSeedBootstrap](back/src/main/java/com/ayvy/api_java/config/DevSeedBootstrap.java#L34) |
+| Cliente (ex.: Heloísa) | `heloisa@ayvy.com.br` | `heloisaayvy` | [DevSeedBootstrap](back/src/main/java/com/ayvy/api_java/config/DevSeedBootstrap.java#L347) |
 
-```
-Tela React (pages/…)
-  └─ função em ayvy-react/src/services/*.js      ex.: checkoutPedido(payload)
-       └─ apiJson("/pedidos/checkout")           services/api.js (base http://localhost:8082)
-            └─ HTTP → Controller (back/.../controller/PedidoController.java)
-                 └─ Service com as regras (back/.../business/PedidoService.java)
-                      └─ Repository JPA (back/.../infrastructure/repositories/)
-                           └─ Tabela no SQL Server (database/ayvySQL_DER.sql)
-```
-
-- **URL da API no front:** `ayvy-react/src/services/api.js` (`VITE_API_BASE_URL`, padrão `http://localhost:8082`).
-- **CORS (quem pode chamar a API):** `back/.../config/WebConfig.java` (libera `localhost:5173` e `5174`).
-- **Erros da API → mensagem na tela:** o back responde `{ detail: "mensagem" }` (`exception/ApiExceptionHandler.java`) e o `api.js` transforma em `Error(message)`.
-- **Imagens:** o front envia para `POST /upload` e o back salva em `back/uploads/…`, servido em `http://localhost:8082/uploads/...` (`UploadService` + `WebConfig`).
-
-### Tabela "função do front → endpoint → classe do back"
-
-| Front (`ayvy-react/src/services/`) | Endpoint | Back (controller → service) |
-|---|---|---|
-| `authApi.loginUsuario` | `POST /usuarios/login` | `UsuarioController` → `UsuarioService.autenticar` |
-| `authApi.criarUsuario` / `criarCliente` / `criarLojista` | `POST /usuarios`, `/clientes`, `/lojistas` | `UsuarioService`, `ClienteService`, `LojistaService` |
-| `senhaApi.solicitarCodigoSenha` | `POST /usuarios/recuperar-senha` | `RecuperacaoSenhaService.solicitarCodigo` (+ `SmsService`) |
-| `senhaApi.redefinirSenhaComCodigo` | `POST /usuarios/redefinir-senha` | `RecuperacaoSenhaService.redefinirSenha` |
-| `shopApi.listProdutosApi` / `loadShopsFromApi` | `GET /produtos`, `GET /lojistas` | `ProdutoService`, `LojistaService` |
-| `categoriasApi.listCategoriasApi` | `GET /categorias` | `CategoriaService` |
-| `lojistaApi.salvarProdutoLojista` / `atualizarProdutoLojista` | `POST/PUT /produtos`, `POST /produtos/{id}/imagens`, `POST /upload` | `ProdutoService`, `UploadService` |
-| `lojistaApi.listPedidosDoLojista` | `GET /pedidos/all` + `GET /pedidos/{id}/itens` | `PedidoService` |
-| `lojistaApi.confirmarRecebimentoLojista` | `PUT /pedidos/{id}/recebido` | `PedidoService.confirmarRecebimento` |
-| `lojistaApi.separarPedidoLojista` | `PUT /pedidos/{id}/status?novoStatus=em_separacao` | `PedidoService.atualizarStatus` |
-| `lojistaApi.despacharPedidoLojista` | `PUT /pedidos/{id}/envio` | `PedidoService.registrarEnvio` |
-| `pedidosApi.checkoutPedido` | `POST /pedidos/checkout` | `PedidoService.finalizarCheckout` (+ `FreteService`) |
-| `pedidosApi.calcularFrete` | `POST /frete/calcular` | `FreteService` (distância entre CEPs) |
-| `pedidosApi.confirmarEntregaCliente` | `PUT /pedidos/{id}/entrega-confirmada` | `PedidoService.confirmarEntregaPeloCliente` |
-| `pedidosApi.getPedidoHistorico` | `GET /pedidos/{id}/historico` | `PedidoService.listarHistoricoPorPedidoId` |
-| `pedidosApi.criarPagamento` / `listPagamentos` | `POST/GET /pagamentos` | `PagamentoService` |
-| `notificacoesApi.*` | `GET/PUT/DELETE /notificacoes` | `NotificacoesService` |
-| `favoritosApi.*` | `/favoritos`, `POST /visualizacoes` | `FavoritosService`, `VisualizacoesProdutoService` |
-| `adminApi.*` | CRUD de `/usuarios`, `/clientes`, `/lojistas`, `/produtos`, `/categorias` | controllers correspondentes |
-
----
-
-## 3. "Eu quero achar…" (índice rápido)
-
-| Quero… | Front | Back |
-|---|---|---|
-| Login / sessão do usuário | `pages/Login`, `context/AuthContext` (guarda em `localStorage: ayvy.auth`) | `UsuarioController /usuarios/login` |
-| Cadastro de cliente/lojista | `pages/Cadastro`, `components/CadastroForm` | `UsuarioService`, `ClienteService`, `LojistaService` |
-| Recuperar senha (código por e-mail/SMS) | `pages/EsqueciSenha`, `services/senhaApi.js` | `RecuperacaoSenhaService`, `SmsService`, tabela `redefinicao_senha` |
-| Menu do topo (sanduíche) | `components/Navbar`, `components/NavbarMobile` | — |
-| Rodapé padrão de todas as telas | `components/Footer`, `components/MainLayout` | — |
-| Página de categorias (estilo SHEIN) | `pages/Categorias`, `utils/categoriaArvore.js` | `CategoriaArvoreBootstrap` (árvore), `CategoriaService` |
-| Escolher categoria ao cadastrar produto | `pages/Loja/ProdutoNovo/CategoriaPicker.jsx` | `ProdutoService` (campo `categoria`) |
-| Loja do lojista (produtos, rascunhos, pedidos) | `pages/Loja/index.jsx` | `ProdutoService`, `PedidoService` |
-| Despachar pedido (local + código de rastreio) | `pages/Loja/DespacharModal.jsx` | `PUT /pedidos/{id}/envio` |
-| Linha de envio com caminhão | `components/TrackingTimeline` | `Pedido.getEtapaEnvio()` (`infrastructure/entities/Pedido.java`) |
-| Carrinho / importar carrinho do app | `context/CartContext` (`localStorage: ayvy.cart.v2`), `pages/Carrinho`, `utils/cartImport.js` | `GET /produtos` |
-| Checkout (endereço, frete, pagamento) | `pages/Checkout` | `PedidoService.finalizarCheckout`, `FreteService` |
-| Meus pedidos + confirmar entrega | `pages/MeusPedidos` | `PedidoService.confirmarEntregaPeloCliente` |
-| Notificações (cliente, lojista, admin) | `pages/Notificacoes`, aviso no card da loja, "Atividade" no admin | `PedidoService` (`notificarCliente/Lojistas/Admins`) |
-| Painel admin (pedidos, histórico, atividade) | `pages/Adim/*`, `components/AdminLayout` | `/pedidos/all`, `/pedidos/{id}/historico`, `/notificacoes` |
-| Código do pedido por loja (`LU-1`) | `utils/pedidoNumero.js` | `SiglaLojaService`, `PedidoNumeroLojaBootstrap` |
-| Escala da tela (Windows/Linux) | `src/index.css` (`--app-zoom`) | — |
-| Tabelas e colunas do banco | — | `database/ayvySQL_DER.sql` e `back/.../infrastructure/entities/` |
-
----
-
-## 4. Fluxos principais (do clique até o banco)
-
-**Compra**
-1. O cliente adiciona ao carrinho (`CartContext`).
-2. Em `/checkout`, o front chama `POST /pedidos/checkout`.
-3. O back valida o estoque, calcula o frete (`FreteService`) e grava `pedidos`, `pedido_produtos` (com `codigo_pedido_loja`, ex.: `LU-1`), `pedido_endereco_entrega` e `historico_compras`.
-4. O front registra o pagamento (`POST /pagamentos`) e marca o pedido como `pago` (`PUT /pedidos/{id}/status`).
-5. Cliente, lojista e admin recebem notificação.
-
-**Envio**
-1. O lojista confirma o recebimento (`/recebido`) e começa o preparo (`status=em_separacao`).
-2. O lojista despacha (`/envio`, com local da postagem, transportadora e código de rastreio).
-3. A etapa avança sozinha com o tempo: Coletado → Em rota → Entregue (`Pedido.getEtapaEnvio`).
-4. O cliente clica em **Confirmar entrega** (`/entrega-confirmada`), e o lojista vê o aviso "Entrega confirmada pelo cliente".
-
-**Recuperar senha**
-1. Em `/esqueci-senha`, o cliente informa o e-mail e escolhe E-mail ou SMS.
-2. O back gera um código de 6 dígitos, válido por 15 minutos, e guarda só o hash.
-3. Se e-mail e SMS não estiverem configurados, o código aparece no **console do Spring**. Procure por `RECUPERAÇÃO DE SENHA`.
-4. Para configurar o envio, veja as variáveis `SPRING_MAIL_*` e `TWILIO_*` em `back/src/main/resources/application.properties`.
-
-**Carrinho do app → site**
-1. O app abre `/carrinho?itens=10:2,15:1`.
-2. O site busca os produtos em `GET /produtos`, respeita o estoque, avisa o que foi ajustado e limpa a URL (`utils/cartImport.js`).
-
----
-
-## 5. Contas de teste (criadas pelos bootstraps)
-
-- **Admin:** ver `back/.../config/AdminBootstrap.java`.
-- **Lojistas e clientes de exemplo:** ver `back/.../config/DevSeedBootstrap.java`.
-- **Complemento dos dados de demonstração:** `back/.../config/DemoDataBootstrap.java` (pedidos, favoritos, endereços, imagens e produtos).
-  - Lojistas: `lojaurbana@ayvy.com.br`, `sneakhouse@ayvy.com.br`, entre outros. A senha padrão está em `SENHA_PADRAO_LOJISTA`.
-  - Clientes: `heloisa@ayvy.com.br`, `emilly@ayvy.com.br`, entre outros. A senha é o nome de usuário (ex.: `heloisaayvy`).
-
----
-
-## 6. Git (atalhos que o grupo usa)
+## 6. Git (atalhos do grupo)
 
 ```bash
 git switch corrigido                 # trocar de branch

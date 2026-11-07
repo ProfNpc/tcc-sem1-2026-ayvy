@@ -5,6 +5,9 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+/**
+ * Corpo do POST /clientes (2º passo do cadastro): usuarioId, CPF e data de nascimento.
+ */
 @Getter
 @Setter
 public class ClienteCreateRequest {

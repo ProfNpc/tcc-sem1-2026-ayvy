@@ -5,6 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
+/**
+ * Consultas da galeria de fotos do produto, em ordem.
+ */
 public interface ProdutoImagemRepository extends JpaRepository<ProdutoImagem, Integer> {
 
     List<ProdutoImagem> findByProduto_IdOrderByOrdemAsc(Integer produtoId);

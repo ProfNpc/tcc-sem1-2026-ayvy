@@ -1,3 +1,6 @@
+/**
+ * Barra de abas do rodapé (Início, Carrinho com contador, Pedidos, Conta).
+ */
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from './theme';

@@ -127,9 +127,17 @@
 }
 
 .card-product-shopee__discount {
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  background: #fdecec;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #c2410c;
+}
+
+.card-product-shopee__old-price {
   font-size: 0.75rem;
-  color: var(--ayvy-purple, #b06edc);
-  opacity: 0.85;
+  color: #9a93a6;
 }
 
 .card-product-shopee__meta {

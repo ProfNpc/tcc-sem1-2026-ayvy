@@ -1,3 +1,6 @@
+/**
+ * Lista horizontal com rolagem (setas no navegador) usada nas faixas de lojas e produtos da HomeScreen.
+ */
 import { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { colors } from './theme';

@@ -1,3 +1,7 @@
+/**
+ * Endereços e cópia local de pedidos guardados no navegador (localStorage ayvy.orders.v1 / ayvy.addresses.v1),
+ * usados só como apoio no Checkout. O pedido de verdade é o da API (POST /pedidos/checkout).
+ */
 import { formatBRL, lineSubtotal } from "./cartHelpers";
 
 const ORDERS_KEY = "ayvy.orders.v1";

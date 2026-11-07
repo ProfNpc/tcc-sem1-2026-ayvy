@@ -1,3 +1,6 @@
+/**
+ * Galeria de fotos do produto no admin: lista, adiciona (POST /produtos/{id}/imagens) e remove fotos.
+ */
 import { useState } from "react";
 import { addProdutoImagem, deleteProdutoImagem, uploadImage } from "../../services/adminApi";
 import { resolveImageUrl } from "../../utils/imageUrl";

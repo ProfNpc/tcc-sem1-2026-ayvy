@@ -1,3 +1,7 @@
+/**
+ * Números do painel admin (usuários, lojistas, produtos, pedidos) calculados com as listas da API.
+ * notifyAdminMetricsChanged() avisa o painel para recalcular depois de criar/editar/excluir.
+ */
 import { listClientes, listLojistas, listProdutos } from "../services/adminApi";
 import { resolveImageUrl } from "./imageUrl";
 

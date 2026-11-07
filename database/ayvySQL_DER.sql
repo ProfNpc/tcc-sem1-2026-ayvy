@@ -120,6 +120,7 @@ CREATE TABLE produtos (
     slug                   VARCHAR(150) NOT NULL,
     descricao              NVARCHAR(MAX) NULL,
     preco                  DECIMAL(12,2) NOT NULL,
+    desconto_percentual    INT NULL,  -- 0 a 90; preço final = preco * (100 - desconto) / 100
     estoque                INT NOT NULL CONSTRAINT DF_produtos_estoque DEFAULT 0,
     imagem_principal_url   VARCHAR(500) NULL,
     cores                  VARCHAR(500) NULL,
@@ -133,6 +134,18 @@ CREATE TABLE produtos (
         FOREIGN KEY (lojista_id) REFERENCES lojistas(id),
     CONSTRAINT fk_produtos_categorias
         FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+);
+
+-- ---------------------------------------------------------------------
+-- Tabela: produto_categorias_extras (N:N) — categorias a mais do produto
+-- (ex.: tênis em Calçados › Tênis e também em Streetwear › Tênis streetwear)
+-- ---------------------------------------------------------------------
+CREATE TABLE produto_categorias_extras (
+    produto_id    INT NOT NULL,
+    categoria_id  INT NOT NULL,
+    CONSTRAINT pk_produto_categorias_extras PRIMARY KEY (produto_id, categoria_id),
+    CONSTRAINT fk_pce_produtos FOREIGN KEY (produto_id) REFERENCES produtos(id),
+    CONSTRAINT fk_pce_categorias FOREIGN KEY (categoria_id) REFERENCES categorias(id)
 );
 
 -- ---------------------------------------------------------------------
@@ -271,6 +284,39 @@ CREATE TABLE visualizacoes_produtos (
         FOREIGN KEY (produto_id) REFERENCES produtos(id),
     CONSTRAINT fk_visualizacoes_usuarios
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- ---------------------------------------------------------------------
+-- Tabela: carrinho_itens (carrinho salvo na conta: o mesmo no site e no app)
+-- ---------------------------------------------------------------------
+CREATE TABLE carrinho_itens (
+    id             INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    usuario_id     INT NOT NULL,
+    produto_id     INT NOT NULL,
+    quantidade     INT NOT NULL,
+    cor            VARCHAR(60) NULL,
+    tamanho        VARCHAR(30) NULL,
+    atualizado_em  DATETIME2 NOT NULL CONSTRAINT DF_carrinho_itens_atualizado_em DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT fk_carrinho_usuarios FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    CONSTRAINT fk_carrinho_produtos FOREIGN KEY (produto_id) REFERENCES produtos(id)
+);
+
+-- ---------------------------------------------------------------------
+-- Tabela: estoque_itens (planilha "Meu estoque" do lojista)
+-- Uma linha por produto + tamanho (tamanho NULL = todos os tamanhos juntos).
+-- O checkout tira daqui e o cancelamento/reembolso devolve (EstoqueService).
+-- ---------------------------------------------------------------------
+CREATE TABLE estoque_itens (
+    id             INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    lojista_id     INT NOT NULL,
+    produto_id     INT NOT NULL,
+    tamanho        VARCHAR(30) NULL,
+    quantidade     INT NOT NULL,
+    criado_em      DATETIME2 NOT NULL CONSTRAINT DF_estoque_itens_criado_em DEFAULT SYSUTCDATETIME(),
+    atualizado_em  DATETIME2 NOT NULL CONSTRAINT DF_estoque_itens_atualizado_em DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT uq_estoque_produto_tamanho UNIQUE (produto_id, tamanho),
+    CONSTRAINT fk_estoque_lojistas FOREIGN KEY (lojista_id) REFERENCES lojistas(id),
+    CONSTRAINT fk_estoque_produtos FOREIGN KEY (produto_id) REFERENCES produtos(id)
 );
 
 -- ---------------------------------------------------------------------

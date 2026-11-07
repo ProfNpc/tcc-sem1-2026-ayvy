@@ -1,3 +1,6 @@
+/**
+ * Entrada do app Expo: registra o App.js como tela principal.
+ */
 import { registerRootComponent } from 'expo';
 
 import App from './App';

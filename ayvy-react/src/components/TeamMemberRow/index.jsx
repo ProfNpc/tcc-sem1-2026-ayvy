@@ -1,3 +1,6 @@
+/**
+ * Linha "foto + texto" de cada integrante na página Sobre (reversed alterna o lado da foto).
+ */
 import "./style.css";
 
 export default function TeamMemberRow({ reversed, imageSrc, imageAlt, name, children }) {

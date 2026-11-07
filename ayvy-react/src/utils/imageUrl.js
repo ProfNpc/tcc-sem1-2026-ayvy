@@ -1,3 +1,6 @@
+/**
+ * resolveImageUrl: transforma o caminho /uploads/... salvo pela API em URL completa (http://localhost:8082/uploads/...).
+ */
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8082";
 
 /** Converte caminho do banco (/uploads/...) em URL exibível no front. */

@@ -1,3 +1,6 @@
+/**
+ * Links do app para o site (EXPO_PUBLIC_WEB_URL): abrir o carrinho/checkout no site e o aviso antes de abrir.
+ */
 import { Linking } from 'react-native';
 import { WEB_BASE_URL } from './api';
 import { notify } from './notify';
@@ -23,6 +26,6 @@ export function buildCartUrl(items) {
 }
 
 // Aviso mostrado antes de mandar a pessoa para o site: o pagamento só existe lá.
-export const CHECKOUT_NOTICE = CART_HANDOFF_ENABLED
-  ? 'O pagamento é feito no site da AYVY. Seus itens serão enviados ao carrinho do site, e você precisará entrar na sua conta no site para pagar.'
-  : 'O pagamento é feito no site da AYVY. Os itens do carrinho do app ainda não são enviados ao site, então adicione-os novamente por lá. Você também precisará entrar na sua conta no site.';
+// O carrinho fica salvo na conta (API /carrinho), então os itens já estão no site depois do login.
+export const CHECKOUT_NOTICE =
+  'O pagamento é feito no site da AYVY. Seu carrinho fica salvo na sua conta: entre no site com o mesmo e-mail e os itens já estarão lá.';

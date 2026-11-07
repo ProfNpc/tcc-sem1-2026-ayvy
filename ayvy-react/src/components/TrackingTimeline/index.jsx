@@ -1,3 +1,9 @@
+/**
+ * Linha de envio com caminhão: Pedido recebido → Preparando → Despachado → Coletado → Em rota → Entregue.
+ * A etapa vem da API (Pedido.getEtapaEnvio no back); aqui só anima o caminhão andando entre as etapas
+ * (2 min andando e 3 min parado) a partir de envioIniciadoEm e avisa onEtapaChange quando muda.
+ * Usada em: Loja (aba Pedidos), MeusPedidos e Admin › Pedidos.
+ */
 import { useEffect, useRef, useState } from "react";
 import "./style.css";
 

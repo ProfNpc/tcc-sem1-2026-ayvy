@@ -5,6 +5,11 @@
 
 USE ayvy;
 
+-- Tabelas mais novas primeiro: elas apontam (FK) para produtos, usuarios e lojistas.
+IF OBJECT_ID(N'dbo.carrinho_itens', N'U') IS NOT NULL DROP TABLE dbo.carrinho_itens;
+IF OBJECT_ID(N'dbo.estoque_itens', N'U') IS NOT NULL DROP TABLE dbo.estoque_itens;
+IF OBJECT_ID(N'dbo.produto_categorias_extras', N'U') IS NOT NULL DROP TABLE dbo.produto_categorias_extras;
+IF OBJECT_ID(N'dbo.redefinicao_senha', N'U') IS NOT NULL DROP TABLE dbo.redefinicao_senha;
 IF OBJECT_ID(N'dbo.visualizacoes_produtos', N'U') IS NOT NULL DROP TABLE dbo.visualizacoes_produtos;
 IF OBJECT_ID(N'dbo.favoritos', N'U') IS NOT NULL DROP TABLE dbo.favoritos;
 IF OBJECT_ID(N'dbo.historico_compras', N'U') IS NOT NULL DROP TABLE dbo.historico_compras;

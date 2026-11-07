@@ -1,3 +1,6 @@
+/**
+ * Admin › Relatórios: números calculados dos usuários e pedidos da API (vendas, status, lojas).
+ */
 import { useEffect, useMemo, useState } from "react";
 import { listUsuarios } from "../../../services/adminApi";
 import { listTodosPedidos, getPedidoItens } from "../../../services/pedidosApi";

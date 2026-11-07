@@ -1,179 +1,176 @@
-# AYVY API (Spring Boot)
+# AYVY — API (Spring Boot) · guia completo do back
 
-API REST do projeto. Roda em **http://localhost:8082**
+API REST do marketplace em **http://localhost:8082**. Clique nos links para abrir a linha exata; no topo de cada
+classe há um comentário explicando para que ela serve.
+Guia antigo bem detalhado (SQL Server, Postman, cadastro em 2 passos): [README-GUIA.md](./README-GUIA.md) ·
+Mapa geral: [../README.md](../README.md).
 
-Guia fácil (pastas, URLs, SQL Server, onde achar tudo): **[README-GUIA.md](./README-GUIA.md)**
+## Índice
 
-### Atalhos no guia completo
-
-| Assunto | Link |
-|---------|------|
-| O que é o back | [README-GUIA §1](./README-GUIA.md#1-o-que-é-o-back-sem-enrolação) |
-| O que ligar antes de testar | [README-GUIA §2](./README-GUIA.md#2-o-que-precisa-estar-ligado-antes-de-testar) |
-| SQL Server (config + script) | [README-GUIA §3](./README-GUIA.md#3-banco-de-dados--sql-server-não-é-mais-dockermysql) |
-| Subir a API | [README-GUIA §4](./README-GUIA.md#4-como-subir-a-api) |
-| Pastas — “eu quero X, abro Y” | [README-GUIA §5](./README-GUIA.md#5-pastas-do-back--eu-quero-x-abro-y) |
-| Todas as URLs da API | [README-GUIA §6](./README-GUIA.md#6-todos-os-caminhos-da-api-urls) |
-| Tabelas no banco | [README-GUIA §7](./README-GUIA.md#7-tabelas-principais-no-sql-server) |
-| Cadastro em 2 passos | [README-GUIA §8](./README-GUIA.md#8-regra-de-ouro-cadastro-em-2-passos) |
-| Imagens (upload) | [README-GUIA §9](./README-GUIA.md#9-imagens-passo-a-passo) |
-| Ligação com o React | [README-GUIA §10](./README-GUIA.md#10-ligação-com-o-front-react) |
-| Postman | [README-GUIA §11](./README-GUIA.md#11-testar-sem-o-site-postman) |
-| Problemas comuns | [README-GUIA §12](./README-GUIA.md#12-problemas-comuns) |
-| Índice “eu quero encontrar…” | [README-GUIA — índice](./README-GUIA.md#índice-eu-quero-encontrar) |
+1. [Como rodar](#1-como-rodar)
+2. [Configuração (application.properties)](#2-configuração-applicationproperties)
+3. [Camadas do código](#3-camadas-do-código)
+4. [Controllers — todas as rotas](#4-controllers--todas-as-rotas)
+5. [Services — as regras de negócio](#5-services--as-regras-de-negócio)
+6. [Entidades (tabelas)](#6-entidades-tabelas)
+7. [Bootstraps (rodam ao subir)](#7-bootstraps-rodam-ao-subir)
+8. [Fluxos completos](#8-fluxos-completos)
+9. [E-mail e SMS](#9-e-mail-e-sms)
+10. [Pontos de atenção (onde mais dá erro)](#10-pontos-de-atenção-onde-mais-dá-erro)
 
 ---
 
-## Antes de subir — SQL Server
-
-O projeto usa **Microsoft SQL Server** (Docker na raiz ou instância local).
-
-1. SQL Server rodando em **`localhost:1433`** (`docker compose up -d` na raiz)
-2. Banco **`ayvy`** + tabelas — script: **`database/ayvySQL_DER.sql`** (DBeaver/SSMS)
-3. Reset opcional: **`database/drop-ayvy-tables.sql`** e depois o DER de novo
-4. Usuário/senha conferidos em **`src/main/resources/application.properties`**
-
-Detalhes: [README-GUIA §3 — SQL Server](./README-GUIA.md#3-banco-de-dados--sql-server-não-é-mais-dockermysql)
-
----
-
-## Subir a API
+## 1. Como rodar
 
 ```bash
+docker compose up -d          # na raiz: SQL Server + database ayvy
 cd back
-./mvnw spring-boot:run
+./mvnw spring-boot:run        # http://localhost:8082/produtos para testar
 ```
 
-Teste no navegador: http://localhost:8082/usuarios
+O Hibernate cria e atualiza as tabelas sozinho (`ddl-auto=update`). Não é preciso rodar o SQL antes.
 
-Detalhes: [README-GUIA §4 — subir a API](./README-GUIA.md#4-como-subir-a-api) · [§2 — o que precisa estar ligado](./README-GUIA.md#2-o-que-precisa-estar-ligado-antes-de-testar)
+## 2. Configuração (application.properties)
 
----
+| O quê | Linha |
+|---|---|
+| Porta 8082 | [server.port](src/main/resources/application.properties#L22) |
+| Conexão com o SQL Server | [spring.datasource.url](src/main/resources/application.properties#L26) |
+| Tabelas automáticas (`update`) | [ddl-auto](src/main/resources/application.properties#L36) |
+| E-mail (Gmail) | [spring.mail](src/main/resources/application.properties#L46) |
+| SMS (Twilio) | [ayvy.sms.twilio](src/main/resources/application.properties#L53) |
 
-## Cadastro (sempre 2 passos)
+## 3. Camadas do código
 
-| Papel | 1 — `POST /usuarios` | 2 |
-|-------|----------------------|---|
-| admin | `papel: "admin"` | — |
-| cliente | `papel: "cliente"` | `POST /clientes` |
-| lojista | `papel: "lojista"` | `POST /lojistas` |
+Pacote base: [`src/main/java/com/ayvy/api_java`](src/main/java/com/ayvy/api_java)
 
-Detalhes: [README-GUIA §8 — cadastro em 2 passos](./README-GUIA.md#8-regra-de-ouro-cadastro-em-2-passos)
+```
+HTTP → controller/ (recebe) → business/ (regras) → infrastructure/repositories/ (consulta) → entities/ (tabelas)
+```
 
----
+| Pasta | Para que serve |
+|---|---|
+| `controller/` | URLs, parâmetros e corpo da requisição (sem regra de negócio) |
+| `business/` | **regras**: validações, cálculos, estoque, notificações |
+| `infrastructure/entities/` | cada classe = uma tabela do banco |
+| `infrastructure/repositories/` | consultas (Spring Data JPA cria o SQL pelo nome do método) |
+| `infrastructure/enums/` | status e papéis |
+| `infrastructure/geo/` | CEP → coordenadas → distância (frete) |
+| `dto/` | formato do JSON de entrada de alguns endpoints |
+| `config/` | segurança, CORS, `/uploads` e bootstraps |
+| `exception/` | erros viram `{ "detail": "mensagem" }` ([ApiExceptionHandler](src/main/java/com/ayvy/api_java/exception/ApiExceptionHandler.java#L17)) |
 
-## URLs da API
+## 4. Controllers — todas as rotas
 
-Principais caminhos (base `http://localhost:8082`):
-
-| Recurso | Caminho |
-|---------|---------|
-| Usuários | `/usuarios` |
-| Clientes | `/clientes` |
-| Lojistas | `/lojistas` |
-| Produtos | `/produtos` |
-| Categorias | `/categorias` |
-| Upload | `/upload` |
-
-Detalhes: [README-GUIA §6 — todas as URLs](./README-GUIA.md#6-todos-os-caminhos-da-api-urls) · [§5 — qual arquivo abrir no código](./README-GUIA.md#5-pastas-do-back--eu-quero-x-abro-y)
-
----
-
-## Imagens
-
-`POST /upload` → salva em `back/uploads/` → acessa em `http://localhost:8082/uploads/...`
-
-Detalhes: [README-GUIA §9 — imagens passo a passo](./README-GUIA.md#9-imagens-passo-a-passo)
-
----
-
-## Postman
-
-`postman/AYVY-API.postman_collection.json` + `AYVY-Local.postman_environment.json`
-
-Detalhes: [postman/README.md](./postman/README.md) · [README-GUIA §11 — Postman](./README-GUIA.md#11-testar-sem-o-site-postman)
-
----
-
-## Front React
-
-Consome esta API via `ayvy-react/src/services/*.js` (tabela completa "função do front → endpoint → service" no [README da raiz](../README.md#2-como-front-e-back-conversam-o-caminho-de-uma-chamada))
-
-Detalhes: [README-GUIA §10 — ligação com o React](./README-GUIA.md#10-ligação-com-o-front-react) · [Guia do admin](../ayvy-react/src/pages/Adim/README-ADMIN.md)
-
----
-
-## Mapa do código (camadas)
-
-Pacote base: `src/main/java/com/ayvy/api_java/`
-
-| Pasta | Para que serve | Exemplo |
+| Rota | Linha | Quem usa |
 |---|---|---|
-| `controller/` | Recebe o HTTP: URL, parâmetros e corpo. Não tem regra de negócio | `PedidoController` → `/pedidos` |
-| `business/` | **Regras de negócio** (validações, cálculos, notificações) | `PedidoService.finalizarCheckout` |
-| `infrastructure/entities/` | Tabelas do banco como classes JPA | `Pedido` → tabela `pedidos` |
-| `infrastructure/repositories/` | Consultas ao banco (Spring Data JPA) | `PedidoProdutosRepository.findByCodigoPedidoLoja` |
-| `infrastructure/enums/` | Status e papéis | `StatusPedido`, `PapelUsuario` |
-| `infrastructure/geo/` | CEP → coordenadas e distância (frete) | `CepGeoLocalizacaoClient`, `CalculadoraDistancia` |
-| `dto/` | Formato do JSON de entrada de alguns endpoints | `CheckoutRequest`, `EnvioRequest`, `RecuperarSenhaRequest` |
-| `config/` | Segurança, CORS, `/uploads` e dados iniciais (bootstraps) | `WebConfig`, `SecurityFilterChainConfig` |
-| `exception/` | Erros viram `{ "detail": "mensagem" }` para o front | `ApiExceptionHandler` |
+| `POST /usuarios/login` | [UsuarioController](src/main/java/com/ayvy/api_java/controller/UsuarioController.java#L54) | site e app |
+| `POST /usuarios/recuperar-senha` · `/redefinir-senha` | [UsuarioController](src/main/java/com/ayvy/api_java/controller/UsuarioController.java#L34) | Esqueci a senha |
+| `POST /usuarios` (cadastro) | [UsuarioController](src/main/java/com/ayvy/api_java/controller/UsuarioController.java#L49) | Cadastro |
+| `/clientes` · `/lojistas` | [ClienteController](src/main/java/com/ayvy/api_java/controller/ClienteController.java#L17) · [LojistaController](src/main/java/com/ayvy/api_java/controller/LojistaController.java#L17) | Cadastro, admin, vitrine |
+| `/produtos` + `/produtos/{id}/imagens` | [ProdutoController](src/main/java/com/ayvy/api_java/controller/ProdutoController.java#L58) | vitrine, lojista, admin |
+| `/categorias` | [CategoriaController](src/main/java/com/ayvy/api_java/controller/CategoriaController.java#L16) | Categorias, cadastro de produto |
+| `POST /pedidos/checkout` | [PedidoController](src/main/java/com/ayvy/api_java/controller/PedidoController.java#L38) | Checkout |
+| `PUT /pedidos/{id}/status` | [PedidoController](src/main/java/com/ayvy/api_java/controller/PedidoController.java#L83) | pago, preparo, cancelar, admin |
+| `PUT /pedidos/{id}/recebido` | [PedidoController](src/main/java/com/ayvy/api_java/controller/PedidoController.java#L90) | lojista |
+| `PUT /pedidos/{id}/envio` | [PedidoController](src/main/java/com/ayvy/api_java/controller/PedidoController.java#L96) | lojista (despachar) |
+| `PUT /pedidos/{id}/entrega-confirmada` | [PedidoController](src/main/java/com/ayvy/api_java/controller/PedidoController.java#L101) | cliente |
+| `GET /pedidos/{id}/historico` · `/codigo/{codigo}` | [PedidoController](src/main/java/com/ayvy/api_java/controller/PedidoController.java#L106) | admin, busca `LU-1` |
+| `/carrinho` (GET/PUT/DELETE) | [CarrinhoController](src/main/java/com/ayvy/api_java/controller/CarrinhoController.java#L32) | site e app |
+| `/estoque` + `/planilha` + `/relatorio` | [EstoqueController](src/main/java/com/ayvy/api_java/controller/EstoqueController.java#L31) | Meu estoque |
+| `POST /frete/calcular` | [FreteController](src/main/java/com/ayvy/api_java/controller/FreteController.java#L35) | Carrinho, Checkout |
+| `/favoritos` | [FavoritosController](src/main/java/com/ayvy/api_java/controller/FavoritosController.java#L42) | site e app |
+| `/notificacoes` · `/pagamentos` · `/enderecos` | [Notificacoes](src/main/java/com/ayvy/api_java/controller/NotificacoesController.java#L17) · [Pagamento](src/main/java/com/ayvy/api_java/controller/PagamentoController.java#L17) · [Endereco](src/main/java/com/ayvy/api_java/controller/EnderecoController.java#L15) | várias telas |
+| `POST /upload` | [UploadController](src/main/java/com/ayvy/api_java/controller/UploadController.java#L33) | fotos |
+| `/visualizacoes` | [VisualizacoesProdutoController](src/main/java/com/ayvy/api_java/controller/VisualizacoesProdutoController.java#L11) | página do produto |
 
-### Bootstraps (rodam sozinhos ao subir, em ordem)
+## 5. Services — as regras de negócio
+
+| Service | Método | O que faz |
+|---|---|---|
+| PedidoService | [finalizarCheckout](src/main/java/com/ayvy/api_java/business/PedidoService.java#L343) | valida opção e estoque, **baixa o estoque**, calcula frete, grava pedido, itens (código `LU-1`) e endereço |
+| | [atualizarStatus](src/main/java/com/ayvy/api_java/business/PedidoService.java#L116) | muda status; **cancelado/reembolsado devolve as peças** ao estoque; notifica |
+| | [registrarEnvio](src/main/java/com/ayvy/api_java/business/PedidoService.java#L181) · [confirmarRecebimento](src/main/java/com/ayvy/api_java/business/PedidoService.java#L227) · [confirmarEntregaPeloCliente](src/main/java/com/ayvy/api_java/business/PedidoService.java#L246) | fluxo de envio |
+| | [notificarLojistas](src/main/java/com/ayvy/api_java/business/PedidoService.java#L295) · [notificarAdmins](src/main/java/com/ayvy/api_java/business/PedidoService.java#L310) | avisos para loja e admin |
+| EstoqueService | [baixarParaVenda](src/main/java/com/ayvy/api_java/business/EstoqueService.java#L141) · [devolver](src/main/java/com/ayvy/api_java/business/EstoqueService.java#L168) | tira/devolve do tamanho certo da planilha |
+| | [criarPlanilha](src/main/java/com/ayvy/api_java/business/EstoqueService.java#L73) · [relatorio](src/main/java/com/ayvy/api_java/business/EstoqueService.java#L219) | planilha e vendas por mês |
+| CarrinhoService | [substituir](src/main/java/com/ayvy/api_java/business/CarrinhoService.java#L49) | salva o carrinho inteiro (soma repetidos, limita ao estoque) |
+| ProdutoService | [atualizarProdutoPorId](src/main/java/com/ayvy/api_java/business/ProdutoService.java#L120) · [resolverCategoriasExtras](src/main/java/com/ayvy/api_java/business/ProdutoService.java#L54) | PUT parcial, desconto, categorias extras |
+| RecuperacaoSenhaService | [solicitarCodigo](src/main/java/com/ayvy/api_java/business/RecuperacaoSenhaService.java#L68) · [redefinirSenha](src/main/java/com/ayvy/api_java/business/RecuperacaoSenhaService.java#L104) · [mostrarNoConsole](src/main/java/com/ayvy/api_java/business/RecuperacaoSenhaService.java#L168) | código de 6 dígitos (hash, 15 min, 5 tentativas) |
+| SmsService | [enviar](src/main/java/com/ayvy/api_java/business/SmsService.java#L51) | SMS pelo Twilio (sem SDK) |
+| FreteService | [calcularFreteTotal](src/main/java/com/ayvy/api_java/business/FreteService.java#L44) · [faixas de preço](src/main/java/com/ayvy/api_java/business/FreteService.java#L79) | distância entre CEPs → valor |
+| UsuarioService | [autenticar](src/main/java/com/ayvy/api_java/business/UsuarioService.java#L196) · [deletarUsuario](src/main/java/com/ayvy/api_java/business/UsuarioService.java#L78) | login BCrypt; excluir apaga códigos e carrinho |
+| SiglaLojaService | [gerarSiglaUnica](src/main/java/com/ayvy/api_java/business/SiglaLojaService.java#L30) | "Loja Urbana" → `LU` |
+| UploadService | [salvarImagem](src/main/java/com/ayvy/api_java/business/UploadService.java#L52) | grava em `back/uploads/` |
+
+## 6. Entidades (tabelas)
+
+| Entidade | Tabela | Destaques |
+|---|---|---|
+| [Usuario](src/main/java/com/ayvy/api_java/infrastructure/entities/Usuario.java#L24) | `usuarios` | [senha nunca sai no JSON](src/main/java/com/ayvy/api_java/infrastructure/entities/Usuario.java#L43) |
+| [Produto](src/main/java/com/ayvy/api_java/infrastructure/entities/Produto.java#L31) | `produtos` | [getPrecoFinal (desconto)](src/main/java/com/ayvy/api_java/infrastructure/entities/Produto.java#L109) · [categoriasExtras](src/main/java/com/ayvy/api_java/infrastructure/entities/Produto.java#L50) |
+| [Pedido](src/main/java/com/ayvy/api_java/infrastructure/entities/Pedido.java#L26) | `pedidos` | [getEtapaEnvio (linha de envio)](src/main/java/com/ayvy/api_java/infrastructure/entities/Pedido.java#L110) |
+| [PedidoProdutos](src/main/java/com/ayvy/api_java/infrastructure/entities/PedidoProdutos.java#L19) | `pedido_produtos` | código `LU-1` por loja |
+| [Categoria](src/main/java/com/ayvy/api_java/infrastructure/entities/Categoria.java#L18) | `categorias` | árvore (categoriaPai) |
+| [EstoqueItem](src/main/java/com/ayvy/api_java/infrastructure/entities/EstoqueItem.java#L24) | `estoque_itens` | planilha Meu estoque |
+| [CarrinhoItem](src/main/java/com/ayvy/api_java/infrastructure/entities/CarrinhoItem.java#L21) | `carrinho_itens` | carrinho do site e do app |
+| [RedefinicaoSenha](src/main/java/com/ayvy/api_java/infrastructure/entities/RedefinicaoSenha.java#L17) | `redefinicao_senha` | só o hash do código |
+| Demais | `clientes`, `lojistas`, `enderecos`, `notificacoes`, `pagamentos`, `historico_compras`, `favoritos`, `produto_imagens`, `visualizacoes_produtos`, `pedido_endereco_entrega` | ver [database/README.md](../database/README.md) |
+
+## 7. Bootstraps (rodam ao subir)
 
 | Ordem | Classe | O que faz |
 |---|---|---|
-| 2 | `DevSeedBootstrap` | lojas, produtos e clientes de exemplo (só cria o que falta) |
-| 3 | `PedidoNumeroLojaBootstrap` | preenche sigla da loja e código `LU-1` de pedidos antigos |
-| 4 | `CategoriaArvoreBootstrap` | árvore de categorias, junta repetidas e move produtos do seed |
-| 5 | `DemoDataBootstrap` | completa perfis de lojistas, endereços de clientes, catálogo, favoritos e pedidos fictícios (idempotente) |
-| sem `@Order` (por último) | `AdminBootstrap` | garante a conta admin |
+| 2 | [DevSeedBootstrap](src/main/java/com/ayvy/api_java/config/DevSeedBootstrap.java#L30) | lojas, produtos e clientes de exemplo ([senha dos lojistas](src/main/java/com/ayvy/api_java/config/DevSeedBootstrap.java#L34)) |
+| 3 | [PedidoNumeroLojaBootstrap](src/main/java/com/ayvy/api_java/config/PedidoNumeroLojaBootstrap.java#L27) | sigla da loja e código `LU-1` de pedidos antigos |
+| 4 | [CategoriaArvoreBootstrap](src/main/java/com/ayvy/api_java/config/CategoriaArvoreBootstrap.java#L24) | [árvore de categorias](src/main/java/com/ayvy/api_java/config/CategoriaArvoreBootstrap.java#L32), [junta repetidas](src/main/java/com/ayvy/api_java/config/CategoriaArvoreBootstrap.java#L171) |
+| 5 | [DemoDataBootstrap](src/main/java/com/ayvy/api_java/config/DemoDataBootstrap.java#L32) | mais produtos, pedidos e favoritos de demonstração |
+| 6 | [ImagensSeedBootstrap](src/main/java/com/ayvy/api_java/config/ImagensSeedBootstrap.java#L39) | copia de `IMAGENS/` as fotos que faltam em `back/uploads` |
+| último | [AdminBootstrap](src/main/java/com/ayvy/api_java/config/AdminBootstrap.java#L19) | conta admin (`admin@ayvy.com.br` / `admin123`) |
 
-## Dados de demonstração (DemoDataBootstrap)
+## 8. Fluxos completos
 
-Ao iniciar a API em perfil diferente de `prod`, o `DemoDataBootstrap` complementa os registros existentes sem alterar fotos de contas de clientes. O seed fica desativado quando `spring.profiles.active=prod`:
+**Compra**
+1. O checkout chama [finalizarCheckout](src/main/java/com/ayvy/api_java/business/PedidoService.java#L343).
+2. Para cada item, o estoque é baixado por [baixarParaVenda](src/main/java/com/ayvy/api_java/business/PedidoService.java#L358).
+3. O preço vem de `getPrecoFinal()`, já com o desconto. O preço que vem do front nunca é usado.
+4. O front marca o pedido como `pago`. Com isso, cliente, loja e admin são notificados.
 
-- adiciona avatar de demonstração às contas de lojistas sem foto e gera logo/banner próprios para as cinco lojas seed;
-- garante um endereço principal com apelido `Casa` para cada cliente seed e um endereço adicional `Chácara` em Pirenópolis/GO para `heloisa@ayvy.com.br`;
-- acrescenta 20 produtos ao catálogo seed, com fotos locais, categorias, cores e tamanhos coerentes (numeração para calçados; letras para roupas; tamanho `Único` para bolsas);
-- completa descrição, cor e lista de tamanhos dos produtos antigos quando esses campos estão vazios;
-- completa a lista até cinco favoritos por cliente e um pedido por combinação cliente/loja (20 pedidos para o conjunto seed), distribuídos entre entregue, em andamento e cancelado;
-- identifica os pedidos pelo marcador `AYVY_DEMO_SEED_V1`, evitando duplicação em reinicializações.
+**Envio**
+1. O lojista confirma o recebimento (`/recebido`).
+2. O lojista começa o preparo (`status=em_separacao`).
+3. O lojista despacha (`/envio`).
+4. A etapa avança sozinha com o tempo (`Pedido.getEtapaEnvio`).
+5. O cliente confirma a entrega (`/entrega-confirmada`).
 
-**Importante sobre estoque:** a tabela `produtos` já possui `estoque`, e o checkout já valida e reduz esse total. `tamanhos` e `cores` são listas de opções (e o checkout agora rejeita uma opção que não pertença à lista), não variações com estoque independente. Assim, o catálogo demonstra tamanhos corretos, mas ainda não controla, por exemplo, 2 unidades P e 5 unidades M separadamente. Isso exige uma entidade/tabela de variações e ajuste do checkout/carrinho antes de ser apresentado como controle de estoque por tamanho/cor.
+**Estoque**
+- Com linhas na planilha, `produtos.estoque` = soma das linhas.
+- Uma venda tira do tamanho comprado.
+- Um cancelamento ou reembolso devolve a peça.
+- Quando uma linha zera, a loja recebe uma notificação "Repor estoque".
 
-Os endereços e pedidos criados pelo bootstrap são dados fictícios para demonstração. O frete histórico dos pedidos seed é ilustrativo; para comparar fretes, use o cálculo da API com os CEPs cadastrados.
+**Carrinho entre site e app**
+- Os dois mandam o carrinho inteiro (`PUT /carrinho`) e leem com `GET /carrinho`.
+- Linhas iguais são somadas e a quantidade é limitada ao estoque.
 
-## Endpoints de pedidos, envio e senha (fluxo completo)
+**Senha**
+1. `solicitarCodigo` gera o código e o envia por e-mail, por SMS ou, sem configuração, mostra no console.
+2. `redefinirSenha` confere o código e grava a nova senha em BCrypt.
 
-| Método e caminho | Quem usa no site | Service |
-|---|---|---|
-| `POST /pedidos/checkout` | Checkout (cliente) | `PedidoService.finalizarCheckout` |
-| `GET /pedidos?usuarioId=` · `GET /pedidos/all` | Meus pedidos · Loja/Admin | `PedidoService` |
-| `GET /pedidos/{id}/itens` · `/endereco-entrega` · `/historico` | telas de pedido · admin | `PedidoService` |
-| `GET /pedidos/codigo/{codigo}` | busca por `LU-1` | `PedidoService.buscarPedidoPorCodigo` |
-| `PUT /pedidos/{id}/status?novoStatus=` | pago (checkout), preparo/cancelar (lojista), admin | `PedidoService.atualizarStatus` |
-| `PUT /pedidos/{id}/recebido` | lojista "Confirmar pedido recebido" | `PedidoService.confirmarRecebimento` |
-| `PUT /pedidos/{id}/envio` | lojista "Marcar como despachado" (local, transportadora, rastreio) | `PedidoService.registrarEnvio` |
-| `PUT /pedidos/{id}/entrega-confirmada?usuarioId=` | cliente "Confirmar entrega" | `PedidoService.confirmarEntregaPeloCliente` |
-| `POST /frete/calcular` | carrinho/checkout | `FreteService` |
-| `POST /usuarios/recuperar-senha` | Esqueci a senha (e-mail ou SMS) | `RecuperacaoSenhaService` (+ `SmsService`) |
-| `POST /usuarios/redefinir-senha` | Esqueci a senha (código + nova senha) | `RecuperacaoSenhaService` |
+## 9. E-mail e SMS
 
-A etapa da linha de envio (`etapaEnvio`, `segundosDesdeEnvio`) é calculada em `Pedido.java`: 2 min andando e 3 min parado em cada etapa.
+Sem configuração, o código de recuperação aparece no **console do Spring** (busque `RECUPERAÇÃO DE SENHA`).
+- **Gmail:** `SPRING_MAIL_HOST=smtp.gmail.com`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD` (senha de app).
+- **Twilio:** `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`.
 
-## E-mail e SMS (recuperação de senha)
+## 10. Pontos de atenção (onde mais dá erro)
 
-Sem configuração, o código aparece no **console do Spring** (procure `RECUPERAÇÃO DE SENHA`).
-Para enviar de verdade, defina antes do `./mvnw spring-boot:run`:
-
-- **E-mail (Gmail):** `SPRING_MAIL_HOST=smtp.gmail.com`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD` (senha de app).
-- **SMS (Twilio):** `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`.
-
----
-
-## Deu erro?
-
-Detalhes: [README-GUIA §12 — problemas comuns](./README-GUIA.md#12-problemas-comuns) · [Índice “eu quero encontrar…”](./README-GUIA.md#índice-eu-quero-encontrar)
-
-
+1. **"No qualifying bean of type PasswordEncoder" ou classe não encontrada depois de mudar o código**: o reinício automático do DevTools pegou a compilação pela metade, ou entrou uma biblioteca nova no `pom.xml`. Pare (Ctrl+C) e rode `./mvnw spring-boot:run` de novo.
+2. **Foto quebrada no site**: `back/uploads` está no `.gitignore`. Coloque o arquivo com o mesmo nome em `IMAGENS/`; o [ImagensSeedBootstrap](src/main/java/com/ayvy/api_java/config/ImagensSeedBootstrap.java#L69) copia ao subir.
+3. **Erro 409 ao excluir**: o registro ainda é usado em outra tabela (FK). Por isso `deletarUsuario` e `deletarProdutoPorId` apagam antes os itens ligados.
+4. **`@Transactional` + erro = tudo desfeito**: em [atualizarStatus](src/main/java/com/ayvy/api_java/business/PedidoService.java#L116), se faltar estoque ao reativar um pedido, nada é salvo pela metade.
+5. **PUT parcial apagando campo**: campos sem valor padrão de propósito (`descontoPercentual`, `categoriasExtras` em [Produto](src/main/java/com/ayvy/api_java/infrastructure/entities/Produto.java)). Não coloque `@Builder.Default` neles.
+6. **SQL Server e `UNIQUE` com NULL**: só aceita um NULL por coluna única. Por isso `lojistas.sigla` não é `unique`, e `estoque_itens` usa `(produto_id, tamanho)` com uma única linha "todos os tamanhos".
+7. **Segurança**: [permitAll](src/main/java/com/ayvy/api_java/config/SecurityFilterChainConfig.java#L27). A API não exige token; quem protege as telas é o front.
+8. **CORS**: só `localhost:5173` e `5174` ([allowedOrigins](src/main/java/com/ayvy/api_java/config/WebConfig.java#L35)).
+9. **Frete sem internet**: a distância usa a BrasilAPI ([CepGeoLocalizacaoClient](src/main/java/com/ayvy/api_java/infrastructure/geo/CepGeoLocalizacaoClient.java)).

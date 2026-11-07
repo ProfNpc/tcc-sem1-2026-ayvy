@@ -11,6 +11,11 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * Tabela pedidos: compra do cliente (valores, status e dados de envio).
+ * getEtapaEnvio()/getSegundosDesdeEnvio() (não são colunas, vão no JSON) calculam a etapa da linha de envio:
+ * depois de despachado, 2 min andando e 3 min parado em cada etapa até "entregue".
+ */
 @Getter
 @Setter
 @AllArgsConstructor

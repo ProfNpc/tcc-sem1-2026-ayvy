@@ -1,3 +1,6 @@
+/**
+ * Alertas e confirmações que funcionam no celular (Alert) e no navegador (window.alert/confirm).
+ */
 import { Alert, Platform } from 'react-native';
 
 // Alert.alert NÃO funciona no navegador (não mostra nada). Estas funções escolhem o jeito certo em cada plataforma.

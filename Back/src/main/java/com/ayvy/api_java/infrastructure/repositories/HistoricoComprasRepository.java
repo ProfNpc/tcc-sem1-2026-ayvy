@@ -6,6 +6,9 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/**
+ * Consultas da linha do tempo do pedido (historico_compras), em ordem de data.
+ */
 public interface HistoricoComprasRepository extends JpaRepository<HistoricoCompras, Integer> {
     List<HistoricoCompras> findByPedidoIdOrderByCriadoEmAsc(Integer pedidoId);
 }

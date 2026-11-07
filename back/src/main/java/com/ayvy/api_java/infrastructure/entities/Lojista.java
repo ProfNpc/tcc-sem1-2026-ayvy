@@ -6,6 +6,10 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * Tabela lojistas: a loja (nome, slug da URL /loja/slug, CNPJ, logo, banner, status) 1:1 com usuarios.
+ * sigla (ex.: "LU") forma o código dos pedidos da loja (LU-1, LU-2...). Ver SiglaLojaService.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

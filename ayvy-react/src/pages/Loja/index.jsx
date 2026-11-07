@@ -514,6 +514,7 @@ export default function Loja() {
                   rating={product.rating}
                   soldCount={product.soldCount}
                   discountPercent={product.discountPercent}
+                  originalPrice={product.originalPrice}
                   productId={product.id}
                   shopSlug={slug}
                   ownerMode={isOwner}

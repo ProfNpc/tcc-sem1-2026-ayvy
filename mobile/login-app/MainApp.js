@@ -1,3 +1,7 @@
+/**
+ * Telas de quem já entrou: troca de aba (Início, Carrinho, Pedidos, Conta) com a TabBar.
+ * O Início fica sempre montado (só escondido) para não recarregar o catálogo a cada troca de aba.
+ */
 import { useEffect, useState } from 'react';
 import { BackHandler, Platform, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';

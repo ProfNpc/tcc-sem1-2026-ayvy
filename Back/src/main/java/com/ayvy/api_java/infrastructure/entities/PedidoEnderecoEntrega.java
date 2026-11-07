@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Tabela pedido_endereco_entrega: cópia do endereço no momento da compra (não muda se o cliente editar o endereço depois).
+ */
 @Getter
 @Setter
 @Builder
