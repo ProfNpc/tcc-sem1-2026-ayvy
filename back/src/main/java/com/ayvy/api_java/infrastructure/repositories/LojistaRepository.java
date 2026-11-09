@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
+/**
+ * Consultas da tabela lojistas (por usuário, slug e sigla).
+ */
 public interface LojistaRepository extends JpaRepository<Lojista, Integer> {
 
     java.util.Optional<Lojista> findByUsuario_Id(Integer usuarioId);

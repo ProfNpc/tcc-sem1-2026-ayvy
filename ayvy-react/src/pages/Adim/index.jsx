@@ -1,3 +1,6 @@
+/**
+ * Admin › Visão geral (/admin): números do marketplace (utils/adminMetrics.js) e pedidos recentes da API.
+ */
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {

@@ -1,5 +1,6 @@
 /**
- * Home (/): banner, busca de lojas/produtos, seções de produtos vindas da API e Suporte AYVY.
+ * Home (/): banner, busca de lojas/produtos, todos os produtos ativos da API juntos e Suporte AYVY.
+ * A separação por categoria fica só na tela /categorias.
  * Dados: services/shopApi.js (GET /lojistas, GET /produtos).
  */
 import { useEffect, useMemo, useState } from "react";
@@ -9,14 +10,14 @@ import BrandSlider from "../../components/BrandSlider";
 import Card from "../../components/Card";
 import { SupportSection } from "../../components/Footer";
 import { listLojistasApi, listProdutosApi } from "../../services/shopApi";
-import { listCategorias, mapApiProdutoToCard } from "../../services/lojistaApi";
+import { mapApiProdutoToCard } from "../../services/lojistaApi";
 import { HOME_BRANDS } from "../../utils/homeContent";
 import { enrichProduct } from "../../utils/productHelpers";
 import { resolveImageUrl } from "../../utils/imageUrl";
+import { rolarAteSuporte } from "../../utils/scrollToSupport";
 import "./style.css";
 
 const BANNER_IMG = "/assets/img/img-curta-ayvy.jpeg";
-const PER_CATEGORY = 6;
 
 function shuffle(list) {
   const a = [...list];
@@ -68,65 +69,6 @@ function mapProdutoCard(p) {
   };
 }
 
-/**
- * Agrupa produtos ativos por categoria da API, com shuffle por seção.
- */
-function buildCategorySections(produtos, categorias) {
-  const ativos = (produtos || [])
-    .filter((p) => isProdutoAtivo(p) && (p?.lojista?.slug || p?.lojista?.id))
-    .map(mapProdutoCard)
-    .filter((c) => c.shopSlug && c.productId);
-
-  const byCat = new Map();
-  const semCategoria = [];
-
-  for (const card of ativos) {
-    if (card.categoryId == null) {
-      semCategoria.push(card);
-      continue;
-    }
-    const key = Number(card.categoryId);
-    if (!byCat.has(key)) byCat.set(key, []);
-    byCat.get(key).push(card);
-  }
-
-  const orderedCats = (categorias || []).filter(
-    (c) => c?.ativo !== false && c?.id != null,
-  );
-
-  const sections = [];
-
-  for (const cat of orderedCats) {
-    const list = byCat.get(Number(cat.id)) || [];
-    if (!list.length) continue;
-    sections.push({
-      id: cat.id,
-      title: cat.nome || "Categoria",
-      products: shuffle(list).slice(0, PER_CATEGORY),
-    });
-    byCat.delete(Number(cat.id));
-  }
-
-  for (const [id, list] of byCat) {
-    if (!list.length) continue;
-    sections.push({
-      id,
-      title: list[0].categoryName || "Categoria",
-      products: shuffle(list).slice(0, PER_CATEGORY),
-    });
-  }
-
-  if (semCategoria.length) {
-    sections.push({
-      id: "outros",
-      title: "Outros",
-      products: shuffle(semCategoria).slice(0, PER_CATEGORY),
-    });
-  }
-
-  return sections;
-}
-
 function ProductGrid({ products }) {
   return (
     <div className="home-product-grid">
@@ -140,6 +82,7 @@ function ProductGrid({ products }) {
           rating={c.rating}
           soldCount={c.soldCount}
           discountPercent={c.discountPercent || 0}
+          originalPrice={c.originalPrice}
           productId={c.productId}
           shopSlug={c.shopSlug}
         />
@@ -150,7 +93,6 @@ function ProductGrid({ products }) {
 
 export default function Home() {
   const location = useLocation();
-  const [sections, setSections] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [lojistas, setLojistas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -158,24 +100,19 @@ export default function Home() {
   const [activeQuery, setActiveQuery] = useState("");
 
   useEffect(() => {
-    if (window.location.hash === "#support-section") {
-      requestAnimationFrame(() => {
-        document
-          .getElementById("support-section")
-          ?.scrollIntoView({ behavior: "smooth" });
-      });
-    }
-  }, [location.hash]);
+    if (loading || window.location.hash !== "#support-section") return;
+    const support = document.getElementById("support-section");
+    if (support) rolarAteSuporte(support);
+  }, [location.hash, loading]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
       try {
-        const [produtos, lojistaList, categorias] = await Promise.all([
+        const [produtos, lojistaList] = await Promise.all([
           listProdutosApi(),
           listLojistasApi(),
-          listCategorias().catch(() => []),
         ]);
 
         const cards = (produtos || [])
@@ -183,16 +120,12 @@ export default function Home() {
           .map(mapProdutoCard)
           .filter((c) => c.shopSlug && c.productId);
 
-        const nextSections = buildCategorySections(produtos, categorias);
-
         if (!cancelled) {
-          setAllProducts(cards);
+          setAllProducts(shuffle(cards));
           setLojistas(lojistaList || []);
-          setSections(nextSections);
         }
       } catch {
         if (!cancelled) {
-          setSections([]);
           setAllProducts([]);
           setLojistas([]);
         }
@@ -239,7 +172,7 @@ export default function Home() {
     setActiveQuery("");
   }
 
-  const totalProducts = sections.reduce((n, s) => n + s.products.length, 0);
+  const totalProducts = allProducts.length;
   const searching = Boolean(searchResults);
 
   return (
@@ -348,12 +281,7 @@ export default function Home() {
                 </p>
               ) : null}
 
-              {sections.map((section) => (
-                <section key={section.id} className="home-category-block">
-                  <h3 className="home-category-title">{section.title}</h3>
-                  <ProductGrid products={section.products} />
-                </section>
-              ))}
+              {totalProducts > 0 ? <ProductGrid products={allProducts} /> : null}
             </>
           )}
         </div>

@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Consultas da tabela notificacoes.
+ */
 public interface NotificacoesRepository extends JpaRepository<Notificacoes, Integer> {
     List<Notificacoes> findByTituloOrMensagem(String titulo, String mensagem);
     List<Notificacoes> findByTitulo(String titulo);

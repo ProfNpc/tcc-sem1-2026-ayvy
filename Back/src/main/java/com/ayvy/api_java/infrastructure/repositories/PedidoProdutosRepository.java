@@ -7,8 +7,14 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/**
+ * Consultas dos itens de pedido: por pedido, por loja (relatório do estoque), pelo código LU-1 e o
+ * maior número de pedido da loja (para gerar o próximo código).
+ */
 public interface PedidoProdutosRepository extends JpaRepository<PedidoProdutos, Integer > {
     List<PedidoProdutos> findByPedidoId(Integer pedidoId);
+
+    List<PedidoProdutos> findByLojistaId(Integer lojistaId);
 
     List<PedidoProdutos> findByNumeroPedidoLojaIsNullOrderByPedidoIdAsc();
 

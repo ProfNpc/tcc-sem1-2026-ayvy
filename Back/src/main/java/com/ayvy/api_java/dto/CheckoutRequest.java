@@ -5,6 +5,10 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * Corpo do POST /pedidos/checkout: usuarioId, observação, endereço de entrega e itens (produto,
+ * quantidade, cor, tamanho). O preço NÃO vem do front: o PedidoService usa o precoFinal do banco.
+ */
 @Getter
 @Setter
 public class CheckoutRequest {

@@ -6,6 +6,9 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Tabela enderecos: endereços do usuário. O principal do lojista é a origem do cálculo de frete.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

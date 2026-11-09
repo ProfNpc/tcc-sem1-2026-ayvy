@@ -1,3 +1,7 @@
+/**
+ * Formulário de cadastro (cliente ou lojista) usado em pages/Cadastro. Só coleta os dados;
+ * quem chama a API é a página (cadastro em 2 passos: POST /usuarios e depois /clientes ou /lojistas).
+ */
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import useCepLookup from "../../hooks/useCepLookup";

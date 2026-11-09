@@ -1,3 +1,6 @@
+/**
+ * Banner grande do topo da home (imagem AYVY) com a busca por cima (children).
+ */
 import "./style.css";
 
 /** Banner principal da home (hero + área de conteúdo sobreposto). */

@@ -1,3 +1,7 @@
+/**
+ * Transforma a lista de GET /categorias em árvore (principal → subcategorias, por ordem).
+ * Usado em: pages/Categorias, CategoriaPicker, CategoriaOptions.
+ */
 function porOrdem(a, b) {
   return (a.ordem ?? 999) - (b.ordem ?? 999) || String(a.nome).localeCompare(String(b.nome), "pt-BR");
 }

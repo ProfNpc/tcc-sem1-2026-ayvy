@@ -1,3 +1,6 @@
+/**
+ * Versão antiga em src/. NÃO É USADO hoje (nenhum arquivo importa este). Fica só como referência/legado. O app usa api.js da raiz.
+ */
 import { API_URL } from '../config';
 
 // Função base: todas as chamadas à API passam por aqui.

@@ -1,7 +1,13 @@
+/**
+ * Menu do topo no computador: logo AYVY (volta ao início da home com subirParaInicio), links Sobre,
+ * Suporte AYVY (rola até o fim da home) e Categorias, e o menu sanduíche (gaveta) com os itens por papel:
+ * admin → Painel admin; lojista → Meu perfil, Minha loja, Meu estoque; cliente → Perfil; logado → Sair.
+ * No celular quem aparece é o NavbarMobile.
+ */
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import scrollToSupportSection from "../../utils/scrollToSupport";
+import scrollToSupportSection, { subirParaInicio } from "../../utils/scrollToSupport";
 import LogoutModal from "../LogoutModal";
 import NavCartButton from "../NavCartButton";
 import NavbarMobile from "../NavbarMobile";
@@ -29,13 +35,8 @@ export default function Navbar() {
             <nav className="gaveta-flutuante">
               <ul className="nav-links">
                 <li>
-                  <Link to="/">
+                  <Link to="/" onClick={subirParaInicio}>
                     <i className="fas fa-home" /> Início
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/categorias">
-                    <i className="fas fa-th-large" /> Categorias
                   </Link>
                 </li>
                 <li style={{ display: isAdmin ? "" : "none" }}>
@@ -51,6 +52,11 @@ export default function Navbar() {
                 <li style={{ display: isLojista ? "" : "none" }}>
                   <Link to={minhaLojaPath}>
                     <i className="fas fa-store" /> Minha loja
+                  </Link>
+                </li>
+                <li style={{ display: isLojista ? "" : "none" }}>
+                  <Link to="/meu-estoque">
+                    <i className="fas fa-boxes-stacked" /> Meu estoque
                   </Link>
                 </li>
                 <li style={{ display: isCliente && loggedIn ? "" : "none" }}>
@@ -76,7 +82,7 @@ export default function Navbar() {
             </nav>
           </div>
 
-          <Link className="logo-brand" to="/">
+          <Link className="logo-brand" to="/" onClick={subirParaInicio}>
             AYVY
           </Link>
 
@@ -93,15 +99,9 @@ export default function Navbar() {
           >
             Suporte AYVY
           </a>
-          <a
-            href="#"
-            className="nav-link-top"
-            onClick={(e) => {
-              e.preventDefault();
-            }}
-          >
-            Baixe o App
-          </a>
+          <Link to="/categorias" className="nav-link-top">
+            Categorias
+          </Link>
         </div>
 
         <div className="nav-right">

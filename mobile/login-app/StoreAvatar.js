@@ -1,3 +1,6 @@
+/**
+ * Foto/logo redonda da loja, com imagem padrão quando a loja não tem logo.
+ */
 import { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { resolveImageUrl } from './api';

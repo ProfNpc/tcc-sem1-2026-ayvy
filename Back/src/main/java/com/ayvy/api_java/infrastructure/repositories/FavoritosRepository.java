@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Consultas da tabela favoritos (por usuário, e usuário + produto).
+ */
 public interface FavoritosRepository extends JpaRepository<Favoritos, Integer> {
     List<Favoritos> findByUsuarioId(Integer usuarioId);
     Optional<Favoritos> findByUsuarioIdAndProdutoId(Integer usuarioId, Integer produtoId);

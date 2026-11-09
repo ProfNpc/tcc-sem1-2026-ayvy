@@ -6,6 +6,9 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Tabela favoritos: produto favoritado por um usuário (único por usuário + produto). Usada pelo site e pelo app.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

@@ -1,3 +1,6 @@
+/**
+ * Admin › Produtos: lista (GET /produtos), editar e excluir. Formulário em ./Form.jsx.
+ */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteProduto, listProdutos } from "../../../services/adminApi";

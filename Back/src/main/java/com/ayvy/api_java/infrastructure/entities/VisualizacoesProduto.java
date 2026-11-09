@@ -5,6 +5,9 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * Tabela visualizacoes_produtos: cada visualização de produto (ranking e "Escolhas para você").
+ */
 @Getter
 @Setter
 @AllArgsConstructor

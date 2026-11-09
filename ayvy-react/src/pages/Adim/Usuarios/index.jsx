@@ -1,3 +1,6 @@
+/**
+ * Admin › Usuários: lista (GET /usuarios), editar, desativar e excluir. Formulário em ./Form.jsx.
+ */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteUsuario, listUsuarios } from "../../../services/adminApi";

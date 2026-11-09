@@ -1,3 +1,6 @@
+/**
+ * Hook que injeta CSS legado de /public/assets/css só uma vez (telas de login, cadastro e esqueci a senha).
+ */
 import { useEffect } from "react";
 
 /**

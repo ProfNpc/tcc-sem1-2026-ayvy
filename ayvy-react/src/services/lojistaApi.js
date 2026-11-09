@@ -25,6 +25,7 @@ import {
   listTodosPedidos,
   registrarEnvioPedido,
 } from "./pedidosApi";
+import { precosDoProduto } from "./shopApi";
 import { resolveImageUrl } from "../utils/imageUrl";
 import { numeroPedidoLabel } from "../utils/pedidoNumero";
 import { formatBRL } from "../utils/cartHelpers";
@@ -84,13 +85,12 @@ export async function listProdutosDoLojista(lojistaId, statusFilter = "all") {
 
 export function mapApiProdutoToCard(p) {
   const img = resolveImageUrl(p.imagemPrincipalUrl) || "";
-  const priceNum = Number(p.preco) || 0;
   return {
     id: String(p.id),
     apiId: p.id,
     title: p.nome,
     name: p.nome,
-    price: formatBRL(priceNum),
+    ...precosDoProduto(p),
     href: img,
     img,
     images: img ? [img] : [],
@@ -105,6 +105,19 @@ export function mapApiProdutoToCard(p) {
 
 function cleanList(list) {
   return [...new Set((list || []).map((v) => String(v).trim()).filter(Boolean))];
+}
+
+/** Desconto do formulário (texto) → inteiro de 0 a 90, que o back aplica no preço cobrado. */
+function descontoDoForm(form) {
+  const n = Math.round(Number(String(form.discountPercent ?? "").replace(",", ".")));
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.min(90, n);
+}
+
+function categoriasExtrasDoForm(form, categoriaId) {
+  return [...new Set((form.extraCategoryIds || []).map(Number))]
+    .filter((id) => Number.isFinite(id) && id !== Number(categoriaId))
+    .map((id) => ({ id }));
 }
 
 async function uploadFotos(images) {
@@ -144,12 +157,14 @@ export async function salvarProdutoLojista({
     slug: `${slugBase}-${Date.now().toString(36)}`,
     descricao: String(form.description || form.descricao || "").trim() || null,
     preco,
+    descontoPercentual: descontoDoForm(form),
     estoque: Number(form.stock ?? form.estoque) || 0,
     imagemPrincipalUrl: caminhos[0] || null,
     cores: cleanList(form.colors),
     tamanhos: cleanList(form.sizes),
     status,
     lojista: { id: Number(lojistaId) },
+    categoriasExtras: categoriasExtrasDoForm(form, categoriaId),
   };
   if (categoriaId) payload.categoria = { id: Number(categoriaId) };
 
@@ -198,10 +213,12 @@ export async function carregarProdutoParaEdicao(produtoId) {
       title: produto.nome || "",
       description: produto.descricao || "",
       categoryId: produto.categoria?.id ? String(produto.categoria.id) : "",
-      price: Number.isFinite(preco) ? preco.toFixed(2).replace(".", ",") : "",
-      discountPercent: "",
+      price: Number.isFinite(preco)
+        ? preco.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : "",
+      discountPercent: produto.descontoPercentual ? String(produto.descontoPercentual) : "",
       stock: produto.estoque != null ? String(produto.estoque) : "",
-      sku: "",
+      extraCategoryIds: (produto.categoriasExtras || []).map((c) => String(c.id)),
       colors: Array.isArray(produto.cores) ? produto.cores : [],
       sizes: Array.isArray(produto.tamanhos) ? produto.tamanhos : [],
     },
@@ -253,10 +270,12 @@ export async function atualizarProdutoLojista({
     nome,
     descricao: String(form.description || "").trim(),
     preco,
+    descontoPercentual: descontoDoForm(form),
     estoque: Number(form.stock) || 0,
     imagemPrincipalUrl: caminhos[0],
     cores: cleanList(form.colors),
     tamanhos: cleanList(form.sizes),
+    categoriasExtras: categoriasExtrasDoForm(form, categoriaId),
   };
   if (categoriaId) payload.categoria = { id: Number(categoriaId) };
 

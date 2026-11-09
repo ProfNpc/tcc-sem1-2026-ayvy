@@ -29,6 +29,7 @@ import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Loja from "../pages/Loja";
 import LojaProdutoNovo from "../pages/Loja/ProdutoNovo";
+import MeuEstoque from "../pages/MeuEstoque";
 import MeusPedidos from "../pages/MeusPedidos";
 import Notificacoes from "../pages/Notificacoes";
 import PedidoSucesso from "../pages/PedidoSucesso";
@@ -74,6 +75,14 @@ export default function AppRoutes() {
             <RequireAuth>
               <Notificacoes />
             </RequireAuth>
+          }
+        />
+        <Route
+          path="meu-estoque"
+          element={
+            <RequireRole role={ROLES.LOJISTA}>
+              <MeuEstoque />
+            </RequireRole>
           }
         />
         <Route path="carrinho" element={<Carrinho />} />

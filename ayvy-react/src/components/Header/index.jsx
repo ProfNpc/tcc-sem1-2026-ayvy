@@ -1,3 +1,6 @@
+/**
+ * Cabeçalho do site: só embrulha a Navbar (ponto único para evoluir o topo).
+ */
 import Navbar from "../Navbar";
 import "./style.css";
 

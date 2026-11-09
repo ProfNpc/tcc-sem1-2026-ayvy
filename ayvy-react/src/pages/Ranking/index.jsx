@@ -1,3 +1,6 @@
+/**
+ * Ranking das lojas (/ranking) calculado com produtos e lojas da API (shopApi).
+ */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { listLojistasApi, listProdutosApi } from "../../services/shopApi";

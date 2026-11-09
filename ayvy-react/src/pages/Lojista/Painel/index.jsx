@@ -1,3 +1,6 @@
+/**
+ * NÃO É USADO hoje (nenhum arquivo importa este). Fica só como referência/legado. (a rota /lojista redireciona para a home).
+ */
 import { Link } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import "../style.css";

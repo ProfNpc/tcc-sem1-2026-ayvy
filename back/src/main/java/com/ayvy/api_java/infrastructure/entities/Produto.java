@@ -10,10 +10,18 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+/**
+ * Tabela produtos: nome, preço, desconto (%), estoque, cores, tamanhos, status, categoria principal e
+ * categoriasExtras (tabela produto_categorias_extras). getPrecoFinal() = preço com desconto (vai no JSON).
+ * Atenção: descontoPercentual e categoriasExtras não têm valor padrão de propósito — num PUT parcial
+ * (ex.: publicar envia só o status) eles chegam nulos e não são apagados.
+ */
 @Getter
 @Setter
 @AllArgsConstructor
@@ -35,6 +43,13 @@ public class Produto {
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
 
+    /** Categorias a mais em que o produto também aparece (ex.: tênis em Calçados e em Streetwear). */
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "produto_categorias_extras",
+            joinColumns = @JoinColumn(name = "produto_id"),
+            inverseJoinColumns = @JoinColumn(name = "categoria_id"))
+    private Set<Categoria> categoriasExtras;
+
 //    @OneToOne
 //    @JoinColumn(name = "favoritos_id", nullable = false, unique = true)
 //    private Favoritos favoritos;
@@ -50,6 +65,14 @@ public class Produto {
 
     @Column(name = "preco", nullable = false, precision = 12, scale = 2)
     private BigDecimal preco;
+
+    /** Desconto em % (0 a 90). Vale na vitrine e no valor cobrado no checkout. */
+    @Column(name = "desconto_percentual")
+    private Integer descontoPercentual;
+
+    @Builder.Default
+    @Column(name = "estoque", nullable = false)
+    private Integer estoque = 0;
 
     /** Caminho relativo em back/uploads, ex.: /uploads/produtos/uuid.jpg */
     @JsonAlias("caminho")
@@ -79,4 +102,15 @@ public class Produto {
     @OneToMany(mappedBy = "produto")
     @Builder.Default
     private List<ProdutoVariacao> variacoes = new ArrayList<>();
+
+    /** Preço com o desconto aplicado (vai no JSON como "precoFinal"); é o valor cobrado no checkout. */
+    @Transient
+    public BigDecimal getPrecoFinal() {
+        if (preco == null) return null;
+        int desconto = descontoPercentual == null ? 0 : Math.max(0, Math.min(90, descontoPercentual));
+        if (desconto == 0) return preco;
+        return preco.multiply(BigDecimal.valueOf(100 - desconto))
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+    }
+
 }

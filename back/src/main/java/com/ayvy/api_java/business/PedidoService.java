@@ -45,9 +45,16 @@ public class PedidoService {
     private final NotificacoesRepository notificacoesRepository;
     private final LojistaRepository lojistaRepository;
     private final SiglaLojaService siglaLojaService;
+<<<<<<< HEAD
     private final ProdutoVariacaoRepository produtoVariacaoRepository;
 
     public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository, HistoricoComprasRepository historicoComprasRepository, FreteService freteService, NotificacoesRepository notificacoesRepository, LojistaRepository lojistaRepository, SiglaLojaService siglaLojaService, ProdutoVariacaoRepository produtoVariacaoRepository) {
+=======
+    private final EstoqueService estoqueService;
+
+    public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository, HistoricoComprasRepository historicoComprasRepository, FreteService freteService, NotificacoesRepository notificacoesRepository, LojistaRepository lojistaRepository, SiglaLojaService siglaLojaService, EstoqueService estoqueService) {
+        this.estoqueService = estoqueService;
+>>>>>>> 6adebdfa50eb7d11b83330569f1ba8f3dc956b4f
         this.notificacoesRepository = notificacoesRepository;
         this.lojistaRepository = lojistaRepository;
         this.siglaLojaService = siglaLojaService;
@@ -112,11 +119,25 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
     }
 
     // UPDATE DE STATUS
+    @Transactional
     public Pedido atualizarStatus(Integer id, StatusPedido novoStatus, Integer actorUsuarioId) {
         Pedido pedido = buscarPedidoPorId(id);
 
         if (novoStatus == StatusPedido.entregue) {
             pedido.setEntregueEm(LocalDateTime.now());
+        }
+
+        StatusPedido anterior = pedido.getStatus();
+        boolean estavaDevolvido = anterior == StatusPedido.cancelado || anterior == StatusPedido.reembolsado;
+        boolean ficaDevolvido = novoStatus == StatusPedido.cancelado || novoStatus == StatusPedido.reembolsado;
+        if (ficaDevolvido && !estavaDevolvido) {
+            for (PedidoProdutos item : pedidoProdutosRepository.findByPedidoId(pedido.getId())) {
+                estoqueService.devolver(item.getProduto(), item.getTamanho(), item.getQuantidade());
+            }
+        } else if (estavaDevolvido && !ficaDevolvido) {
+            for (PedidoProdutos item : pedidoProdutosRepository.findByPedidoId(pedido.getId())) {
+                estoqueService.baixarParaVenda(item.getProduto(), item.getTamanho(), item.getQuantidade());
+            }
         }
 
         pedido.setStatus(novoStatus);
@@ -350,6 +371,7 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.NOT_FOUND, "Variação do produto não encontrada"));
 
+<<<<<<< HEAD
             if (!variacao.getProduto().getId().equals(produto.getId())) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "A variação selecionada não pertence ao produto informado");
@@ -378,6 +400,12 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
             BigDecimal precoUnit = produto.getPreco();
             subtotal = subtotal.add(
                     precoUnit.multiply(BigDecimal.valueOf(itemReq.getQuantidade())));
+=======
+            estoqueService.baixarParaVenda(produto, itemReq.getTamanho(), itemReq.getQuantidade());
+
+            BigDecimal precoUnit = produto.getPrecoFinal();
+            subtotal = subtotal.add(precoUnit.multiply(BigDecimal.valueOf(itemReq.getQuantidade())));
+>>>>>>> 6adebdfa50eb7d11b83330569f1ba8f3dc956b4f
 
             itens.add(PedidoProdutos.builder()
                     .produto(produto)

@@ -5,6 +5,9 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+/**
+ * Corpo do PUT /pedidos/{id}/envio: local da postagem, transportadora, código de rastreio, previsão e observação.
+ */
 @Getter
 @Setter
 public class EnvioRequest {

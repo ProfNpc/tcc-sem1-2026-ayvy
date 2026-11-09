@@ -10,6 +10,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Consultas da tabela produtos (por loja, slug, categoria principal e categorias extras).
+ */
 public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
 
     List<Produto> findByLojistaId(Integer id);
@@ -19,5 +22,7 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
     boolean existsByCategoriaId(Integer categoriaId);
 
     List<Produto> findByCategoriaId(Integer categoriaId);
+
+    List<Produto> findByCategoriasExtrasId(Integer categoriaId);
 
 }

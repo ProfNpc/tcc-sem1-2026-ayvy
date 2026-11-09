@@ -1,3 +1,8 @@
+/**
+ * Formulário "Marcar como despachado" do lojista: mostra cliente, pagamento, destino e itens e pede o
+ * local onde o pacote foi deixado, o serviço (SEDEX, PAC...) e o código de rastreio.
+ * Ao confirmar, a Loja chama lojistaApi.despacharPedidoLojista → PUT /pedidos/{id}/envio.
+ */
 import { useEffect, useState } from "react";
 import { formatBRL } from "../../utils/cartHelpers";
 

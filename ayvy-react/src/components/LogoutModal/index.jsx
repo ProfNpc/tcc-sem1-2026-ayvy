@@ -1,3 +1,6 @@
+/**
+ * Janela "Deseja sair?" aberta pelo item Sair do menu (Navbar/NavbarMobile).
+ */
 import "./style.css";
 
 export default function LogoutModal({ open, onClose, onConfirm }) {

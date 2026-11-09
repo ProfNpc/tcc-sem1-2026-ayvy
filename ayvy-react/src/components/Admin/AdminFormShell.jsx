@@ -1,3 +1,7 @@
+/**
+ * Moldura padrão dos formulários do painel admin (título, voltar, erro e botões de ação).
+ * Usado nos formulários do admin (pages/Adim/Usuarios, Lojistas, Clientes e Produtos → Form.jsx).
+ */
 import { Link } from "react-router-dom";
 
 export default function AdminFormShell({ title, subtitle, backTo, error, children, actions }) {

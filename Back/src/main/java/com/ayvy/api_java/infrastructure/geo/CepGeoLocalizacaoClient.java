@@ -6,6 +6,10 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.databind.JsonNode;
 
+/**
+ * Busca latitude/longitude de um CEP na BrasilAPI (https://brasilapi.com.br/api/cep/v2).
+ * Atenção: precisa de internet; se falhar, o frete não consegue calcular a distância.
+ */
 @Component
 public class CepGeoLocalizacaoClient {
 

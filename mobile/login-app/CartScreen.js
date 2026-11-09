@@ -1,6 +1,10 @@
+/**
+ * Tela do carrinho do app: itens (com cor/tamanho escolhidos no site), quantidades, subtotal e
+ * "Finalizar compra no site" (o pagamento só existe no site; o carrinho já está lá pela conta).
+ */
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { resolveImageUrl } from './api';
-import { useCart } from './CartContext';
+import { unitPrice, useCart } from './CartContext';
 import ScreenHeader from './ScreenHeader';
 import { formatPrice } from './format';
 import { CHECKOUT_NOTICE, buildCartUrl, openUrl } from './links';
@@ -8,9 +12,10 @@ import { confirmAction } from './notify';
 import { colors } from './theme';
 
 function CartItemRow({ item, onChangeQuantity, onRemove }) {
-  const { product, quantity } = item;
+  const { product, quantity, cor, tamanho } = item;
   const image = resolveImageUrl(product.imagemPrincipalUrl);
-  const unitPrice = Number(product.preco || 0);
+  const price = unitPrice(product);
+  const variant = [cor, tamanho].filter(Boolean).join(' · ');
 
   return (
     <View style={styles.row}>
@@ -24,19 +29,20 @@ function CartItemRow({ item, onChangeQuantity, onRemove }) {
       <View style={styles.rowInfo}>
         <Text style={styles.rowName} numberOfLines={2}>{product.nome || 'Produto'}</Text>
         <Text style={styles.rowStore} numberOfLines={1}>{product.lojista?.nomeLoja || 'AYVY'}</Text>
-        <Text style={styles.rowPrice}>{formatPrice(unitPrice * quantity)}</Text>
+        {variant ? <Text style={styles.rowVariant}>{variant}</Text> : null}
+        <Text style={styles.rowPrice}>{formatPrice(price * quantity)}</Text>
 
         <View style={styles.controls}>
           <View style={styles.stepper}>
-            <Pressable style={styles.stepButton} onPress={() => onChangeQuantity(product.id, quantity - 1)} hitSlop={6} accessibilityLabel="Diminuir quantidade">
+            <Pressable style={styles.stepButton} onPress={() => onChangeQuantity(item.key, quantity - 1)} hitSlop={6} accessibilityLabel="Diminuir quantidade">
               <Text style={styles.stepText}>−</Text>
             </Pressable>
             <Text style={styles.quantity}>{quantity}</Text>
-            <Pressable style={styles.stepButton} onPress={() => onChangeQuantity(product.id, quantity + 1)} hitSlop={6} accessibilityLabel="Aumentar quantidade">
+            <Pressable style={styles.stepButton} onPress={() => onChangeQuantity(item.key, quantity + 1)} hitSlop={6} accessibilityLabel="Aumentar quantidade">
               <Text style={styles.stepText}>+</Text>
             </Pressable>
           </View>
-          <Pressable onPress={() => onRemove(product.id)} hitSlop={8}>
+          <Pressable onPress={() => onRemove(item.key)} hitSlop={8}>
             <Text style={styles.remove}>Remover</Text>
           </Pressable>
         </View>
@@ -77,7 +83,7 @@ export default function CartScreen({ onGoHome }) {
         <>
           <FlatList
             data={items}
-            keyExtractor={(item) => String(item.product.id)}
+            keyExtractor={(item) => item.key}
             renderItem={({ item }) => (
               <CartItemRow item={item} onChangeQuantity={setQuantity} onRemove={removeItem} />
             )}
@@ -88,7 +94,10 @@ export default function CartScreen({ onGoHome }) {
               <Text style={styles.totalLabel}>Subtotal</Text>
               <Text style={styles.totalValue}>{formatPrice(totalPrice)}</Text>
             </View>
-            <Text style={styles.footnote}>O frete é calculado no site, de acordo com o seu CEP.</Text>
+            <Text style={styles.footnote}>
+              O carrinho fica salvo na sua conta: entre no site com o mesmo e-mail para ver os mesmos itens. O
+              frete é calculado no site, de acordo com o seu CEP.
+            </Text>
             <Pressable style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]} onPress={checkoutOnSite}>
               <Text style={styles.primaryButtonText}>Finalizar compra no site</Text>
             </Pressable>
@@ -120,6 +129,7 @@ const styles = StyleSheet.create({
   rowInfo: { flex: 1, marginLeft: 12 },
   rowName: { color: colors.text, fontSize: 14, fontWeight: '600' },
   rowStore: { marginTop: 2, color: colors.muted, fontSize: 11 },
+  rowVariant: { marginTop: 2, color: colors.text, fontSize: 11, fontWeight: '600' },
   rowPrice: { marginTop: 6, color: colors.primaryDark, fontSize: 15, fontWeight: '800' },
   controls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 },
   stepper: {

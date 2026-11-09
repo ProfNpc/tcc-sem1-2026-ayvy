@@ -1,5 +1,8 @@
 package com.ayvy.api_java.infrastructure.geo;
 
+/**
+ * Distância em km entre duas coordenadas (fórmula de Haversine). Usada no frete.
+ */
 public final class CalculadoraDistancia {
 
     // FÓRMULA DE HAVERSINE

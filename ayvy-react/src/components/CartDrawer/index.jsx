@@ -1,3 +1,7 @@
+/**
+ * Carrinho lateral (abre pelo ícone do carrinho). Lê e altera o carrinho pelo CartContext;
+ * "Finalizar" leva para /carrinho.
+ */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";

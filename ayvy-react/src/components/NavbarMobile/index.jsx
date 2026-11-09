@@ -1,6 +1,10 @@
+/**
+ * Menu do celular (sanduíche que abre uma gaveta). Mesmos itens da Navbar e também Categorias,
+ * porque no celular os links do topo (Sobre/Suporte/Categorias) não aparecem.
+ */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import scrollToSupportSection from "../../utils/scrollToSupport";
+import scrollToSupportSection, { subirParaInicio } from "../../utils/scrollToSupport";
 import NavCartButton from "../NavCartButton";
 import "./style.css";
 
@@ -53,7 +57,13 @@ export default function NavbarMobile({
 
             <ul className="nav-links">
               <li>
-                <Link to="/" onClick={() => setMobileOpen(false)}>
+                <Link
+                  to="/"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    subirParaInicio();
+                  }}
+                >
                   <i className="fas fa-home" /> Início
                 </Link>
               </li>
@@ -70,6 +80,11 @@ export default function NavbarMobile({
               <li style={{ display: isLojista ? "" : "none" }}>
                 <Link to={minhaLojaPath} onClick={() => setMobileOpen(false)}>
                   <i className="fas fa-store" /> Minha loja
+                </Link>
+              </li>
+              <li style={{ display: isLojista ? "" : "none" }}>
+                <Link to="/meu-estoque" onClick={() => setMobileOpen(false)}>
+                  <i className="fas fa-boxes-stacked" /> Meu estoque
                 </Link>
               </li>
               <li style={{ display: isCliente && loggedIn ? "" : "none" }}>
@@ -133,7 +148,7 @@ export default function NavbarMobile({
           </nav>
         </div>
 
-        <Link className="logo-brand" to="/">
+        <Link className="logo-brand" to="/" onClick={subirParaInicio}>
           AYVY
         </Link>
       </div>

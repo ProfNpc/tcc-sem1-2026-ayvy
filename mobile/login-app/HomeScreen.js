@@ -1,5 +1,11 @@
+/**
+ * Início do app: lojas, produtos, busca, filtros (categoria, preço, estoque, só favoritos) e perfil da loja.
+ * Favoritos: GET/POST/DELETE /favoritos (os mesmos do site); recarrega ao voltar para o app e a cada 20 s.
+ * "Adicionar ao carrinho" usa o CartContext (carrinho salvo na conta).
+ */
 import { useEffect, useMemo, useState } from 'react';
 import {
+  AppState,
   ActivityIndicator,
   BackHandler,
   Platform,
@@ -201,6 +207,32 @@ export default function HomeScreen({ user }) {
       cancelled = true;
     };
   }, [reloadKey, user.id]);
+
+  // Favoritos ficam na conta (API /favoritos), os mesmos do site: ao voltar para o app (e a cada 20 s)
+  // buscamos de novo para mostrar o que foi favoritado ou desfavoritado no site.
+  useEffect(() => {
+    function refreshFavorites() {
+      listFavorites(user.id)
+        .then((favoriteList) =>
+          setFavoriteIds(
+            (Array.isArray(favoriteList) ? favoriteList : [])
+              .map((favorite) => favorite?.produto?.id ?? favorite?.produtoId)
+              .filter((id) => id != null),
+          ),
+        )
+        .catch(() => {});
+    }
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') refreshFavorites();
+    });
+    const interval = setInterval(() => {
+      if (AppState.currentState === 'active') refreshFavorites();
+    }, 20000);
+    return () => {
+      subscription.remove();
+      clearInterval(interval);
+    };
+  }, [user.id]);
 
   // Botão "voltar" do Android: fecha o perfil da loja antes de qualquer outra coisa.
   useEffect(() => {

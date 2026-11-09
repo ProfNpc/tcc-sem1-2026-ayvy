@@ -1,3 +1,6 @@
+/**
+ * Conta do cliente: dados, atalhos para o site (editar perfil) e Sair.
+ */
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { WEB_BASE_URL, resolveImageUrl } from './api';
 import ScreenHeader from './ScreenHeader';

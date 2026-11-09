@@ -96,7 +96,9 @@ public class CategoriaArvoreBootstrap implements ApplicationRunner {
                     new Sub("Camisetas oversized", "camisetas-oversized"),
                     new Sub("Moletons e hoodies", "moletons-hoodies"),
                     new Sub("Calças cargo", "calcas-cargo"),
-                    new Sub("Jaquetas e corta-ventos", "jaquetas-corta-ventos"))),
+                    new Sub("Jaquetas e corta-ventos", "jaquetas-corta-ventos"),
+                    new Sub("Tênis streetwear", "tenis-streetwear"),
+                    new Sub("Bonés e acessórios streetwear", "acessorios-streetwear"))),
             new Principal("Calçados", "calcados", "fa-shoe-prints", List.of(
                     new Sub("Tênis", "tenis"),
                     new Sub("Botas", "botas"),
@@ -210,6 +212,11 @@ public class CategoriaArvoreBootstrap implements ApplicationRunner {
                 categoriaRepository.findBySlug(novaSlug).ifPresent(nova -> {
                     for (Produto produto : produtoRepository.findByCategoriaId(antiga.getId())) {
                         produto.setCategoria(nova);
+                        produtoRepository.save(produto);
+                    }
+                    for (Produto produto : produtoRepository.findByCategoriasExtrasId(antiga.getId())) {
+                        produto.getCategoriasExtras().removeIf(c -> c.getId().equals(antiga.getId()));
+                        produto.getCategoriasExtras().add(nova);
                         produtoRepository.save(produto);
                     }
                     categoriaRepository.delete(antiga);

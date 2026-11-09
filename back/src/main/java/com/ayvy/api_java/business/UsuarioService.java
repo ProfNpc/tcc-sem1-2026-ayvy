@@ -3,6 +3,7 @@ package com.ayvy.api_java.business;
 import com.ayvy.api_java.infrastructure.entities.Usuario;
 import com.ayvy.api_java.infrastructure.enums.PapelUsuario;
 import com.ayvy.api_java.infrastructure.enums.StatusUsuario;
+import com.ayvy.api_java.infrastructure.repositories.CarrinhoItemRepository;
 import com.ayvy.api_java.infrastructure.repositories.ClienteRepository;
 import com.ayvy.api_java.infrastructure.repositories.LojistaRepository;
 import com.ayvy.api_java.infrastructure.repositories.RedefinicaoSenhaRepository;
@@ -27,6 +28,7 @@ public class UsuarioService {
     private final UploadService uploadService;
     private final PasswordEncoder passwordEncoder;
     private final RedefinicaoSenhaRepository redefinicaoSenhaRepository;
+    private final CarrinhoItemRepository carrinhoItemRepository;
 
     public UsuarioService(
             UsuarioRepository repository,
@@ -34,7 +36,9 @@ public class UsuarioService {
             LojistaRepository lojistaRepository,
             UploadService uploadService,
             PasswordEncoder passwordEncoder,
-            RedefinicaoSenhaRepository redefinicaoSenhaRepository) {
+            RedefinicaoSenhaRepository redefinicaoSenhaRepository,
+            CarrinhoItemRepository carrinhoItemRepository) {
+        this.carrinhoItemRepository = carrinhoItemRepository;
         this.repository = repository;
         this.clienteRepository = clienteRepository;
         this.lojistaRepository = lojistaRepository;
@@ -74,6 +78,7 @@ public class UsuarioService {
     public void deletarUsuario(Integer id) {
         Usuario usuario = buscarUsuarioPorId(id);
         redefinicaoSenhaRepository.deleteAll(redefinicaoSenhaRepository.findByUsuarioId(id));
+        carrinhoItemRepository.deleteAll(carrinhoItemRepository.findByUsuarioIdOrderByIdAsc(id));
         repository.delete(usuario);
     }
 

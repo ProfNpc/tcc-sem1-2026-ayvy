@@ -1,3 +1,6 @@
+/**
+ * Perfil da loja dentro do app: produtos da loja (favoritos e carrinho vêm da HomeScreen por props).
+ */
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

@@ -1,3 +1,6 @@
+/**
+ * Conteúdo fixo da home: logos do carrossel de marcas (HOME_BRANDS) e cards de perfil.
+ */
 export const HOME_BRANDS = [
   "RAFAELE FASHION",
   "LIVRE STORE",

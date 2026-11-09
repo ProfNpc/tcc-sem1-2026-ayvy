@@ -5,6 +5,9 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * Corpo do POST /frete/calcular: CEP de destino e itens.
+ */
 @Getter
 @Setter
 public class FreteRequest {

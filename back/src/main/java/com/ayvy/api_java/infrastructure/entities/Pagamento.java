@@ -8,6 +8,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Tabela pagamentos: TIPO de pagamento, status e valor do pedido (sem dados de cartão).
+ */
 @Getter
 @Setter
 @AllArgsConstructor

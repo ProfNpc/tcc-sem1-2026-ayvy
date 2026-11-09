@@ -4,6 +4,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { listProdutosApi } from "../../services/shopApi";
 import { linhaPrecisaOpcoes, montarImportacao, parseItensParam } from "../../utils/cartImport";
@@ -61,6 +62,7 @@ function recommendProducts(shops, cart, limit = 5) {
 
 export default function Carrinho() {
   const navigate = useNavigate();
+  const { loggedIn } = useAuth();
   const [searchParams] = useSearchParams();
   const itensParam = searchParams.get("itens");
   const importadoRef = useRef(null);
@@ -129,8 +131,8 @@ export default function Carrinho() {
     (async () => {
       try {
         const produtos = await listProdutosApi();
-        const { linhas, avisos, adicionados } = montarImportacao(itens, produtos, cart);
-        if (linhas.length > 0) importLines(linhas);
+        const { linhas, avisos, adicionados } = montarImportacao(itens, produtos, loggedIn ? [] : cart);
+        if (linhas.length > 0) importLines(linhas, { manterMaior: loggedIn });
         const precisaOpcoes = linhas.some(linhaPrecisaOpcoes);
         setImportacao({
           status: "pronto",

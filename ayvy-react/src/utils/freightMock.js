@@ -1,3 +1,6 @@
+/**
+ * NÃO É USADO hoje (nenhum arquivo importa este). Fica só como referência/legado. O frete real vem de POST /frete/calcular.
+ */
 import { formatBRL } from "./cartHelpers";
 
 /**

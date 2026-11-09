@@ -1,3 +1,6 @@
+/**
+ * Histórico de pedidos do cliente: GET /pedidos?usuarioId, itens e linha do tempo (/historico).
+ */
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,

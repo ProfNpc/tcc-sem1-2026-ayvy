@@ -1,3 +1,6 @@
+/**
+ * Cópia duplicada de StoreScreen.js. NÃO É USADO hoje (nenhum arquivo importa este). Fica só como referência/legado.
+ */
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

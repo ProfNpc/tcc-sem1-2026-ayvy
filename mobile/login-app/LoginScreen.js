@@ -1,3 +1,6 @@
+/**
+ * Login do app (só contas de cliente ativas): authenticateClient em api.js → POST /usuarios/login.
+ */
 import { useState } from 'react';
 import {
   ActivityIndicator,
