@@ -14,8 +14,8 @@ import java.nio.file.Files;
 import java.util.List;
 
 /**
- * Regras de produto: criar, atualizar (status, categoria, cores, tamanhos, estoque) e galeria de imagens.
- * Chamado por ProdutoController. O estoque é baixado no checkout (PedidoService).
+ * Regras de produto: criar, atualizar (status, categoria) e galeria de imagens.
+ * Chamado por ProdutoController. O estoque, cores e tamanhos são controlados pelas 'ProdutoVariacoes'.
  */
 @Service
 public class ProdutoService {
@@ -44,9 +44,6 @@ public class ProdutoService {
     }
 
     private void aplicarDefaults(Produto produto) {
-        if (produto.getEstoque() == null) {
-            produto.setEstoque(0);
-        }
         if (produto.getVisualizacoesTotal() == null) {
             produto.setVisualizacoesTotal(0);
         }
@@ -88,9 +85,6 @@ public class ProdutoService {
             validarCaminhoImagem(produto.getImagemPrincipalUrl());
             produtoEntity.setImagemPrincipalUrl(produto.getImagemPrincipalUrl());
         }
-        if (produto.getEstoque() != null) {
-            produtoEntity.setEstoque(produto.getEstoque());
-        }
         if (produto.getSlug() != null) {
             produtoEntity.setSlug(produto.getSlug());
         }
@@ -99,12 +93,6 @@ public class ProdutoService {
         }
         if (produto.getCategoria() != null) {
             produtoEntity.setCategoria(produto.getCategoria());
-        }
-        if (produto.getCores() != null) {
-            produtoEntity.setCores(produto.getCores());
-        }
-        if (produto.getTamanhos() != null) {
-            produtoEntity.setTamanhos(produto.getTamanhos());
         }
 
         return repository.saveAndFlush(produtoEntity);

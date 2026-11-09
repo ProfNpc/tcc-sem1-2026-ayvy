@@ -45,8 +45,9 @@ public class PedidoService {
     private final NotificacoesRepository notificacoesRepository;
     private final LojistaRepository lojistaRepository;
     private final SiglaLojaService siglaLojaService;
+    private final ProdutoVariacaoRepository produtoVariacaoRepository;
 
-    public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository, HistoricoComprasRepository historicoComprasRepository, FreteService freteService, NotificacoesRepository notificacoesRepository, LojistaRepository lojistaRepository, SiglaLojaService siglaLojaService) {
+    public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository, HistoricoComprasRepository historicoComprasRepository, FreteService freteService, NotificacoesRepository notificacoesRepository, LojistaRepository lojistaRepository, SiglaLojaService siglaLojaService, ProdutoVariacaoRepository produtoVariacaoRepository) {
         this.notificacoesRepository = notificacoesRepository;
         this.lojistaRepository = lojistaRepository;
         this.siglaLojaService = siglaLojaService;
@@ -57,6 +58,7 @@ public class PedidoService {
         this.usuarioRepository = usuarioRepository;
         this.historicoComprasRepository = historicoComprasRepository;
         this.freteService = freteService;
+        this.produtoVariacaoRepository = produtoVariacaoRepository;
     }
 
 
@@ -328,37 +330,72 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
         Usuario usuario = usuarioRepository.findById(request.getUsuarioId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario não encontrado"));
 
+        if (request.getItens() == null || request.getItens().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "O carrinho está vazio");
+        }
+
         BigDecimal subtotal = BigDecimal.ZERO;
         List<PedidoProdutos> itens = new ArrayList<>();
 
         for (var itemReq : request.getItens()) {
             Produto produto = produtoRepository.findById(itemReq.getProdutoId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
                             "Produto " + itemReq.getProdutoId() + " não encontrado"));
 
-            validarOpcaoSelecionada(itemReq.getTamanho(), produto.getTamanhos(), "tamanho", produto);
-            validarOpcaoSelecionada(itemReq.getCor(), produto.getCores(), "cor", produto);
+            //Para evitar compras simultâneas
+            ProdutoVariacao variacao = produtoVariacaoRepository
+                    .buscarPorIdComBloqueio(itemReq.getProdutoVariacaoId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "Variação do produto não encontrada"));
 
-            if (produto.getEstoque() < itemReq.getQuantidade()) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Estoque insuficiente para " + produto.getNome());
+            if (!variacao.getProduto().getId().equals(produto.getId())) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "A variação selecionada não pertence ao produto informado");
+            }
+            //Verifica se a variação está ativa
+            if (!variacao.isAtivo()){
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "A variação selecionada não está disponível");
             }
 
-            produto.setEstoque(produto.getEstoque() - itemReq.getQuantidade());
-            produtoRepository.save(produto);
+            if (variacao.getEstoque() < itemReq.getQuantidade()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Estoque insuficiente para " + produto.getNome()
+                                                    + " (" + variacao.getTamanho()
+                                                    + ", " + variacao.getCor() + ")");
+            }
+
+            variacao.setEstoque(variacao.getEstoque() - itemReq.getQuantidade());
+            produtoVariacaoRepository.save(variacao);
+
+            if (itemReq.getProdutoId() == null || itemReq.getProdutoVariacaoId() == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Informe o produto e a variação selecionada");
+            }
 
             BigDecimal precoUnit = produto.getPreco();
-            subtotal = subtotal.add(precoUnit.multiply(BigDecimal.valueOf(itemReq.getQuantidade())));
+            subtotal = subtotal.add(
+                    precoUnit.multiply(BigDecimal.valueOf(itemReq.getQuantidade())));
 
             itens.add(PedidoProdutos.builder()
                     .produto(produto)
+                    .produtoVariacao(variacao)
                     .lojista(produto.getLojista())
                     .quantidade(itemReq.getQuantidade())
                     .precoUnitario(precoUnit.doubleValue())
-                    .cor(itemReq.getCor())
-                    .tamanho(itemReq.getTamanho())
+                    .cor(variacao.getCor())
+                    .tamanho(variacao.getTamanho())
                     .build()
             );
+        }
+
+        if (request.getEnderecoEntrega() == null
+                || request.getEnderecoEntrega().getCep() == null
+                || request.getEnderecoEntrega().getCep().isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Informe o endereço de entrega e o CEP");
         }
         //variavél local de cálculo para implementação no builder
         BigDecimal valorFrete = freteService.calcularFreteTotal(itens, request.getEnderecoEntrega().getCep());
@@ -373,6 +410,7 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
 
         pedido = repository.saveAndFlush(pedido);
 
+        //Gera numeração e código dos pedidos por loja
         Map<Integer, Integer> numeroPorLoja = new HashMap<>();
         for (var item : itens) {
             Lojista lojista = item.getLojista();
@@ -427,22 +465,6 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
         repository.saveAndFlush(pedidoAtualizado);
     }*/
 
-    
-    private void validarOpcaoSelecionada(String selecionada, List<String> opcoes, String tipo, Produto produto) {
-        if (opcoes == null || opcoes.isEmpty()) return;
-        if (selecionada == null || selecionada.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Selecione " + tipo + " para " + produto.getNome());
-        }
-        String valor = selecionada.trim().toLowerCase(Locale.ROOT);
-        boolean disponivel = opcoes.stream().filter(o -> o != null)
-                .anyMatch(o -> o.trim().toLowerCase(Locale.ROOT).equals(valor));
-        if (!disponivel) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    tipo.substring(0, 1).toUpperCase(Locale.ROOT) + tipo.substring(1)
-                            + " não disponível para " + produto.getNome());
-        }
-    }
 
     private void registrarHistorico(Pedido pedido, String evento, String descricao, Integer actorUsuarioId){
             Usuario actor = null;

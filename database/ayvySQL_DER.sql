@@ -1,11 +1,14 @@
+
 -- =====================================================================
 -- SCRIPT DDL - SQL Server (modelo DER) — alinhado ao backend Spring/JPA
 -- Base: Diagrama Entidade-Relacionamento (marketplace)
 -- Extra: tabelas/colunas necessárias para o que já funciona na API
--- Compatível com DBeaver (sem GO)
+-- Compatível com DBeaver (sem GO, caso execute os comandos por seleção)
 -- =====================================================================
+
 CREATE DATABASE ayvy;
 GO
+
 USE ayvy;
 GO
 
@@ -16,7 +19,7 @@ CREATE TABLE usuarios (
     id               INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     papel            VARCHAR(50) NOT NULL,
     nome             VARCHAR(150) NOT NULL,
-    nome_usuario     VARCHAR(80) NULL , --foi retirado o UNIQUE dessa coluna, pois impedia a criação de novos uuários
+    nome_usuario     VARCHAR(80) NULL, -- foi retirado o UNIQUE dessa coluna, pois impedia a criação de novos usuários
     email            VARCHAR(191) NOT NULL UNIQUE,
     senha_hash       VARCHAR(255) NOT NULL,
     telefone         VARCHAR(20) NULL,
@@ -26,6 +29,7 @@ CREATE TABLE usuarios (
     criado_em        DATETIME2 NOT NULL CONSTRAINT DF_usuarios_criado_em DEFAULT SYSUTCDATETIME(),
     atualizado_em    DATETIME2 NOT NULL CONSTRAINT DF_usuarios_atualizado_em DEFAULT SYSUTCDATETIME()
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: clientes (1:1 com usuarios)
@@ -38,6 +42,7 @@ CREATE TABLE clientes (
     CONSTRAINT fk_clientes_usuarios
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: enderecos (1:N com usuarios)
@@ -58,6 +63,7 @@ CREATE TABLE enderecos (
     CONSTRAINT fk_enderecos_usuarios
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: notificacoes (1:N com usuarios)
@@ -73,6 +79,7 @@ CREATE TABLE notificacoes (
     CONSTRAINT fk_notificacoes_usuarios
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: lojistas (1:1 com usuarios)
@@ -92,6 +99,7 @@ CREATE TABLE lojistas (
     CONSTRAINT fk_lojistas_usuarios
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: categorias
@@ -108,9 +116,12 @@ CREATE TABLE categorias (
     CONSTRAINT fk_categorias_pai
         FOREIGN KEY (categoria_pai_id) REFERENCES categorias(id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: produtos (N:1 com lojistas e categorias)
+-- O estoque, as cores e os tamanhos são controlados individualmente
+-- na tabela produto_variacoes.
 -- ---------------------------------------------------------------------
 CREATE TABLE produtos (
     id                     INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
@@ -120,20 +131,57 @@ CREATE TABLE produtos (
     slug                   VARCHAR(150) NOT NULL,
     descricao              NVARCHAR(MAX) NULL,
     preco                  DECIMAL(12,2) NOT NULL,
-    estoque                INT NOT NULL CONSTRAINT DF_produtos_estoque DEFAULT 0,
     imagem_principal_url   VARCHAR(500) NULL,
-    cores                  VARCHAR(500) NULL,
-    tamanhos               VARCHAR(300) NULL,
     visualizacoes_total    INT NOT NULL CONSTRAINT DF_produtos_visualizacoes DEFAULT 0,
     status                 VARCHAR(30) NOT NULL CONSTRAINT DF_produtos_status DEFAULT 'rascunho',
     criado_em              DATETIME2 NOT NULL CONSTRAINT DF_produtos_criado_em DEFAULT SYSUTCDATETIME(),
     atualizado_em          DATETIME2 NOT NULL CONSTRAINT DF_produtos_atualizado_em DEFAULT SYSUTCDATETIME(),
+
     CONSTRAINT uq_produtos_lojista_slug UNIQUE (lojista_id, slug),
+
+    CONSTRAINT ck_produtos_preco
+        CHECK (preco >= 0),
+
     CONSTRAINT fk_produtos_lojistas
         FOREIGN KEY (lojista_id) REFERENCES lojistas(id),
+
     CONSTRAINT fk_produtos_categorias
         FOREIGN KEY (categoria_id) REFERENCES categorias(id)
 );
+GO
+
+-- ---------------------------------------------------------------------
+-- Tabela: produto_variacoes (1:N com produtos)
+-- Cada registro representa uma combinação de tamanho e cor.
+-- As opções são definidas livremente pelo lojista, sem valores
+-- previamente estabelecidos pelo sistema.
+-- Para produtos sem variação de tamanho, utilizar "Único".
+-- A cor deve sempre ser informada (ex.: Preto, Transparente, Incolor).
+-- ---------------------------------------------------------------------
+CREATE TABLE produto_variacoes (
+    id          INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    produto_id  INT NOT NULL,
+    tamanho     VARCHAR(30) NOT NULL,
+    cor         VARCHAR(60) NOT NULL,
+    estoque     INT NOT NULL CONSTRAINT DF_produto_variacoes_estoque DEFAULT 0,
+    ativo       BIT NOT NULL CONSTRAINT DF_produto_variacoes_ativo DEFAULT 1,
+
+    CONSTRAINT fk_produto_variacoes_produtos
+        FOREIGN KEY (produto_id) REFERENCES produtos(id),
+
+    CONSTRAINT ck_produto_variacoes_estoque
+        CHECK (estoque >= 0),
+
+    -- Impede cadastrar duas vezes a mesma combinação para o mesmo produto.
+    CONSTRAINT uq_produto_variacoes_combinacao
+        UNIQUE (produto_id, tamanho, cor)
+);
+GO
+
+-- Índice para localizar rapidamente as variações de um produto.
+CREATE INDEX ix_produto_variacoes_produto
+    ON produto_variacoes(produto_id);
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: produto_imagens (1:N com produtos) — usada pelo admin/API
@@ -146,6 +194,7 @@ CREATE TABLE produto_imagens (
     CONSTRAINT fk_produto_imagens_produtos
         FOREIGN KEY (produto_id) REFERENCES produtos(id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: pedidos (N:1 com usuarios - comprador)
@@ -172,6 +221,7 @@ CREATE TABLE pedidos (
     CONSTRAINT fk_pedidos_usuarios
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: pedido_endereco_entrega (1:1 com pedidos)
@@ -188,28 +238,51 @@ CREATE TABLE pedido_endereco_entrega (
     CONSTRAINT fk_pedido_endereco_pedidos
         FOREIGN KEY (pedido_id) REFERENCES pedidos(id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: pedido_produtos (N:N entre pedidos e produtos, com lojista)
+-- produto_variacao_id identifica a variação efetivamente comprada.
+-- cor e tamanho são mantidos como registro histórico da compra,
+-- mesmo que a variação seja alterada posteriormente.
 -- ---------------------------------------------------------------------
 CREATE TABLE pedido_produtos (
-    id               INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-    pedido_id        INT NOT NULL,
-    produto_id       INT NOT NULL,
-    lojista_id       INT NOT NULL,
-    quantidade       INT NOT NULL CONSTRAINT DF_pedido_produtos_quantidade DEFAULT 1,
-    preco_unitario   DECIMAL(12,2) NOT NULL,
-    cor              VARCHAR(60) NULL,
-    tamanho          VARCHAR(30) NULL,
-    numero_pedido_loja INT NULL,
-    codigo_pedido_loja VARCHAR(20) NULL,
+    id                    INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    pedido_id             INT NOT NULL,
+    produto_id            INT NOT NULL,
+    produto_variacao_id   INT NOT NULL,
+    lojista_id            INT NOT NULL,
+    quantidade            INT NOT NULL CONSTRAINT DF_pedido_produtos_quantidade DEFAULT 1,
+    preco_unitario        DECIMAL(12,2) NOT NULL,
+    cor                   VARCHAR(60) NOT NULL,
+    tamanho               VARCHAR(30) NOT NULL,
+    numero_pedido_loja    INT NULL,
+    codigo_pedido_loja    VARCHAR(20) NULL,
+
+    CONSTRAINT ck_pedido_produtos_quantidade
+        CHECK (quantidade > 0),
+
+    CONSTRAINT ck_pedido_produtos_preco
+        CHECK (preco_unitario >= 0),
+
     CONSTRAINT fk_pedido_produtos_pedidos
         FOREIGN KEY (pedido_id) REFERENCES pedidos(id),
+
     CONSTRAINT fk_pedido_produtos_produtos
         FOREIGN KEY (produto_id) REFERENCES produtos(id),
+
+    CONSTRAINT fk_pedido_produtos_variacoes
+        FOREIGN KEY (produto_variacao_id) REFERENCES produto_variacoes(id),
+
     CONSTRAINT fk_pedido_produtos_lojistas
         FOREIGN KEY (lojista_id) REFERENCES lojistas(id)
 );
+GO
+
+-- Índice para localizar os itens de pedido por variação.
+CREATE INDEX ix_pedido_produtos_variacao
+    ON pedido_produtos(produto_variacao_id);
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: pagamentos (N:1 com pedidos)
@@ -226,6 +299,7 @@ CREATE TABLE pagamentos (
     CONSTRAINT fk_pagamentos_pedidos
         FOREIGN KEY (pedido_id) REFERENCES pedidos(id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: historico_compras — usada no checkout / status do pedido
@@ -238,11 +312,14 @@ CREATE TABLE historico_compras (
     descricao         VARCHAR(500) NULL,
     actor_usuario_id  INT NULL,
     criado_em         DATETIME2 NOT NULL CONSTRAINT DF_historico_compras_criado_em DEFAULT SYSUTCDATETIME(),
+
     CONSTRAINT fk_historico_compras_pedidos
         FOREIGN KEY (pedido_id) REFERENCES pedidos(id),
+
     CONSTRAINT fk_historico_compras_actor
         FOREIGN KEY (actor_usuario_id) REFERENCES usuarios(id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: favoritos (N:N entre usuarios e produtos)
@@ -252,12 +329,17 @@ CREATE TABLE favoritos (
     usuario_id  INT NOT NULL,
     produto_id  INT NOT NULL,
     criado_em   DATETIME2 NOT NULL CONSTRAINT DF_favoritos_criado_em DEFAULT SYSUTCDATETIME(),
+
     CONSTRAINT fk_favoritos_usuarios
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+
     CONSTRAINT fk_favoritos_produtos
         FOREIGN KEY (produto_id) REFERENCES produtos(id),
-    CONSTRAINT uq_favoritos_usuario_produto UNIQUE (usuario_id, produto_id)
+
+    CONSTRAINT uq_favoritos_usuario_produto
+        UNIQUE (usuario_id, produto_id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: visualizacoes_produtos (N:N entre produtos e usuarios)
@@ -267,11 +349,14 @@ CREATE TABLE visualizacoes_produtos (
     produto_id       INT NOT NULL,
     usuario_id       INT NOT NULL,
     visualizado_em   DATETIME2 NOT NULL CONSTRAINT DF_visualizacoes_visualizado_em DEFAULT SYSUTCDATETIME(),
+
     CONSTRAINT fk_visualizacoes_produtos
         FOREIGN KEY (produto_id) REFERENCES produtos(id),
+
     CONSTRAINT fk_visualizacoes_usuarios
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Tabela: redefinicao_senha (códigos de recuperação de senha, só o hash)
@@ -284,9 +369,11 @@ CREATE TABLE redefinicao_senha (
     usado_em      DATETIME2 NULL,
     tentativas    INT NOT NULL CONSTRAINT DF_redefinicao_senha_tentativas DEFAULT 0,
     criado_em     DATETIME2 NOT NULL CONSTRAINT DF_redefinicao_senha_criado_em DEFAULT SYSUTCDATETIME(),
+
     CONSTRAINT fk_redefinicao_senha_usuarios
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
+GO
 
 -- ---------------------------------------------------------------------
 -- Seeds mínimos (categorias) — evita admin vazio
@@ -296,6 +383,12 @@ INSERT INTO categorias (nome, slug, ativo) VALUES
     (N'Streetwear', N'streetwear', 1),
     (N'Acessórios', N'acessorios', 1),
     (N'Calçados', N'calcados', 1);
+GO
+
+-- ---------------------------------------------------------------------
+-- Consulta de conferência
+-- ---------------------------------------------------------------------
 
 
-  SELECT * FROM usuarios;
+SELECT * FROM usuarios;
+

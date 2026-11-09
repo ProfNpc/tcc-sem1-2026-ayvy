@@ -11,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -50,22 +51,10 @@ public class Produto {
     @Column(name = "preco", nullable = false, precision = 12, scale = 2)
     private BigDecimal preco;
 
-    @Builder.Default
-    @Column(name = "estoque", nullable = false)
-    private Integer estoque = 0;
-
     /** Caminho relativo em back/uploads, ex.: /uploads/produtos/uuid.jpg */
     @JsonAlias("caminho")
     @Column(name = "imagem_principal_url")
     private String imagemPrincipalUrl;
-
-    @Convert(converter = StringListConverter.class)
-    @Column(name = "cores", length = 500)
-    private List<String> cores;
-
-    @Convert(converter = StringListConverter.class)
-    @Column(name = "tamanhos", length = 300)
-    private List<String> tamanhos;
 
     @Builder.Default
     @Column(name = "visualizacoes_total", nullable = false)
@@ -84,4 +73,10 @@ public class Produto {
     @UpdateTimestamp
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
+
+    //Garante que seja possível várias variações e que uma variação pertença
+    //apenas a um produto.
+    @OneToMany(mappedBy = "produto")
+    @Builder.Default
+    private List<ProdutoVariacao> variacoes = new ArrayList<>();
 }

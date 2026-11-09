@@ -30,16 +30,20 @@ public class PedidoProdutos {
     @JoinColumn(name = "lojista_id", nullable = false)
     private Lojista lojista;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "produto_variacao_id", nullable = false)
+    private ProdutoVariacao produtoVariacao;
+
     @Column(name = "quantidade")
     private Integer quantidade;
 
     @Column(name = "preco_unitario")
     private Double precoUnitario;
 
-    @Column(name = "cor", length = 60)
+    @Column(name = "cor", nullable = false, length = 60)
     private String cor;
 
-    @Column(name = "tamanho", length = 30)
+    @Column(name = "tamanho", nullable = false, length = 30)
     private String tamanho;
 
     /** Sequência do pedido dentro da loja: o 1º pedido da loja é 1, o 2º é 2... */

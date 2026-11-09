@@ -30,8 +30,7 @@ private List<ItemCarrinhoRequest> itens;
     @Setter
     public static class ItemCarrinhoRequest {
         private Integer produtoId;
+        private Integer produtoVariacaoId;
         private Integer quantidade;
-        private String cor;
-        private String tamanho;
     }
 }
