@@ -90,9 +90,65 @@ public class ProdutoVariacaoService {
                 request.getCor().trim(),
                 variacaoId)) {
 
-       //     throw new ResponseStatusException(
-        //            Http
-       //     )
+          throw new ResponseStatusException(
+                   HttpStatus.CONFLICT, "Essa combinação de tamnaho e cor já existe");
+        }
+
+        variacao.setTamanho(request.getTamanho().trim());
+        variacao.setCor(request.getCor().trim());
+        variacao.setEstoque(request.getEstoque());
+
+        return ProdutoVariacaoResponse.fromEntity(
+                produtoVariacaoRepository.saveAndFlush(variacao));
+    }
+
+    //Desativar uma variação
+    @Transactional
+    public void desativarVariacao(Integer produtoId, Integer variacaoId) {
+        ProdutoVariacao variacao = buscarVariacao(produtoId, variacaoId);
+
+        variacao.setAtivo(false);
+
+        produtoVariacaoRepository.save(variacao);
+    }
+
+    //Ativar novamente
+    @Transactional
+    public void ativarVariacao(Integer produtoId, Integer variacaoId) {
+        ProdutoVariacao variacao = buscarVariacao(produtoId, variacaoId);
+
+        variacao.setAtivo(true);
+
+        produtoVariacaoRepository.save(variacao);
+    }
+
+    private Produto buscarProduto(Integer produtoId){
+        return produtoRepository.findById(produtoId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Produto não encontrado"));
+    }
+
+    private ProdutoVariacao  buscarVariacao(Integer produtoId, Integer variacaoId){
+        return produtoVariacaoRepository.findByIdAndProdutoId(variacaoId, produtoId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Variação não encontrada para este produto"));
+    }
+
+    private void validarDados(ProdutoVariacaoRequest request){
+
+        if(request.getTamanho() == null || request.getTamanho().isBlank()){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "O tamanho é obrigatório");
+        }
+
+        if(request.getCor() == null || request.getCor().isBlank()){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "A cor é obrigatória");
+        }
+
+        if (request.getEstoque() == null || request.getEstoque() < 0){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "O estoque deve ser maior ou igual a zero");
         }
     }
 }

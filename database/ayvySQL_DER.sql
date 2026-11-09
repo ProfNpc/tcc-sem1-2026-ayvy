@@ -131,11 +131,10 @@ CREATE TABLE produtos (
     slug                   VARCHAR(150) NOT NULL,
     descricao              NVARCHAR(MAX) NULL,
     preco                  DECIMAL(12,2) NOT NULL,
-<<<<<<< HEAD
-=======
+
     desconto_percentual    INT NULL,  -- 0 a 90; preço final = preco * (100 - desconto) / 100
     estoque                INT NOT NULL CONSTRAINT DF_produtos_estoque DEFAULT 0,
->>>>>>> 6adebdfa50eb7d11b83330569f1ba8f3dc956b4f
+
     imagem_principal_url   VARCHAR(500) NULL,
     visualizacoes_total    INT NOT NULL CONSTRAINT DF_produtos_visualizacoes DEFAULT 0,
     status                 VARCHAR(30) NOT NULL CONSTRAINT DF_produtos_status DEFAULT 'rascunho',
@@ -441,4 +440,5 @@ GO
 
 
 SELECT * FROM usuarios;
+
 
