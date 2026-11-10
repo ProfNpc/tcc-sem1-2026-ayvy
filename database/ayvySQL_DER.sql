@@ -389,23 +389,6 @@ CREATE TABLE carrinho_itens (
     CONSTRAINT fk_carrinho_produtos FOREIGN KEY (produto_id) REFERENCES produtos(id)
 );
 
--- ---------------------------------------------------------------------
--- Tabela: estoque_itens (planilha "Meu estoque" do lojista)
--- Uma linha por produto + tamanho (tamanho NULL = todos os tamanhos juntos).
--- O checkout tira daqui e o cancelamento/reembolso devolve (EstoqueService).
--- ---------------------------------------------------------------------
-CREATE TABLE estoque_itens (
-    id             INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-    lojista_id     INT NOT NULL,
-    produto_id     INT NOT NULL,
-    tamanho        VARCHAR(30) NULL,
-    quantidade     INT NOT NULL,
-    criado_em      DATETIME2 NOT NULL CONSTRAINT DF_estoque_itens_criado_em DEFAULT SYSUTCDATETIME(),
-    atualizado_em  DATETIME2 NOT NULL CONSTRAINT DF_estoque_itens_atualizado_em DEFAULT SYSUTCDATETIME(),
-    CONSTRAINT uq_estoque_produto_tamanho UNIQUE (produto_id, tamanho),
-    CONSTRAINT fk_estoque_lojistas FOREIGN KEY (lojista_id) REFERENCES lojistas(id),
-    CONSTRAINT fk_estoque_produtos FOREIGN KEY (produto_id) REFERENCES produtos(id)
-);
 
 -- ---------------------------------------------------------------------
 -- Tabela: redefinicao_senha (códigos de recuperação de senha, só o hash)
