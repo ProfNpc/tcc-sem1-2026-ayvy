@@ -45,16 +45,10 @@ public class PedidoService {
     private final NotificacoesRepository notificacoesRepository;
     private final LojistaRepository lojistaRepository;
     private final SiglaLojaService siglaLojaService;
-<<<<<<< HEAD
     private final ProdutoVariacaoRepository produtoVariacaoRepository;
 
     public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository, HistoricoComprasRepository historicoComprasRepository, FreteService freteService, NotificacoesRepository notificacoesRepository, LojistaRepository lojistaRepository, SiglaLojaService siglaLojaService, ProdutoVariacaoRepository produtoVariacaoRepository) {
-=======
-    private final EstoqueService estoqueService;
 
-    public PedidoService(PedidoRepository repository, PedidoProdutosRepository pedidoProdutosRepository, ProdutoRepository produtoRepository, PedidoEnderecoEntregaRepository pedidoEnderecoEntregaRepository, UsuarioRepository usuarioRepository, HistoricoComprasRepository historicoComprasRepository, FreteService freteService, NotificacoesRepository notificacoesRepository, LojistaRepository lojistaRepository, SiglaLojaService siglaLojaService, EstoqueService estoqueService) {
-        this.estoqueService = estoqueService;
->>>>>>> 6adebdfa50eb7d11b83330569f1ba8f3dc956b4f
         this.notificacoesRepository = notificacoesRepository;
         this.lojistaRepository = lojistaRepository;
         this.siglaLojaService = siglaLojaService;
@@ -98,19 +92,19 @@ public class PedidoService {
     }
 
     public PedidoEnderecoEntrega buscarEnderecoPorPedidoId(Integer pedidoId){
-    return pedidoEnderecoEntregaRepository.findById(pedidoId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Endereço de entrega não encontrado para o pedido " + pedidoId));
-}
+        return pedidoEnderecoEntregaRepository.findById(pedidoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Endereço de entrega não encontrado para o pedido " + pedidoId));
+    }
 
     public List<Pedido> listarPedidosPorUsuario(Integer usuarioId){
-    return repository.findByUsuarioId(usuarioId);}
+        return repository.findByUsuarioId(usuarioId);}
 
 
-public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
-    buscarPedidoPorId(pedidoId);
-    return pedidoProdutosRepository.findByPedidoId(pedidoId);
-}
+    public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
+        buscarPedidoPorId(pedidoId);
+        return pedidoProdutosRepository.findByPedidoId(pedidoId);
+    }
 
     //DELETE
     public String deletarPedidoPorId(Integer id){
@@ -132,11 +126,11 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
         boolean ficaDevolvido = novoStatus == StatusPedido.cancelado || novoStatus == StatusPedido.reembolsado;
         if (ficaDevolvido && !estavaDevolvido) {
             for (PedidoProdutos item : pedidoProdutosRepository.findByPedidoId(pedido.getId())) {
-                estoqueService.devolver(item.getProduto(), item.getTamanho(), item.getQuantidade());
+                devolverEstoque(item);
             }
         } else if (estavaDevolvido && !ficaDevolvido) {
             for (PedidoProdutos item : pedidoProdutosRepository.findByPedidoId(pedido.getId())) {
-                estoqueService.baixarParaVenda(item.getProduto(), item.getTamanho(), item.getQuantidade());
+                baixarEstoque(item);
             }
         }
 
@@ -144,7 +138,7 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
         pedido = repository.save(pedido);
 
         registrarHistorico(pedido, "STATUS_ALTERADO",
-                        "Status alterado para " + novoStatus.name(), actorUsuarioId);
+                "Status alterado para " + novoStatus.name(), actorUsuarioId);
 
         ResumoPedido resumo = resumir(pedido);
         switch (novoStatus) {
@@ -346,6 +340,45 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
         salvarNotificacao(pedido.getUsuario(), titulo, mensagem, "pedido");
     }
 
+    // ------------------------------------------------------------------ estoque (por variação)
+
+    /** Cancelamento/reembolso: a peça volta para a variação comprada. */
+    private void devolverEstoque(PedidoProdutos item) {
+        if (item.getProdutoVariacao() == null || item.getQuantidade() == null) return;
+        ProdutoVariacao variacao = produtoVariacaoRepository
+                .buscarPorIdComBloqueio(item.getProdutoVariacao().getId())
+                .orElse(null);
+        if (variacao == null) return;
+        variacao.setEstoque(variacao.getEstoque() + item.getQuantidade());
+        produtoVariacaoRepository.save(variacao);
+    }
+
+    /** Pedido reativado depois de cancelado/reembolsado: tira do estoque de novo (se houver). */
+    private void baixarEstoque(PedidoProdutos item) {
+        if (item.getProdutoVariacao() == null || item.getQuantidade() == null) return;
+        ProdutoVariacao variacao = produtoVariacaoRepository
+                .buscarPorIdComBloqueio(item.getProdutoVariacao().getId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Variação do produto não encontrada"));
+        if (variacao.getEstoque() < item.getQuantidade()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Estoque insuficiente para reativar o pedido: " + item.getProduto().getNome()
+                            + " (" + variacao.getTamanho() + ", " + variacao.getCor() + ")");
+        }
+        variacao.setEstoque(variacao.getEstoque() - item.getQuantidade());
+        produtoVariacaoRepository.save(variacao);
+    }
+
+    private void avisarReporEstoque(Produto produto, ProdutoVariacao variacao) {
+        Lojista lojista = produto.getLojista();
+        if (lojista == null) return;
+        String nome = produto.getNome() + " (" + variacao.getTamanho() + ", " + variacao.getCor() + ")";
+        salvarNotificacao(lojista.getUsuario(),
+                "Repor estoque: " + nome,
+                "Acabou o estoque de " + nome + ". Reponha ou desative a variação em Meu estoque.",
+                "estoque");
+    }
+
     @Transactional
     public Pedido finalizarCheckout(CheckoutRequest request) {
         Usuario usuario = usuarioRepository.findById(request.getUsuarioId())
@@ -360,6 +393,15 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
         List<PedidoProdutos> itens = new ArrayList<>();
 
         for (var itemReq : request.getItens()) {
+            if (itemReq.getProdutoId() == null || itemReq.getProdutoVariacaoId() == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Informe o produto e a variação selecionada");
+            }
+            if (itemReq.getQuantidade() == null || itemReq.getQuantidade() <= 0) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Informe uma quantidade maior que zero");
+            }
+
             Produto produto = produtoRepository.findById(itemReq.getProdutoId())
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.NOT_FOUND,
@@ -371,41 +413,35 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.NOT_FOUND, "Variação do produto não encontrada"));
 
-<<<<<<< HEAD
             if (!variacao.getProduto().getId().equals(produto.getId())) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "A variação selecionada não pertence ao produto informado");
             }
             //Verifica se a variação está ativa
             if (!variacao.isAtivo()){
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT, "A variação selecionada não está disponível");
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT, "A variação selecionada não está disponível");
             }
 
             if (variacao.getEstoque() < itemReq.getQuantidade()) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "Estoque insuficiente para " + produto.getNome()
-                                                    + " (" + variacao.getTamanho()
-                                                    + ", " + variacao.getCor() + ")");
+                                + " (" + variacao.getTamanho()
+                                + ", " + variacao.getCor() + ")");
             }
 
             variacao.setEstoque(variacao.getEstoque() - itemReq.getQuantidade());
             produtoVariacaoRepository.save(variacao);
 
-            if (itemReq.getProdutoId() == null || itemReq.getProdutoVariacaoId() == null) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, "Informe o produto e a variação selecionada");
+            //Avisa o lojista quando a variação acaba
+            if (variacao.getEstoque() == 0) {
+                avisarReporEstoque(produto, variacao);
             }
 
-            BigDecimal precoUnit = produto.getPreco();
+            //Preço com desconto (precoFinal): é o valor cobrado, nunca o que vem do front
+            BigDecimal precoUnit = produto.getPrecoFinal();
             subtotal = subtotal.add(
                     precoUnit.multiply(BigDecimal.valueOf(itemReq.getQuantidade())));
-=======
-            estoqueService.baixarParaVenda(produto, itemReq.getTamanho(), itemReq.getQuantidade());
-
-            BigDecimal precoUnit = produto.getPrecoFinal();
-            subtotal = subtotal.add(precoUnit.multiply(BigDecimal.valueOf(itemReq.getQuantidade())));
->>>>>>> 6adebdfa50eb7d11b83330569f1ba8f3dc956b4f
 
             itens.add(PedidoProdutos.builder()
                     .produto(produto)
@@ -476,9 +512,9 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
 
         return pedido;
     }
-        //UPDATE
-        // !!! Não será possível atualizar o Pedido uma vez feito
-        // !!! Pórem PedidoAtualizado está aqui caso seja necessário no futuro
+    //UPDATE
+    // !!! Não será possível atualizar o Pedido uma vez feito
+    // !!! Pórem PedidoAtualizado está aqui caso seja necessário no futuro
     /*
     public void atualizarPedidoPorId(Integer id, Pedido pedido){
         Pedido pedidoEntity = buscarPedidoPorId(id);
@@ -495,25 +531,25 @@ public List<PedidoProdutos> listarItensPorPedidoId(Integer pedidoId){
 
 
     private void registrarHistorico(Pedido pedido, String evento, String descricao, Integer actorUsuarioId){
-            Usuario actor = null;
-            if (actorUsuarioId != null) {
-                actor = usuarioRepository.findById(actorUsuarioId).orElse(null);
-            }
-
-
-            HistoricoCompras registro = HistoricoCompras.builder()
-                    .pedido(pedido)
-                    .evento(evento)
-                    .statusPedido(pedido.getStatus().name())
-                    .descricao(descricao)
-                    .actorUsuario(actor)
-                    .build();
-
-            historicoComprasRepository.saveAndFlush(registro);
+        Usuario actor = null;
+        if (actorUsuarioId != null) {
+            actor = usuarioRepository.findById(actorUsuarioId).orElse(null);
         }
 
-        public List<HistoricoCompras> listarHistoricoPorPedidoId(Integer pedidoId){
-            buscarPedidoPorId(pedidoId);
-            return historicoComprasRepository.findByPedidoIdOrderByCriadoEmAsc(pedidoId);
-        }
+
+        HistoricoCompras registro = HistoricoCompras.builder()
+                .pedido(pedido)
+                .evento(evento)
+                .statusPedido(pedido.getStatus().name())
+                .descricao(descricao)
+                .actorUsuario(actor)
+                .build();
+
+        historicoComprasRepository.saveAndFlush(registro);
     }
+
+    public List<HistoricoCompras> listarHistoricoPorPedidoId(Integer pedidoId){
+        buscarPedidoPorId(pedidoId);
+        return historicoComprasRepository.findByPedidoIdOrderByCriadoEmAsc(pedidoId);
+    }
+}

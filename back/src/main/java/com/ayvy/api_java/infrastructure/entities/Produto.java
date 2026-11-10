@@ -1,8 +1,8 @@
 package com.ayvy.api_java.infrastructure.entities;
 
-import com.ayvy.api_java.infrastructure.converters.StringListConverter;
 import com.ayvy.api_java.infrastructure.enums.StatusProduto;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Tabela produtos: nome, preço, desconto (%), estoque, cores, tamanhos, status, categoria principal e
@@ -99,9 +100,30 @@ public class Produto {
 
     //Garante que seja possível várias variações e que uma variação pertença
     //apenas a um produto.
+    //@JsonIgnore evita o loop Produto -> variacoes -> produto -> variacoes... ao gerar o JSON
+    //(as variações são lidas por GET /produtos/{id}/variacoes).
+    @JsonIgnore
     @OneToMany(mappedBy = "produto")
     @Builder.Default
     private List<ProdutoVariacao> variacoes = new ArrayList<>();
+
+    /** Cores das variações ativas (vai no JSON como "cores", que o front já lê). */
+    @Transient
+    @JsonProperty(value = "cores", access = JsonProperty.Access.READ_ONLY)
+    public List<String> getCores() {
+        if (variacoes == null) return List.of();
+        return variacoes.stream().filter(ProdutoVariacao::isAtivo)
+                .map(ProdutoVariacao::getCor).distinct().collect(Collectors.toList());
+    }
+
+    /** Tamanhos das variações ativas (vai no JSON como "tamanhos", que o front já lê). */
+    @Transient
+    @JsonProperty(value = "tamanhos", access = JsonProperty.Access.READ_ONLY)
+    public List<String> getTamanhos() {
+        if (variacoes == null) return List.of();
+        return variacoes.stream().filter(ProdutoVariacao::isAtivo)
+                .map(ProdutoVariacao::getTamanho).distinct().collect(Collectors.toList());
+    }
 
     /** Preço com o desconto aplicado (vai no JSON como "precoFinal"); é o valor cobrado no checkout. */
     @Transient

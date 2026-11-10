@@ -56,7 +56,7 @@ public class ProdutoVariacaoService {
         validarDados(request);
 
         if(produtoVariacaoRepository.existsByProdutoIdAndTamanhoAndCor(
-                produtoId, request.getTamanho(), request.getCor())){
+                produtoId, request.getTamanho().trim(), request.getCor().trim())){
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT, "Essa combinação de tamanho e cor já existe para esse produto");
         }
@@ -90,8 +90,8 @@ public class ProdutoVariacaoService {
                 request.getCor().trim(),
                 variacaoId)) {
 
-          throw new ResponseStatusException(
-                   HttpStatus.CONFLICT, "Essa combinação de tamnaho e cor já existe");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "Essa combinação de tamanho e cor já existe");
         }
 
         variacao.setTamanho(request.getTamanho().trim());

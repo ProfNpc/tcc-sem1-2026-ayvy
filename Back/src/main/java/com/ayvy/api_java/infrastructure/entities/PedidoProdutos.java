@@ -1,6 +1,7 @@
 package com.ayvy.api_java.infrastructure.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,6 +35,7 @@ public class PedidoProdutos {
     @JoinColumn(name = "lojista_id", nullable = false)
     private Lojista lojista;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "produto_variacao_id", nullable = false)
     private ProdutoVariacao produtoVariacao;
@@ -58,5 +60,11 @@ public class PedidoProdutos {
     @Column(name = "codigo_pedido_loja", length = 20)
     private String codigoPedidoLoja;
 
+    /** No JSON sai só o id da variação comprada (a variação em si é LAZY e não deve ser serializada). */
+    @Transient
+    @JsonProperty("produtoVariacaoId")
+    public Integer getProdutoVariacaoId() {
+        return produtoVariacao == null ? null : produtoVariacao.getId();
+    }
 
 }

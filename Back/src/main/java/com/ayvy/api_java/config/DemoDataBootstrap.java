@@ -25,6 +25,7 @@ import java.util.Optional;
  * categorias. Não altera fotos de clientes, não sobrescreve dados preenchidos
  * manualmente e identifica os pedidos gerados por uma chave estável para que
  * o bootstrap possa ser executado repetidamente sem duplicações.
+ * Cores, tamanhos e estoque dos produtos são criados como ProdutoVariacoes.
  */
 @Component
 @Profile("!prod")
@@ -40,6 +41,7 @@ public class DemoDataBootstrap implements ApplicationRunner {
     private final EnderecoRepository enderecoRepository;
     private final CategoriaRepository categoriaRepository;
     private final ProdutoRepository produtoRepository;
+    private final ProdutoVariacaoRepository produtoVariacaoRepository;
     private final FavoritosRepository favoritosRepository;
     private final PedidoRepository pedidoRepository;
     private final PedidoProdutosRepository pedidoProdutosRepository;
@@ -55,6 +57,7 @@ public class DemoDataBootstrap implements ApplicationRunner {
             EnderecoRepository enderecoRepository,
             CategoriaRepository categoriaRepository,
             ProdutoRepository produtoRepository,
+            ProdutoVariacaoRepository produtoVariacaoRepository,
             FavoritosRepository favoritosRepository,
             PedidoRepository pedidoRepository,
             PedidoProdutosRepository pedidoProdutosRepository,
@@ -68,6 +71,7 @@ public class DemoDataBootstrap implements ApplicationRunner {
         this.enderecoRepository = enderecoRepository;
         this.categoriaRepository = categoriaRepository;
         this.produtoRepository = produtoRepository;
+        this.produtoVariacaoRepository = produtoVariacaoRepository;
         this.favoritosRepository = favoritosRepository;
         this.pedidoRepository = pedidoRepository;
         this.pedidoProdutosRepository = pedidoProdutosRepository;
@@ -268,11 +272,10 @@ public class DemoDataBootstrap implements ApplicationRunner {
             Produto produto = existente.get();
             if (produto.getCategoria() == null) categoriaRepository.findBySlug(slugCategoria).ifPresent(produto::setCategoria);
             if (vazio(produto.getDescricao())) produto.setDescricao(descricao);
-            if (produto.getTamanhos() == null || produto.getTamanhos().isEmpty()) produto.setTamanhos(tamanhos);
-            if (produto.getCores() == null || produto.getCores().isEmpty()) produto.setCores(cores);
             if (produto.getEstoque() == null || produto.getEstoque() < 0) produto.setEstoque(estoque);
             if (vazio(produto.getImagemPrincipalUrl())) produto.setImagemPrincipalUrl("/uploads/produtos/" + imagem);
             produtoRepository.save(produto);
+            garantirVariacoes(produto, tamanhos, cores, estoque);
             return;
         }
         Lojista loja = lojistaRepository.findBySlug(slugLoja).orElse(null);
@@ -285,27 +288,39 @@ public class DemoDataBootstrap implements ApplicationRunner {
                 .lojista(loja).categoria(categoria).nome(nome).slug(slug)
                 .descricao(descricao).preco(new BigDecimal(preco)).estoque(estoque)
                 .imagemPrincipalUrl("/uploads/produtos/" + imagem)
-                .tamanhos(tamanhos.isEmpty() ? null : tamanhos).cores(cores)
                 .statusProduto(com.ayvy.api_java.infrastructure.enums.StatusProduto.ativo)
                 .build();
-        produtoRepository.saveAndFlush(produto);
+        produto = produtoRepository.saveAndFlush(produto);
+        garantirVariacoes(produto, tamanhos, cores, estoque);
+    }
+
+    /**
+     * Cria uma variação para cada combinação tamanho x cor do produto, caso ele ainda não tenha nenhuma.
+     * O estoque total informado é dividido entre as variações (mínimo de 2 peças cada, para os pedidos demo).
+     */
+    private void garantirVariacoes(Produto produto, List<String> tamanhos, List<String> cores, int estoqueTotal) {
+        if (!produtoVariacaoRepository.findByProdutoId(produto.getId()).isEmpty()) return;
+        List<String> listaTamanhos = (tamanhos == null || tamanhos.isEmpty()) ? List.of("Único") : tamanhos;
+        List<String> listaCores = (cores == null || cores.isEmpty()) ? List.of("Conforme imagem") : cores;
+        int totalVariacoes = listaTamanhos.size() * listaCores.size();
+        int porVariacao = Math.max(2, estoqueTotal / totalVariacoes);
+        for (String tamanho : listaTamanhos) {
+            for (String cor : listaCores) {
+                produtoVariacaoRepository.save(ProdutoVariacao.builder()
+                        .produto(produto).tamanho(tamanho).cor(cor)
+                        .estoque(porVariacao).ativo(true).build());
+            }
+        }
     }
 
     private void completarCamposProdutoExistente(Produto produto) {
         boolean alterado = false;
-        if (produto.getCategoria() != null && (produto.getTamanhos() == null || produto.getTamanhos().isEmpty())) {
+        if (produtoVariacaoRepository.findByProdutoId(produto.getId()).isEmpty() && produto.getCategoria() != null) {
             Categoria raiz = produto.getCategoria();
             while (raiz.getCategoriaPai() != null) raiz = raiz.getCategoriaPai();
-            String slugRaiz = raiz.getSlug();
-            List<String> tamanhos = tamanhosPadrao(slugRaiz, produto.getNome());
-            if (!tamanhos.isEmpty()) {
-                produto.setTamanhos(tamanhos);
-                alterado = true;
-            }
-        }
-        if (produto.getCores() == null || produto.getCores().isEmpty()) {
-            produto.setCores(List.of(corPadrao(produto.getNome())));
-            alterado = true;
+            List<String> tamanhos = tamanhosPadrao(raiz.getSlug(), produto.getNome());
+            int estoqueBase = produto.getEstoque() == null || produto.getEstoque() < 0 ? 10 : produto.getEstoque();
+            garantirVariacoes(produto, tamanhos, List.of(corPadrao(produto.getNome())), estoqueBase);
         }
         if (vazio(produto.getDescricao())) {
             produto.setDescricao("Produto de demonstração da AYVY. Consulte as opções disponíveis e as informações da loja.");
@@ -396,12 +411,15 @@ public class DemoDataBootstrap implements ApplicationRunner {
                 List<Produto> produtosLoja = produtoRepository.findByLojistaId(loja.getId());
                 if (produtosLoja.isEmpty()) continue;
                 Produto produto = produtosLoja.get(Math.floorMod(ci + si, produtosLoja.size()));
-                if (produto.getEstoque() == null || produto.getEstoque() <= 0) produto.setEstoque(5);
+                List<ProdutoVariacao> variacoes = produtoVariacaoRepository.findByProdutoIdAndAtivoTrue(produto.getId());
+                if (variacoes.isEmpty()) continue;
+                ProdutoVariacao variacao = variacoes.get(Math.min(1, variacoes.size() - 1));
+                if (variacao.getEstoque() <= 0) variacao.setEstoque(5);
 
                 StatusPedido status = statusPorIndice[Math.floorMod(ci + si, statusPorIndice.length)];
                 // Pedido cancelado não consome estoque; os demais representam venda concluída/ativa.
-                if (status != StatusPedido.cancelado) produto.setEstoque(produto.getEstoque() - 1);
-                produtoRepository.save(produto);
+                if (status != StatusPedido.cancelado) variacao.setEstoque(variacao.getEstoque() - 1);
+                produtoVariacaoRepository.save(variacao);
                 boolean pedidoChacara = "heloisa@ayvy.com.br".equalsIgnoreCase(usuario.getEmail()) && si == lojas.size() - 1 && chacara != null;
                 Endereco destino = pedidoChacara ? chacara : casa;
                 if (destino == null) continue;
@@ -432,11 +450,10 @@ public class DemoDataBootstrap implements ApplicationRunner {
                 }
                 int numero = pedidoProdutosRepository.maiorNumeroPedidoDaLoja(loja.getId()) + 1;
                 String codigo = sigla + "-" + numero;
-                String tamanho = primeiroTamanhoDisponivel(produto);
-                String cor = produto.getCores() == null || produto.getCores().isEmpty() ? null : produto.getCores().get(0);
                 pedidoProdutosRepository.saveAndFlush(PedidoProdutos.builder()
-                        .pedido(pedido).produto(produto).lojista(loja).quantidade(1)
-                        .precoUnitario(produto.getPreco().doubleValue()).tamanho(tamanho).cor(cor)
+                        .pedido(pedido).produto(produto).produtoVariacao(variacao).lojista(loja).quantidade(1)
+                        .precoUnitario(produto.getPreco().doubleValue())
+                        .tamanho(variacao.getTamanho()).cor(variacao.getCor())
                         .numeroPedidoLoja(numero).codigoPedidoLoja(codigo).build());
 
                 pedidoEnderecoEntregaRepository.saveAndFlush(PedidoEnderecoEntrega.builder()
@@ -463,11 +480,6 @@ public class DemoDataBootstrap implements ApplicationRunner {
         return enderecos.stream().filter(e -> e.getUsuario() != null
                 && e.getUsuario().getId().equals(usuarioId)
                 && Boolean.TRUE.equals(e.getPrincipal())).findFirst().orElse(null);
-    }
-
-    private String primeiroTamanhoDisponivel(Produto produto) {
-        if (produto.getTamanhos() == null || produto.getTamanhos().isEmpty()) return null;
-        return produto.getTamanhos().get(Math.min(1, produto.getTamanhos().size() - 1));
     }
 
     private boolean vazio(String valor) {

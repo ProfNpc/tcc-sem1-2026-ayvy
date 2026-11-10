@@ -8,6 +8,7 @@ import com.ayvy.api_java.infrastructure.enums.StatusProduto;
 import com.ayvy.api_java.infrastructure.repositories.CategoriaRepository;
 import com.ayvy.api_java.infrastructure.repositories.ProdutoImagemRepository;
 import com.ayvy.api_java.infrastructure.repositories.ProdutoRepository;
+import com.ayvy.api_java.infrastructure.repositories.ProdutoVariacaoRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,7 +32,7 @@ public class ProdutoService {
     private final ProdutoImagemRepository produtoImagemRepository;
     private final UploadService uploadService;
     private final CategoriaRepository categoriaRepository;
-    private final EstoqueService estoqueService;
+    private final ProdutoVariacaoRepository produtoVariacaoRepository;
     private final CarrinhoService carrinhoService;
 
     public ProdutoService(
@@ -39,7 +40,7 @@ public class ProdutoService {
             ProdutoImagemRepository produtoImagemRepository,
             UploadService uploadService,
             CategoriaRepository categoriaRepository,
-            EstoqueService estoqueService,
+            ProdutoVariacaoRepository produtoVariacaoRepository,
             CarrinhoService carrinhoService
     ) {
         this.carrinhoService = carrinhoService;
@@ -47,7 +48,7 @@ public class ProdutoService {
         this.produtoImagemRepository = produtoImagemRepository;
         this.uploadService = uploadService;
         this.categoriaRepository = categoriaRepository;
-        this.estoqueService = estoqueService;
+        this.produtoVariacaoRepository = produtoVariacaoRepository;
     }
 
     /** Busca as categorias extras pelo id, sem repetir a categoria principal (máx. 2). */
@@ -109,7 +110,7 @@ public class ProdutoService {
     }
 
     public void deletarProdutoPorId(Integer id) {
-        estoqueService.apagarLinhasDoProduto(id);
+        produtoVariacaoRepository.deleteAll(produtoVariacaoRepository.findByProdutoId(id));
         carrinhoService.removerProdutoDosCarrinhos(id);
         repository.deleteById(id);
     }
@@ -130,13 +131,6 @@ public class ProdutoService {
             validarCaminhoImagem(produto.getImagemPrincipalUrl());
             produtoEntity.setImagemPrincipalUrl(produto.getImagemPrincipalUrl());
         }
-<<<<<<< HEAD
-=======
-        if (produto.getEstoque() != null
-                && !estoqueService.aplicarEstoqueDoFormulario(produtoEntity, produto.getEstoque())) {
-            produtoEntity.setEstoque(produto.getEstoque());
-        }
->>>>>>> 6adebdfa50eb7d11b83330569f1ba8f3dc956b4f
         if (produto.getSlug() != null) {
             produtoEntity.setSlug(produto.getSlug());
         }
@@ -145,14 +139,6 @@ public class ProdutoService {
         }
         if (produto.getCategoria() != null) {
             produtoEntity.setCategoria(produto.getCategoria());
-        }
-<<<<<<< HEAD
-=======
-        if (produto.getCores() != null) {
-            produtoEntity.setCores(produto.getCores());
-        }
-        if (produto.getTamanhos() != null) {
-            produtoEntity.setTamanhos(produto.getTamanhos());
         }
         if (produto.getDescontoPercentual() != null) {
             validarDesconto(produto.getDescontoPercentual());
@@ -167,7 +153,6 @@ public class ProdutoService {
                 produtoEntity.getCategoriasExtras().addAll(extras);
             }
         }
->>>>>>> 6adebdfa50eb7d11b83330569f1ba8f3dc956b4f
 
         return repository.saveAndFlush(produtoEntity);
     }

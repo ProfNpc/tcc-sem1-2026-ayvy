@@ -62,7 +62,7 @@ public class ProdutoVariacaoController {
     }
 
     //Ativar variação
-    @PatchMapping("/variacaoId}/ativar")
+    @PatchMapping("/{variacaoId}/ativar")
     public ResponseEntity<Void> ativarVariacao(
             @PathVariable Integer produtoId,
             @PathVariable Integer variacaoId
