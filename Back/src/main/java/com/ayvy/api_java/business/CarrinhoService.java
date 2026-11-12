@@ -54,27 +54,68 @@ public class CarrinhoService {
     @Transactional
     public List<CarrinhoItem> substituir(Integer usuarioId, List<CarrinhoItemRequest> itens) {
         Usuario usuario = buscarUsuario(usuarioId);
-        Map<String, CarrinhoItem> linhas = new LinkedHashMap<>();
+
+        Map<Integer, CarrinhoItem> linhas = new LinkedHashMap<>();
+
         for (CarrinhoItemRequest req : itens == null ? List.<CarrinhoItemRequest>of() : itens) {
-            if (req == null || req.getProdutoId() == null || req.getQuantidade() == null || req.getQuantidade() <= 0) {
-                continue;
+            if (req == null) continue;
+
+            if (req.getProdutoId() == null
+                    || req.getProdutoVariacaoId() == null
+                    || req.getQuantidade() == null
+                    || req.getQuantidade() <= 0) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST, "Informe produto, variação e quantidade válida");
             }
-            Produto produto = produtoRepository.findById(req.getProdutoId()).orElse(null);
-            if (produto == null || produto.getStatusProduto() != StatusProduto.ativo) continue;
-            String cor = textoOuNull(req.getCor());
-            String tamanho = textoOuNull(req.getTamanho());
-            String chave = produto.getId() + "|" + (cor == null ? "" : cor) + "|" + (tamanho == null ? "" : tamanho);
-            CarrinhoItem linha = linhas.computeIfAbsent(chave, k -> CarrinhoItem.builder()
-                    .usuario(usuario).produto(produto).cor(cor).tamanho(tamanho).quantidade(0).build());
-            int estoque = estoqueDisponivel(produto, cor, tamanho);
-            linha.setQuantidade(Math.min(linha.getQuantidade() + req.getQuantidade(), Math.max(estoque, 0)));
+
+            Produto produto = produtoRepository.findById(req.getProdutoId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "Porduto não encontrado"));
+
+            if (produto.getStatusProduto() != StatusProduto.ativo){ continue;}
+
+            ProdutoVariacao variacao = produtoVariacaoRepository
+                    .findByIdAndProdutoId(
+                            req.getProdutoVariacaoId(),
+                            req.getProdutoId()).orElseThrow(() -> new ResponseStatusException(
+                                    HttpStatus.BAD_REQUEST, "Variação não encontrada para esse produto"));
+
+            if (!variacao.isAtivo()) continue;
+
+            int estoque = Math.max(variacao.getEstoque(), 0);
+
+            CarrinhoItem linha = linhas.computeIfAbsent(
+                    variacao.getId(),
+                    id -> CarrinhoItem.builder()
+                            .usuario(usuario)
+                            .produto(produto)
+                            .produtoVariacao(variacao)
+                            .cor(variacao.getCor())
+                            .tamanho(variacao.getTamanho())
+                            .quantidade(0)
+                            .build()
+            );
+
+            linha.setQuantidade(Math.min(
+                    linha.getQuantidade() + req.getQuantidade(),
+                    estoque));
+
             if (linhas.size() > MAX_LINHAS) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Carrinho com itens demais");
-            }
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Carrinho com itens demais");}
         }
-        repository.deleteAll(repository.findByUsuarioIdOrderByIdAsc(usuarioId));
+
+        repository.deleteAll(
+                repository.findByUsuarioIdOrderByIdAsc(usuarioId));
+
         repository.flush();
-        List<CarrinhoItem> validas = linhas.values().stream().filter(l -> l.getQuantidade() > 0).toList();
+
+        List<CarrinhoItem> validas = linhas.values()
+                .stream()
+                .filter(l -> l.getQuantidade() > 0)
+                .toList();
+
         return repository.saveAll(validas);
     }
 
@@ -89,19 +130,6 @@ public class CarrinhoService {
         repository.deleteAll(repository.findByProdutoId(produtoId));
     }
 
-    /**
-     * Estoque das variações ativas que combinam com a cor e o tamanho pedidos.
-     * Com cor e tamanho informados é a quantidade de uma variação só; sem eles, a soma das variações do produto.
-     */
-    private int estoqueDisponivel(Produto produto, String cor, String tamanho) {
-        int total = 0;
-        for (ProdutoVariacao v : produtoVariacaoRepository.findByProdutoIdAndAtivoTrue(produto.getId())) {
-            boolean mesmaCor = cor == null || cor.equalsIgnoreCase(v.getCor());
-            boolean mesmoTamanho = tamanho == null || tamanho.equalsIgnoreCase(v.getTamanho());
-            if (mesmaCor && mesmoTamanho) total += v.getEstoque();
-        }
-        return total;
-    }
 
     private Usuario buscarUsuario(Integer usuarioId) {
         if (usuarioId == null) {
@@ -115,5 +143,11 @@ public class CarrinhoService {
         if (valor == null) return null;
         String limpo = valor.trim();
         return limpo.isEmpty() ? null : limpo;
+    }
+
+    @Transactional
+    public void removerVariacaoDosCarrinhos(Integer VariacaoId) {
+        repository.deleteAll(repository
+                .findByProdutoVariacaoId(VariacaoId));
     }
 }

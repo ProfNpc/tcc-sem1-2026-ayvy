@@ -381,12 +381,14 @@ CREATE TABLE carrinho_itens (
     id             INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     usuario_id     INT NOT NULL,
     produto_id     INT NOT NULL,
+    produto_variacao_id INT NOT NULL,
     quantidade     INT NOT NULL,
     cor            VARCHAR(60) NULL,
     tamanho        VARCHAR(30) NULL,
     atualizado_em  DATETIME2 NOT NULL CONSTRAINT DF_carrinho_itens_atualizado_em DEFAULT SYSUTCDATETIME(),
     CONSTRAINT fk_carrinho_usuarios FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
-    CONSTRAINT fk_carrinho_produtos FOREIGN KEY (produto_id) REFERENCES produtos(id)
+    CONSTRAINT fk_carrinho_produtos FOREIGN KEY (produto_id) REFERENCES produtos(id),
+    CONSTRAINT FK_carrinho_itens_produto_variacao FOREIGN KEY (produto_variacao_id) REFERENCES produto_variacoes(id)
 );
 
 
@@ -423,5 +425,3 @@ GO
 
 
 SELECT * FROM usuarios;
-
-

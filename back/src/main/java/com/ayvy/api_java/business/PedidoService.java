@@ -5,11 +5,13 @@ import com.ayvy.api_java.dto.EnvioRequest;
 import com.ayvy.api_java.infrastructure.entities.*;
 import com.ayvy.api_java.infrastructure.enums.PapelUsuario;
 import com.ayvy.api_java.infrastructure.enums.StatusPedido;
+import com.ayvy.api_java.infrastructure.enums.StatusProduto;
 import com.ayvy.api_java.infrastructure.repositories.*;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import com.ayvy.api_java.infrastructure.enums.StatusProduto;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -407,6 +409,10 @@ public class PedidoService {
                             HttpStatus.NOT_FOUND,
                             "Produto " + itemReq.getProdutoId() + " não encontrado"));
 
+            if (produto.getStatusProduto() != StatusProduto.ativo){
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT, "Este produto não está disponível para compra");
+            }
             //Para evitar compras simultâneas
             ProdutoVariacao variacao = produtoVariacaoRepository
                     .buscarPorIdComBloqueio(itemReq.getProdutoVariacaoId())

@@ -11,4 +11,5 @@ import java.util.List;
 public interface CarrinhoItemRepository extends JpaRepository<CarrinhoItem, Integer> {
     List<CarrinhoItem> findByUsuarioIdOrderByIdAsc(Integer usuarioId);
     List<CarrinhoItem> findByProdutoId(Integer produtoId);
+    List<CarrinhoItem> findByProdutoVariacaoId(Integer produtoVariacaoId);
 }
