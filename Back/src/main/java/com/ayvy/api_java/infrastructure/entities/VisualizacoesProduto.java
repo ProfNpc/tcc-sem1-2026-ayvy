@@ -21,8 +21,9 @@ public class VisualizacoesProduto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    /** null = visitante sem login. */
     @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
     @ManyToOne

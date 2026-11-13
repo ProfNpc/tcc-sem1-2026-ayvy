@@ -35,27 +35,27 @@ Mapa geral: [../README.md](../README.md) · back: [../back/README.md](../back/RE
 
 | Tabela | Linha no DER | Entidade Java | O que guarda | Liga com |
 |---|---|---|---|---|
-| `usuarios` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L15) | `Usuario` | login de todos: e-mail, senha BCrypt, papel, status, telefone, avatar | base de tudo |
-| `clientes` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L33) | `Cliente` | CPF e dados do comprador | 1:1 `usuarios` |
-| `enderecos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L45) | `Endereco` | endereços; o principal do lojista é a origem do frete | N:1 `usuarios` |
-| `notificacoes` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L65) | `Notificacoes` | avisos (`pedido`, `pedido_loja`, `pedido_admin`, `estoque`) | N:1 `usuarios` |
-| `lojistas` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L80) | `Lojista` | loja: nome, slug, CNPJ, logo, banner, **sigla** (`LU`) | 1:1 `usuarios` |
-| `categorias` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L99) | `Categoria` | árvore: `categoria_pai_id` (NULL = principal), `icone`, `ordem` | ela mesma |
-| `produtos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L115) | `Produto` | nome, preço, **desconto_percentual**, estoque, cores, tamanhos, status | N:1 `lojistas`, `categorias` |
-| `produto_categorias_extras` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L143) | (Produto.categoriasExtras) | categorias a mais (tênis também em Streetwear) | N:N |
-| `produto_imagens` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L154) | `ProdutoImagem` | galeria de fotos | N:1 `produtos` |
-| `pedidos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L167) | `Pedido` | valores, status e envio (local, transportadora, rastreio, datas) | N:1 `usuarios` |
-| `pedido_endereco_entrega` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L192) | `PedidoEnderecoEntrega` | cópia do endereço no momento da compra | 1:1 `pedidos` |
-| `pedido_produtos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L208) | `PedidoProdutos` | itens com cor/tamanho e **codigo_pedido_loja** (`LU-1`) | N:1 `pedidos`, `produtos`, `lojistas` |
-| `pagamentos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L230) | `Pagamento` | **tipo** de pagamento e status (sem cartão) | N:1 `pedidos` |
-| `historico_compras` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L246) | `HistoricoCompras` | linha do tempo do pedido | N:1 `pedidos` |
-| `favoritos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L263) | `Favoritos` | favoritos (os mesmos no site e no app) | N:1 `usuarios`, `produtos` |
-| `visualizacoes_produtos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L278) | `VisualizacoesProduto` | cada visualização (ranking) | N:1 `produtos` |
-| `carrinho_itens` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L292) | `CarrinhoItem` | carrinho da conta (site + app) | N:1 `usuarios`, `produtos` |
-| `estoque_itens` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L309) | `EstoqueItem` | planilha Meu estoque (produto + tamanho + quantidade) | N:1 `lojistas`, `produtos` |
-| `redefinicao_senha` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L325) | `RedefinicaoSenha` | códigos de recuperação (só hash, validade, tentativas) | N:1 `usuarios` |
+| `usuarios` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L18) | `Usuario` | login de todos: e-mail, senha BCrypt, papel, status, telefone, avatar | base de tudo |
+| `clientes` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L37) | `Cliente` | CPF e dados do comprador | 1:1 `usuarios` |
+| `enderecos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L50) | `Endereco` | endereços; o principal do lojista é a origem do frete | N:1 `usuarios` |
+| `notificacoes` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L71) | `Notificacoes` | avisos (`pedido`, `pedido_loja`, `pedido_admin`, `estoque`) | N:1 `usuarios` |
+| `lojistas` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L87) | `Lojista` | loja: nome, slug, CNPJ, logo, banner, **sigla** (`LU`) | 1:1 `usuarios` |
+| `categorias` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L107) | `Categoria` | árvore: `categoria_pai_id` (NULL = principal), `icone`, `ordem` | ela mesma |
+| `produtos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L126) | `Produto` | nome, preço, **desconto_percentual**, status (a coluna `estoque` é antiga: o estoque real está em `produto_variacoes`) | N:1 `lojistas`, `categorias` |
+| `produto_categorias_extras` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L194) | (Produto.categoriasExtras) | categorias a mais (tênis também em Streetwear) | N:N |
+| `produto_imagens` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L205) | `ProdutoImagem` | galeria de fotos | N:1 `produtos` |
+| `pedidos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L219) | `Pedido` | valores, status e envio (local, transportadora, rastreio, datas) | N:1 `usuarios` |
+| `pedido_endereco_entrega` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L245) | `PedidoEnderecoEntrega` | cópia do endereço no momento da compra | 1:1 `pedidos` |
+| `pedido_produtos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L265) | `PedidoProdutos` | itens com cor/tamanho e **codigo_pedido_loja** (`LU-1`) | N:1 `pedidos`, `produtos`, `lojistas` |
+| `pagamentos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L306) | `Pagamento` | **tipo** de pagamento e status (sem cartão) | N:1 `pedidos` |
+| `historico_compras` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L323) | `HistoricoCompras` | linha do tempo do pedido | N:1 `pedidos` |
+| `favoritos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L343) | `Favoritos` | favoritos (os mesmos no site e no app) | N:1 `usuarios`, `produtos` |
+| `visualizacoes_produtos` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L363) | `VisualizacoesProduto` | cada visualização (ranking) | N:1 `produtos` |
+| `carrinho_itens` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L380) | `CarrinhoItem` | carrinho da conta (site + app) | N:1 `usuarios`, `produtos` |
+| `produto_variacoes` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L165) | `ProdutoVariacao` | tamanho + cor + **estoque** + ativo; única por (produto, tamanho, cor) | N:1 `produtos`; 1:N `pedido_produtos` |
+| `redefinicao_senha` | [ayvySQL_DER.sql](ayvySQL_DER.sql#L413) | `RedefinicaoSenha` | códigos de recuperação (só hash, validade, tentativas) | N:1 `usuarios` |
 
-Categorias iniciais do DER: [INSERT INTO categorias](ayvySQL_DER.sql#L340) (a árvore completa é criada pela API no `CategoriaArvoreBootstrap`).
+Categorias iniciais do DER: [INSERT INTO categorias](ayvySQL_DER.sql#L430) (a árvore completa é criada pela API no `CategoriaArvoreBootstrap`).
 
 ## 4. Status e papéis
 
@@ -74,8 +74,8 @@ SELECT p.* FROM pedidos p JOIN pedido_produtos pp ON pp.pedido_id = p.id WHERE p
 SELECT pai.nome AS principal, c.nome AS subcategoria
 FROM categorias c LEFT JOIN categorias pai ON pai.id = c.categoria_pai_id ORDER BY pai.ordem, c.ordem;
 
--- planilha de estoque de uma loja
-SELECT pr.nome, e.tamanho, e.quantidade FROM estoque_itens e JOIN produtos pr ON pr.id = e.produto_id WHERE e.lojista_id = 3;
+-- estoque por variação (cor + tamanho) dos produtos de uma loja
+SELECT pr.nome, v.cor, v.tamanho, v.estoque, v.ativo FROM produto_variacoes v JOIN produtos pr ON pr.id = v.produto_id WHERE pr.lojista_id = 3;
 
 -- carrinho de um cliente
 SELECT pr.nome, c.quantidade, c.cor, c.tamanho FROM carrinho_itens c JOIN produtos pr ON pr.id = c.produto_id WHERE c.usuario_id = 2;
@@ -88,6 +88,15 @@ SELECT evento, descricao, criado_em FROM historico_compras WHERE pedido_id = 1 O
 
 1. **DER × API**: quem manda é a entidade Java (`ddl-auto=update`). Mudou uma coluna no Java? Atualize o DER também, para a documentação não ficar diferente do banco.
 2. **Apagar tabela com FK**: sempre na ordem do `drop-ayvy-tables.sql`; primeiro as tabelas que apontam para outras.
-3. **`UNIQUE` com NULL no SQL Server**: só um NULL por coluna única. Em `estoque_itens (produto_id, tamanho)` isso garante uma única linha "todos os tamanhos" por produto.
+3. **`UNIQUE` com NULL no SQL Server**: só um NULL por coluna única. Por isso `lojistas.sigla` não é `unique`.
 4. **`ddl-auto=update` não apaga coluna**: colunas antigas continuam no banco. Para limpar, use o drop e recrie.
 5. **Senha do `sa`**: se mudar no `docker-compose.yml`, mude também em `application.properties` (`DB_PASSWORD`).
+6. **Banco antigo + estoque por variação**: se o Spring não sobe com `Invalid column name 'produto_variacao_id'`, crie a coluna (sem apagar nada) e suba de novo:
+   ```sql
+   ALTER TABLE dbo.pedido_produtos ADD produto_variacao_id INT NULL;
+   ```
+   Ela fica NULL nos pedidos antigos; os novos sempre gravam a variação. A tabela `estoque_itens` (planilha antiga) não é mais usada e pode ficar no banco.
+7. **Visualização sem login dando 500**: em banco antigo, `visualizacoes_produtos.usuario_id` ainda é NOT NULL (o `ddl-auto=update` não muda isso). Libere o NULL (visitante sem login):
+   ```sql
+   ALTER TABLE dbo.visualizacoes_produtos ALTER COLUMN usuario_id INT NULL;
+   ```

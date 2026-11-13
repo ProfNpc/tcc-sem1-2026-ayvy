@@ -104,7 +104,7 @@ function linhaDaConta(item) {
     apiId: p.id,
     shopSlug: String(p.lojista?.slug || "").trim().toLowerCase().replace(/-/g, "_"),
     shopName: p.lojista?.nomeLoja || "",
-    stock: p.estoque,
+    stock: p.estoqueDisponivel,
     colors: listaLimpa(p.cores),
     sizes: listaLimpa(p.tamanhos),
     color: item.cor || null,

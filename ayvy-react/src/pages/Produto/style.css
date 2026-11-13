@@ -291,6 +291,18 @@
   color: var(--produto-accent);
 }
 
+/* Opção sem estoque (estoque por variação: cor + tamanho) */
+.produto-chip.is-esgotado {
+  color: #b3aabd;
+  border-style: dashed;
+  text-decoration: line-through;
+}
+
+.produto-estoque-hint.is-esgotado {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
 .produto-chip.is-selected {
   border-color: var(--produto-accent);
   color: var(--produto-accent);

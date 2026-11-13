@@ -167,7 +167,7 @@ export default function AdminProdutosList() {
                     </td>
                     <td>{row.lojista?.nomeLoja ?? "—"}</td>
                     <td>{formatPreco(row.preco)}</td>
-                    <td>{row.estoque ?? 0}</td>
+                    <td>{row.estoqueDisponivel ?? 0}</td>
                     <td>
                       <span className={`admin-badge--status ${row.status}`}>{row.status}</span>
                     </td>

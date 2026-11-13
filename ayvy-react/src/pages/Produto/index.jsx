@@ -7,6 +7,7 @@ import { Link, useParams } from "react-router-dom";
 import FloatingChat from "../../components/FloatingChat";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
+import { acharVariacao, listarVariacoesAtivas } from "../../services/variacoesApi";
 import {
   desfavoritarProduto,
   favoritarProduto,
@@ -109,6 +110,8 @@ function ProdutoDetail({ slug, shop, product }) {
   const [color, setColor] = useState(product.colors[0] ?? "");
   const [size, setSize] = useState(product.sizes[0] ?? "");
   const [quantity, setQuantity] = useState(1);
+  // Estoque por variação (cor + tamanho): null = ainda carregando da API.
+  const [variacoes, setVariacoes] = useState(null);
   const [reviewFilter, setReviewFilter] = useState("all");
   const [favorites, setFavorites] = useState(() => readFavorites());
   const [chatOpen, setChatOpen] = useState(false);
@@ -117,6 +120,35 @@ function ProdutoDetail({ slug, shop, product }) {
   const apiProdutoId = product.apiId ?? (Number.isFinite(Number(product.id)) ? Number(product.id) : null);
   const isFavorite = favorites.includes(favKey);
   const canEdit = isShopOwner(user, slug) && apiProdutoId != null;
+
+  useEffect(() => {
+    if (!apiProdutoId) return undefined;
+    let cancelado = false;
+    listarVariacoesAtivas(apiProdutoId)
+      .then((lista) => {
+        if (!cancelado) setVariacoes(Array.isArray(lista) ? lista : []);
+      })
+      .catch(() => {
+        if (!cancelado) setVariacoes(null);
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, [apiProdutoId]);
+
+  const variacaoEscolhida = variacoes ? acharVariacao(variacoes, color, size) : null;
+  const estoqueEscolhido = variacoes ? (variacaoEscolhida?.estoque ?? 0) : null;
+  const esgotadoNaEscolha = variacoes != null && estoqueEscolhido <= 0;
+
+  function tamanhoDisponivel(t) {
+    if (!variacoes) return true;
+    return variacoes.some((v) => acharVariacao([v], color, t) && v.estoque > 0);
+  }
+
+  function corDisponivel(c) {
+    if (!variacoes) return true;
+    return variacoes.some((v) => acharVariacao([v], c, null) && v.estoque > 0);
+  }
 
   useEffect(() => {
     if (!apiProdutoId) return;
@@ -201,8 +233,12 @@ function ProdutoDetail({ slug, shop, product }) {
       alert("Selecione a cor e o tamanho.");
       return;
     }
-    if (product.stock === "indisponivel") {
-      alert("Produto sem estoque no momento.");
+    if (product.stock === "indisponivel" || esgotadoNaEscolha) {
+      alert("Esta cor e tamanho estão sem estoque no momento. Escolha outra opção.");
+      return;
+    }
+    if (estoqueEscolhido != null && quantity > estoqueEscolhido) {
+      alert(`Só restam ${estoqueEscolhido} unidade(s) nesta cor e tamanho.`);
       return;
     }
     const img = getImageForColor(product, color);
@@ -328,7 +364,8 @@ function ProdutoDetail({ slug, shop, product }) {
                 <button
                   key={c}
                   type="button"
-                  className={`produto-chip ${color === c ? "is-selected" : ""}`}
+                  className={`produto-chip ${color === c ? "is-selected" : ""}${corDisponivel(c) ? "" : " is-esgotado"}`}
+                  title={corDisponivel(c) ? undefined : "Esgotado nesta cor"}
                   onClick={() => handleSelectColor(c)}
                 >
                   {c}
@@ -344,7 +381,8 @@ function ProdutoDetail({ slug, shop, product }) {
                 <button
                   key={s}
                   type="button"
-                  className={`produto-chip ${size === s ? "is-selected" : ""}`}
+                  className={`produto-chip ${size === s ? "is-selected" : ""}${tamanhoDisponivel(s) ? "" : " is-esgotado"}`}
+                  title={tamanhoDisponivel(s) ? undefined : "Esgotado nesta cor"}
                   onClick={() => setSize(s)}
                 >
                   {s}
@@ -377,20 +415,28 @@ function ProdutoDetail({ slug, shop, product }) {
               <button
                 type="button"
                 aria-label="Aumentar"
-                disabled={quantity >= 99}
-                onClick={() => setQuantity((q) => Math.min(99, q + 1))}
+                disabled={quantity >= Math.min(99, estoqueEscolhido ?? 99)}
+                onClick={() => setQuantity((q) => Math.min(99, estoqueEscolhido ?? 99, q + 1))}
               >
                 +
               </button>
             </div>
-            <span className="produto-estoque-hint">{product.stockLabel}</span>
+            <span className={`produto-estoque-hint${esgotadoNaEscolha ? " is-esgotado" : ""}`}>
+              {variacoes == null
+                ? product.stockLabel
+                : !variacaoEscolhida
+                  ? "Esta combinação de cor e tamanho não existe"
+                  : estoqueEscolhido > 0
+                    ? `${estoqueEscolhido} em estoque nesta cor e tamanho`
+                    : "Esgotado nesta cor e tamanho"}
+            </span>
           </div>
 
           <button
             type="button"
             className="produto-btn-carrinho"
             onClick={handleAddToCart}
-            disabled={product.stock === "indisponivel"}
+            disabled={product.stock === "indisponivel" || esgotadoNaEscolha}
           >
             <i className="fas fa-cart-plus" /> Adicionar ao carrinho
           </button>

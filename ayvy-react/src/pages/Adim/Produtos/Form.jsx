@@ -65,7 +65,6 @@ function buildPayload(form, isEdit) {
     slug: form.slug.trim(),
     descricao: form.descricao.trim() || null,
     preco: Number(form.preco),
-    estoque: Number(form.estoque) || 0,
     imagemPrincipalUrl: form.imagemPrincipalUrl || null,
     status: form.status,
   };
@@ -115,7 +114,7 @@ export default function AdminProdutoForm() {
             slug: data.slug || "",
             descricao: data.descricao || "",
             preco: data.preco != null ? String(data.preco) : "",
-            estoque: data.estoque != null ? String(data.estoque) : "0",
+            estoque: String(data.estoqueDisponivel ?? 0),
             imagemPrincipalUrl: data.imagemPrincipalUrl || "",
             // Status real do produto na API (ex.: esgotado, inativo)
             status: normalizarStatusProduto(data.status),
@@ -281,16 +280,9 @@ export default function AdminProdutoForm() {
             />
           </div>
           <div className="admin-crud-field">
-            <label htmlFor="p-estoque">Estoque</label>
-            <input
-              id="p-estoque"
-              type="number"
-              min="0"
-              step="1"
-              value={form.estoque}
-              onChange={(e) => setForm({ ...form, estoque: e.target.value })}
-              required
-            />
+            <label htmlFor="p-estoque">Estoque (soma das variações)</label>
+            <input id="p-estoque" type="number" value={form.estoque} readOnly disabled />
+            <small>O estoque é por tamanho e cor: o lojista ajusta em Meu estoque.</small>
           </div>
         </div>
 

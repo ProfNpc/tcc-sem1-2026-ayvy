@@ -363,7 +363,7 @@ GO
 CREATE TABLE visualizacoes_produtos (
     id               INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     produto_id       INT NOT NULL,
-    usuario_id       INT NOT NULL,
+    usuario_id       INT NULL,            -- NULL = visitante sem login
     visualizado_em   DATETIME2 NOT NULL CONSTRAINT DF_visualizacoes_visualizado_em DEFAULT SYSUTCDATETIME(),
 
     CONSTRAINT fk_visualizacoes_produtos

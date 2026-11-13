@@ -67,7 +67,7 @@ export async function loadShopsFromApi() {
         ? [resolveImageUrl(p.imagemPrincipalUrl)]
         : [],
       description: p.descricao || "",
-      stock: (p.estoque ?? 0) > 0 ? "disponivel" : "indisponivel",
+      stock: Number(p.estoqueDisponivel) > 0 ? "disponivel" : "indisponivel",
       slug: p.slug,
       categoria: p.categoria?.nome || "",
       ...(Array.isArray(p.cores) ? { colors: p.cores } : {}),

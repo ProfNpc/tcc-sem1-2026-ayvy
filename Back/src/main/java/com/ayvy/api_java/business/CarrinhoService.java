@@ -3,10 +3,12 @@ package com.ayvy.api_java.business;
 import com.ayvy.api_java.dto.CarrinhoItemRequest;
 import com.ayvy.api_java.infrastructure.entities.CarrinhoItem;
 import com.ayvy.api_java.infrastructure.entities.Produto;
+import com.ayvy.api_java.infrastructure.entities.ProdutoVariacao;
 import com.ayvy.api_java.infrastructure.entities.Usuario;
 import com.ayvy.api_java.infrastructure.enums.StatusProduto;
 import com.ayvy.api_java.infrastructure.repositories.CarrinhoItemRepository;
 import com.ayvy.api_java.infrastructure.repositories.ProdutoRepository;
+import com.ayvy.api_java.infrastructure.repositories.ProdutoVariacaoRepository;
 import com.ayvy.api_java.infrastructure.repositories.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -30,10 +32,13 @@ public class CarrinhoService {
     private final CarrinhoItemRepository repository;
     private final UsuarioRepository usuarioRepository;
     private final ProdutoRepository produtoRepository;
+    private final ProdutoVariacaoRepository produtoVariacaoRepository;
 
     public CarrinhoService(CarrinhoItemRepository repository,
                            UsuarioRepository usuarioRepository,
-                           ProdutoRepository produtoRepository) {
+                           ProdutoRepository produtoRepository,
+                           ProdutoVariacaoRepository produtoVariacaoRepository) {
+        this.produtoVariacaoRepository = produtoVariacaoRepository;
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
         this.produtoRepository = produtoRepository;
@@ -60,7 +65,7 @@ public class CarrinhoService {
             String chave = produto.getId() + "|" + (cor == null ? "" : cor) + "|" + (tamanho == null ? "" : tamanho);
             CarrinhoItem linha = linhas.computeIfAbsent(chave, k -> CarrinhoItem.builder()
                     .usuario(usuario).produto(produto).cor(cor).tamanho(tamanho).quantidade(0).build());
-            int estoque = produto.getEstoque() == null ? 0 : produto.getEstoque();
+            int estoque = estoqueDaLinha(produto, cor, tamanho);
             linha.setQuantidade(Math.min(linha.getQuantidade() + req.getQuantidade(), Math.max(estoque, 0)));
             if (linhas.size() > MAX_LINHAS) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Carrinho com itens demais");
@@ -81,6 +86,23 @@ public class CarrinhoService {
     /** Usado ao excluir um produto: tira ele de todos os carrinhos. */
     public void removerProdutoDosCarrinhos(Integer produtoId) {
         repository.deleteAll(repository.findByProdutoId(produtoId));
+    }
+
+    /**
+     * Limite da linha: com cor e tamanho escolhidos, o estoque daquela variação; sem a escolha (ex.: item
+     * vindo do app), o estoque somado das variações ativas. O campo produtos.estoque não é mais usado.
+     */
+    private int estoqueDaLinha(Produto produto, String cor, String tamanho) {
+        List<ProdutoVariacao> ativas = produtoVariacaoRepository.findByProdutoIdAndAtivoTrue(produto.getId());
+        if (cor != null && tamanho != null) {
+            return ativas.stream()
+                    .filter(v -> v.getCor().equalsIgnoreCase(cor) && v.getTamanho().equalsIgnoreCase(tamanho))
+                    .mapToInt(ProdutoVariacao::getEstoque).findFirst().orElse(0);
+        }
+        return ativas.stream()
+                .filter(v -> (cor == null || v.getCor().equalsIgnoreCase(cor))
+                        && (tamanho == null || v.getTamanho().equalsIgnoreCase(tamanho)))
+                .mapToInt(ProdutoVariacao::getEstoque).sum();
     }
 
     private Usuario buscarUsuario(Integer usuarioId) {

@@ -309,7 +309,7 @@ export default function HomeScreen({ user }) {
       if (minValue != null && !(price >= minValue)) return false;
       if (maxValue != null && !(price <= maxValue)) return false;
 
-      if (onlyInStock && !(Number(product.estoque) > 0)) return false;
+      if (onlyInStock && !(Number(product.estoqueDisponivel) > 0)) return false;
       if (onlyFavorites && !favoriteIds.includes(product.id)) return false;
       return true;
     });

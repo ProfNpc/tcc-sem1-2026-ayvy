@@ -1,29 +1,30 @@
 /**
- * Meu estoque (/meu-estoque, só lojista): planilha de estoque por categoria, alertas de reposição,
- * gráfico de vendas que cresce mês a mês (vendas, valor e devoluções) e o card AYVY Premium.
- * Ligado às vendas: o checkout tira do estoque e o cancelamento/reembolso devolve (EstoqueService no back).
- * Dados: services/estoqueApi.js + lojistaApi.listProdutosDoLojista.
+ * Meu estoque (/meu-estoque, só lojista): planilha de estoque POR VARIAÇÃO (cor + tamanho) de cada
+ * produto, por categoria; alertas de reposição; gráfico de vendas mês a mês e o card AYVY Premium.
+ * Ligado às vendas: o checkout tira da variação comprada e o cancelamento/reembolso devolve (back).
+ * Dados: services/estoqueApi.js (variações em /produtos/{id}/variacoes + relatório /estoque/relatorio).
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useAuth } from "../../context/AuthContext";
 import {
-  adicionarAoEstoque,
-  atualizarLinhaEstoque,
-  criarPlanilhaEstoque,
-  listarEstoque,
+  adicionarPecas,
+  atualizarQuantidade,
+  desativarLinha,
+  listarPlanilhaDaLoja,
+  reativarLinha,
   relatorioEstoque,
-  removerLinhaEstoque,
 } from "../../services/estoqueApi";
-import { listProdutosDoLojista } from "../../services/lojistaApi";
+import { COR_UNICA, TAMANHO_UNICO } from "../../services/lojistaApi";
 import { formatBRL } from "../../utils/cartHelpers";
 import { resolveImageUrl } from "../../utils/imageUrl";
 import "./style.css";
 
 const IMAGEM_PADRAO = "/assets/img/ayvy-media-a.png";
 const ESTOQUE_BAIXO = 2;
-const OUTRO_TAMANHO = "__outro__";
+const AVISOS_VISIVEIS = 4;
+const OUTRO = "__outro__";
 const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const MESES_LONGOS = [
   "janeiro", "fevereiro", "março", "abril", "maio", "junho",
@@ -37,7 +38,8 @@ function nomeCategoria(produto) {
 }
 
 function rotuloLinha(linha) {
-  return `${linha.produto?.nome || "Produto"}${linha.tamanho ? ` (${linha.tamanho})` : ""}`;
+  const detalhes = [linha.cor, linha.tamanho].filter((v) => v && v !== COR_UNICA && v !== TAMANHO_UNICO);
+  return `${linha.produto?.nome || "Produto"}${detalhes.length ? ` (${detalhes.join(", ")})` : ""}`;
 }
 
 /** Lista contínua de meses (aaaa-mm) do primeiro registro até o mês atual. */
@@ -67,21 +69,22 @@ export default function MeuEstoque() {
   const [salvando, setSalvando] = useState(false);
   const [quantidades, setQuantidades] = useState({});
   const [remover, setRemover] = useState(null);
-  const [form, setForm] = useState({ produtoId: "", tamanho: "", tamanhoOutro: "", quantidade: "" });
+  const FORM_VAZIO = { produtoId: "", cor: "", corOutra: "", tamanho: "", tamanhoOutro: "", quantidade: "" };
+  const [form, setForm] = useState(FORM_VAZIO);
   const [premiumAviso, setPremiumAviso] = useState(false);
   const [formAberto, setFormAberto] = useState(false);
   const [atualizando, setAtualizando] = useState(false);
+  const [verTodosAvisos, setVerTodosAvisos] = useState(false);
 
   const recarregar = useCallback(async () => {
     if (!lojistaId) return;
     try {
-      const [ls, ps, rel] = await Promise.all([
-        listarEstoque(lojistaId),
-        listProdutosDoLojista(lojistaId),
+      const [planilha, rel] = await Promise.all([
+        listarPlanilhaDaLoja(lojistaId),
         relatorioEstoque(lojistaId).catch(() => null),
       ]);
-      setLinhas(ls || []);
-      setProdutos(ps || []);
+      setLinhas(planilha.linhas);
+      setProdutos(planilha.produtos);
       setRelatorio(rel);
       setQuantidades({});
       setErro("");
@@ -100,44 +103,54 @@ export default function MeuEstoque() {
   const vendidosPorLinha = useMemo(() => {
     const mapa = {};
     const porItem = relatorio?.porItem || [];
+    const igual = (a, b) => String(a || "").toLowerCase() === String(b || "").toLowerCase();
     for (const l of linhas) {
-      const doProduto = porItem.filter((i) => i.produtoId === l.produto?.id);
-      if (l.tamanho) {
-        mapa[l.id] = doProduto
-          .filter((i) => String(i.tamanho || "").toLowerCase() === l.tamanho.toLowerCase())
-          .reduce((s, i) => s + i.vendidos, 0);
-      } else {
-        const outros = new Set(
-          linhas
-            .filter((o) => o.produto?.id === l.produto?.id && o.tamanho)
-            .map((o) => o.tamanho.toLowerCase()),
-        );
-        mapa[l.id] = doProduto
-          .filter((i) => !i.tamanho || !outros.has(String(i.tamanho).toLowerCase()))
-          .reduce((s, i) => s + i.vendidos, 0);
-      }
+      mapa[l.id] = porItem
+        .filter((i) =>
+          i.produtoVariacaoId != null
+            ? i.produtoVariacaoId === l.id
+            : i.produtoId === l.produto?.id && igual(i.tamanho, l.tamanho) && igual(i.cor, l.cor),
+        )
+        .reduce((soma, i) => soma + i.vendidos, 0);
     }
     return mapa;
   }, [linhas, relatorio]);
 
+  const linhasAtivas = linhas.filter((l) => l.ativo);
+  const linhasDesativadas = linhas.filter((l) => !l.ativo);
+
   const grupos = useMemo(() => {
     const mapa = new Map();
-    for (const l of linhas) {
+    for (const l of linhasAtivas) {
       const nome = nomeCategoria(l.produto);
       if (!mapa.has(nome)) mapa.set(nome, []);
       mapa.get(nome).push(l);
     }
     return [...mapa.entries()].sort((a, b) => a[0].localeCompare(b[0], "pt-BR"));
-  }, [linhas]);
+  }, [linhasAtivas]);
 
-  const zerados = linhas.filter((l) => l.quantidade === 0);
-  const baixos = linhas.filter((l) => l.quantidade > 0 && l.quantidade <= ESTOQUE_BAIXO);
-  const totalPecas = linhas.reduce((s, l) => s + l.quantidade, 0);
-  const valorEstoque = linhas.reduce(
+  const zerados = linhasAtivas.filter((l) => l.quantidade === 0);
+  const baixos = linhasAtivas.filter((l) => l.quantidade > 0 && l.quantidade <= ESTOQUE_BAIXO);
+  // Avisos agrupados por produto + cor (cada tamanho vira uma etiqueta), zerados primeiro.
+  const avisos = useMemo(() => {
+    const mapa = new Map();
+    for (const l of [...zerados, ...baixos]) {
+      const chave = `${l.produto?.id}|${String(l.cor).toLowerCase()}`;
+      if (!mapa.has(chave)) mapa.set(chave, { chave, produto: l.produto, cor: l.cor, itens: [] });
+      mapa.get(chave).itens.push(l);
+    }
+    const grupos = [...mapa.values()];
+    for (const g of grupos) g.itens.sort((a, b) => a.quantidade - b.quantidade || a.id - b.id);
+    return grupos.sort((a, b) => b.itens.filter((l) => l.quantidade === 0).length - a.itens.filter((l) => l.quantidade === 0).length);
+  }, [zerados, baixos]);
+  const avisosNaTela = verTodosAvisos ? avisos : avisos.slice(0, AVISOS_VISIVEIS);
+
+  const totalPecas = linhasAtivas.reduce((s, l) => s + l.quantidade, 0);
+  const valorEstoque = linhasAtivas.reduce(
     (s, l) => s + l.quantidade * (Number(l.produto?.precoFinal ?? l.produto?.preco) || 0),
     0,
   );
-  const produtosNaPlanilha = new Set(linhas.map((l) => l.produto?.id)).size;
+  const produtosNaPlanilha = new Set(linhasAtivas.map((l) => l.produto?.id)).size;
 
   const produtoEscolhido = produtos.find((p) => String(p.id) === String(form.produtoId));
   const produtosPorCategoria = useMemo(() => {
@@ -202,22 +215,18 @@ export default function MeuEstoque() {
     }
   }
 
-  function criarPlanilha() {
-    executar(() => criarPlanilhaEstoque(lojistaId), "Planilha criada com os produtos da sua loja.");
-  }
-
   function adicionar(e) {
     e.preventDefault();
     const quantidade = Number(form.quantidade);
-    const tamanho = form.tamanho === OUTRO_TAMANHO ? form.tamanhoOutro.trim() : form.tamanho;
+    const cor = (form.cor === OUTRO ? form.corOutra.trim() : form.cor) || COR_UNICA;
+    const tamanho = (form.tamanho === OUTRO ? form.tamanhoOutro.trim() : form.tamanho) || TAMANHO_UNICO;
     if (!form.produtoId) return setErro("Escolha o produto.");
     if (!Number.isInteger(quantidade) || quantidade < 0) return setErro("Informe a quantidade de peças.");
-    if (form.tamanho === OUTRO_TAMANHO && !tamanho) return setErro("Digite o tamanho ou a numeração.");
     executar(
-      () => adicionarAoEstoque({ lojistaId, produtoId: Number(form.produtoId), tamanho, quantidade }),
-      `${quantidade} peça(s) de ${produtoEscolhido?.nome || "produto"}${tamanho ? ` (${tamanho})` : ""} no estoque.`,
+      () => adicionarPecas({ produtoId: Number(form.produtoId), cor, tamanho, quantidade }),
+      `${quantidade} peça(s) de ${rotuloLinha({ produto: produtoEscolhido, cor, tamanho })} no estoque.`,
     ).then(() => {
-      setForm({ produtoId: "", tamanho: "", tamanhoOutro: "", quantidade: "" });
+      setForm(FORM_VAZIO);
       setFormAberto(false);
     });
   }
@@ -228,13 +237,25 @@ export default function MeuEstoque() {
       setQuantidades((q) => ({ ...q, [linha.id]: undefined }));
       return;
     }
-    executar(() => atualizarLinhaEstoque(linha.id, { quantidade: n }));
+    executar(() => atualizarQuantidade(linha, n));
   }
 
   function confirmarRemocao() {
     const linha = remover;
     setRemover(null);
-    executar(() => removerLinhaEstoque(linha.id), `${rotuloLinha(linha)} saiu da planilha.`);
+    executar(() => desativarLinha(linha), `${rotuloLinha(linha)} foi desativada e saiu da loja.`);
+  }
+
+  function focarQuantidade(linha) {
+    const campo = document.getElementById(`est-qtd-${linha.id}`);
+    if (!campo) return;
+    campo.scrollIntoView({ block: "center", behavior: "smooth" });
+    campo.focus({ preventScroll: true });
+    campo.select();
+  }
+
+  function reativar(linha) {
+    executar(() => reativarLinha(linha), `${rotuloLinha(linha)} voltou para a loja.`);
   }
 
   if (!lojistaId) {
@@ -259,7 +280,7 @@ export default function MeuEstoque() {
           </p>
         </div>
         <div className="est-head__acoes">
-          {linhas.length > 0 ? (
+          {produtos.length > 0 ? (
             <button
               type="button"
               className={`est-btn ${formAberto ? "est-btn--ghost" : "est-btn--primary"}`}
@@ -296,25 +317,19 @@ export default function MeuEstoque() {
         <p className="est-status">
           <span className="est-spinner" aria-hidden /> Carregando seu estoque…
         </p>
-      ) : linhas.length === 0 ? (
+      ) : produtos.length === 0 ? (
         <section className="est-card est-vazio">
           <span className="est-vazio__icone" aria-hidden>
             <i className="fas fa-table" />
           </span>
-          <h2>Crie sua planilha de estoque</h2>
+          <h2>Sua planilha de estoque começa pelos produtos</h2>
           <p>
-            Organize as peças da sua loja por categoria e tamanho (ex.: 50 regatas femininas, 10 saltos
-            número 37). A planilha começa com os produtos que você já cadastrou.
+            Cada produto tem variações (cor + tamanho) e cada variação tem o seu estoque — ex.: Tênis preto 38
+            e Tênis preto 39. Cadastre um produto para começar.
           </p>
-          {produtos.length > 0 ? (
-            <button type="button" className="est-btn est-btn--primary" onClick={criarPlanilha} disabled={salvando}>
-              <i className="fas fa-plus" aria-hidden /> Criar planilha de estoque
-            </button>
-          ) : (
-            <Link to={`/loja/${user.shopSlug}/produto/novo`} className="est-btn est-btn--primary">
-              <i className="fas fa-plus" aria-hidden /> Cadastrar meu primeiro produto
-            </Link>
-          )}
+          <Link to={`/loja/${user.shopSlug}/produto/novo`} className="est-btn est-btn--primary">
+            <i className="fas fa-plus" aria-hidden /> Cadastrar meu primeiro produto
+          </Link>
         </section>
       ) : (
         <>
@@ -337,41 +352,85 @@ export default function MeuEstoque() {
             </article>
           </section>
 
-          {zerados.length > 0 ? (
-            <section className="est-alertas" aria-label="Itens sem estoque">
-              {zerados.map((l) => (
-                <div key={l.id} className="est-alerta est-alerta--zerado">
-                  <i className="fas fa-exclamation-triangle" aria-hidden />
-                  <span>
-                    Você precisa repor <strong>{rotuloLinha(l)}</strong> ou remover da sua planilha.
-                  </span>
-                  <div className="est-alerta__acoes">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        document.getElementById(`est-qtd-${l.id}`)?.focus({ preventScroll: false })
-                      }
-                    >
-                      Repor
-                    </button>
-                    <button type="button" onClick={() => setRemover(l)}>
-                      Remover
-                    </button>
-                  </div>
+          {avisos.length > 0 ? (
+            <section className="est-avisos" aria-label="Atenção ao estoque">
+              <header className="est-avisos__topo">
+                <span className="est-avisos__icone" aria-hidden>
+                  <i className="fas fa-bell" />
+                </span>
+                <div className="est-avisos__titulo">
+                  <h2>Atenção ao estoque</h2>
+                  <p>Toque num tamanho para repor a quantidade na planilha.</p>
                 </div>
-              ))}
-            </section>
-          ) : null}
-          {baixos.length > 0 ? (
-            <section className="est-alertas">
-              {baixos.map((l) => (
-                <div key={l.id} className="est-alerta est-alerta--baixo">
-                  <i className="fas fa-info-circle" aria-hidden />
-                  <span>
-                    Estoque baixo: restam <strong>{l.quantidade}</strong> de {rotuloLinha(l)}.
-                  </span>
+                <div className="est-avisos__contagem">
+                  {zerados.length ? (
+                    <span className="est-pill est-pill--zerado">{zerados.length} sem estoque</span>
+                  ) : null}
+                  {baixos.length ? <span className="est-pill est-pill--baixo">{baixos.length} acabando</span> : null}
                 </div>
-              ))}
+              </header>
+              <ul className="est-avisos__lista">
+                {avisosNaTela.map((g) => {
+                  const qtdIgual =
+                    g.itens.length > 1 && g.itens.every((l) => l.quantidade === g.itens[0].quantidade)
+                      ? g.itens[0].quantidade
+                      : null;
+                  const detalhes = [
+                    g.cor && g.cor !== COR_UNICA ? g.cor : null,
+                    qtdIgual === 0 ? "sem estoque em nenhum tamanho" : qtdIgual ? `restam ${qtdIgual} de cada` : null,
+                  ].filter(Boolean);
+                  return (
+                  <li key={g.chave} className="est-aviso">
+                    <img
+                      src={resolveImageUrl(g.produto?.imagemPrincipalUrl) || IMAGEM_PADRAO}
+                      alt=""
+                      onError={(e) => {
+                        e.currentTarget.src = IMAGEM_PADRAO;
+                      }}
+                    />
+                    <div className="est-aviso__info">
+                      <strong>{g.produto?.nome || "Produto"}</strong>
+                      {detalhes.length ? <small>{detalhes.join(" · ")}</small> : null}
+                    </div>
+                    <div className="est-aviso__tamanhos">
+                      {g.itens.map((l) => {
+                        const zerado = l.quantidade === 0;
+                        const tamanho = l.tamanho === TAMANHO_UNICO ? "Único" : l.tamanho;
+                        return (
+                          <span key={l.id} className={`est-tam est-tam--${zerado ? "zerado" : "baixo"}`}>
+                            <button
+                              type="button"
+                              onClick={() => focarQuantidade(l)}
+                              title={zerado ? `Repor ${rotuloLinha(l)}` : `Restam ${l.quantidade} de ${rotuloLinha(l)}`}
+                            >
+                              {tamanho}
+                              {qtdIgual === null ? <b>{l.quantidade}</b> : null}
+                            </button>
+                            {zerado ? (
+                              <button
+                                type="button"
+                                className="est-tam__x"
+                                onClick={() => setRemover(l)}
+                                aria-label={`Desativar ${rotuloLinha(l)}`}
+                                title="Desativar variação"
+                              >
+                                ×
+                              </button>
+                            ) : null}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </li>
+                  );
+                })}
+              </ul>
+              {avisos.length > AVISOS_VISIVEIS ? (
+                <button type="button" className="est-avisos__mais" onClick={() => setVerTodosAvisos((v) => !v)}>
+                  {verTodosAvisos ? "Mostrar menos" : `Ver todos (${avisos.length} produtos)`}
+                  <i className={`fas fa-chevron-${verTodosAvisos ? "up" : "down"}`} aria-hidden />
+                </button>
+              ) : null}
             </section>
           ) : null}
 
@@ -385,7 +444,7 @@ export default function MeuEstoque() {
                 <span>Produtos da loja</span>
                 <select
                   value={form.produtoId}
-                  onChange={(e) => setForm({ ...form, produtoId: e.target.value, tamanho: "" })}
+                  onChange={(e) => setForm({ ...FORM_VAZIO, produtoId: e.target.value, quantidade: form.quantidade })}
                 >
                   <option value="">Escolha…</option>
                   {produtosPorCategoria.map(([categoria, lista]) => (
@@ -401,20 +460,44 @@ export default function MeuEstoque() {
                 </select>
               </label>
               <label>
+                <span>Cor</span>
+                <select value={form.cor} onChange={(e) => setForm({ ...form, cor: e.target.value })}>
+                  <option value="">{(produtoEscolhido?.cores || []).length ? "Escolha…" : COR_UNICA}</option>
+                  {(produtoEscolhido?.cores || []).map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                  <option value={OUTRO}>Outra cor…</option>
+                </select>
+              </label>
+              {form.cor === OUTRO ? (
+                <label>
+                  <span>Qual cor?</span>
+                  <input
+                    type="text"
+                    maxLength={60}
+                    placeholder="Ex.: Preto"
+                    value={form.corOutra}
+                    onChange={(e) => setForm({ ...form, corOutra: e.target.value })}
+                  />
+                </label>
+              ) : null}
+              <label>
                 <span>Tamanho / numeração</span>
                 <select value={form.tamanho} onChange={(e) => setForm({ ...form, tamanho: e.target.value })}>
-                  <option value="">Todos os tamanhos juntos</option>
+                  <option value="">{(produtoEscolhido?.tamanhos || []).length ? "Escolha…" : TAMANHO_UNICO}</option>
                   {(produtoEscolhido?.tamanhos || []).map((t) => (
                     <option key={t} value={t}>
                       {t}
                     </option>
                   ))}
-                  <option value={OUTRO_TAMANHO}>Outro…</option>
+                  <option value={OUTRO}>Outro…</option>
                 </select>
               </label>
-              {form.tamanho === OUTRO_TAMANHO ? (
+              {form.tamanho === OUTRO ? (
                 <label>
-                  <span>Qual?</span>
+                  <span>Qual tamanho?</span>
                   <input
                     type="text"
                     maxLength={30}
@@ -439,16 +522,8 @@ export default function MeuEstoque() {
               </button>
             </form>
             <p className="est-dica">
-              Já existe a linha desse produto e tamanho? A quantidade é somada. Produto novo? Cadastre em{" "}
-              <Link to={`/loja/${user.shopSlug}/produto/novo`}>Novo produto</Link> e depois adicione aqui.
-              {produtos.length > produtosNaPlanilha ? (
-                <>
-                  {" "}
-                  <button type="button" className="est-link" onClick={criarPlanilha} disabled={salvando}>
-                    Trazer produtos que ainda não estão na planilha
-                  </button>
-                </>
-              ) : null}
+              Já existe essa cor e tamanho no produto? A quantidade é somada (e a variação volta a ficar ativa).
+              Produto novo? Cadastre em <Link to={`/loja/${user.shopSlug}/produto/novo`}>Novo produto</Link>.
             </p>
           </section>
           ) : null}
@@ -468,6 +543,7 @@ export default function MeuEstoque() {
                     <thead>
                       <tr>
                         <th>Produto</th>
+                        <th>Cor</th>
                         <th>Tamanho</th>
                         <th>Em estoque</th>
                         <th>Vendidos</th>
@@ -497,7 +573,8 @@ export default function MeuEstoque() {
                                 </span>
                               </span>
                             </td>
-                            <td>{l.tamanho || "Todos"}</td>
+                            <td>{l.cor}</td>
+                            <td>{l.tamanho}</td>
                             <td>
                               <span className="est-qtd">
                                 <button
@@ -540,10 +617,10 @@ export default function MeuEstoque() {
                                 type="button"
                                 className="est-remover"
                                 onClick={() => setRemover(l)}
-                                aria-label={`Remover ${rotuloLinha(l)} da planilha`}
-                                title="Remover da planilha"
+                                aria-label={`Desativar ${rotuloLinha(l)}`}
+                                title="Desativar variação (some da loja)"
                               >
-                                <i className="fas fa-trash-alt" aria-hidden />
+                                <i className="fas fa-eye-slash" aria-hidden />
                               </button>
                             </td>
                           </tr>
@@ -554,7 +631,33 @@ export default function MeuEstoque() {
                 </div>
               </div>
             ))}
+            {grupos.length === 0 ? (
+              <p className="est-dica">
+                Nenhuma variação ativa ainda. Use "Adicionar peças" para criar a primeira (produto + cor + tamanho).
+              </p>
+            ) : null}
           </section>
+
+          {linhasDesativadas.length > 0 ? (
+            <section className="est-card est-desativadas">
+              <h2>
+                <i className="fas fa-eye-slash" aria-hidden /> Variações desativadas
+              </h2>
+              <p className="est-dica">Não aparecem na loja. O histórico de vendas continua salvo.</p>
+              <ul>
+                {linhasDesativadas.map((l) => (
+                  <li key={l.id}>
+                    <span>
+                      {rotuloLinha(l)} · {l.quantidade} peça(s)
+                    </span>
+                    <button type="button" className="est-btn est-btn--ghost" disabled={salvando} onClick={() => reativar(l)}>
+                      <i className="fas fa-eye" aria-hidden /> Reativar
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
         </>
       )}
 
@@ -676,10 +779,12 @@ export default function MeuEstoque() {
                     />
                     <span>
                       {m.tipo === "venda"
-                        ? `Venda: ${m.quantidade}× ${m.produto}${m.tamanho ? ` (${m.tamanho})` : ""} saiu do estoque`
-                        : `${m.tipo === "reembolso" ? "Reembolso" : "Cancelamento"}: ${m.quantidade}× ${m.produto}${
-                            m.tamanho ? ` (${m.tamanho})` : ""
-                          } voltou para o estoque`}
+                        ? `Venda: ${m.quantidade}× ${rotuloLinha({ produto: { nome: m.produto }, cor: m.cor, tamanho: m.tamanho })} saiu do estoque`
+                        : `${m.tipo === "reembolso" ? "Reembolso" : "Cancelamento"}: ${m.quantidade}× ${rotuloLinha({
+                            produto: { nome: m.produto },
+                            cor: m.cor,
+                            tamanho: m.tamanho,
+                          })} voltou para o estoque`}
                       {m.codigo ? <small> · #{m.codigo}</small> : null}
                     </span>
                     <b>
@@ -718,13 +823,13 @@ export default function MeuEstoque() {
 
       <ConfirmDialog
         open={!!remover}
-        title="Remover da planilha?"
+        title="Desativar esta variação?"
         message={
           remover
-            ? `${rotuloLinha(remover)} sai da planilha. Se não sobrar outra linha desse produto, ele fica sem estoque na vitrine.`
+            ? `${rotuloLinha(remover)} deixa de aparecer na loja e não pode mais ser comprada. O histórico de vendas fica salvo e você pode reativar depois.`
             : ""
         }
-        confirmLabel="Sim, remover"
+        confirmLabel="Sim, desativar"
         cancelLabel="Cancelar"
         danger
         onCancel={() => setRemover(null)}

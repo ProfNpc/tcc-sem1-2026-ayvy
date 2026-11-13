@@ -15,6 +15,7 @@ IF OBJECT_ID(N'dbo.favoritos', N'U') IS NOT NULL DROP TABLE dbo.favoritos;
 IF OBJECT_ID(N'dbo.historico_compras', N'U') IS NOT NULL DROP TABLE dbo.historico_compras;
 IF OBJECT_ID(N'dbo.pagamentos', N'U') IS NOT NULL DROP TABLE dbo.pagamentos;
 IF OBJECT_ID(N'dbo.pedido_produtos', N'U') IS NOT NULL DROP TABLE dbo.pedido_produtos;
+IF OBJECT_ID(N'dbo.produto_variacoes', N'U') IS NOT NULL DROP TABLE dbo.produto_variacoes;
 IF OBJECT_ID(N'dbo.pedido_endereco_entrega', N'U') IS NOT NULL DROP TABLE dbo.pedido_endereco_entrega;
 IF OBJECT_ID(N'dbo.pedidos', N'U') IS NOT NULL DROP TABLE dbo.pedidos;
 IF OBJECT_ID(N'dbo.produto_imagens', N'U') IS NOT NULL DROP TABLE dbo.produto_imagens;

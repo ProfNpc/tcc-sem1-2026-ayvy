@@ -130,13 +130,14 @@ export default function LoginScreen({ onLogin }) {
 
 const styles = StyleSheet.create({
   background: { flex: 1, backgroundColor: '#48214d', overflow: 'hidden' },
+  // absoluteFill (o absoluteFillObject saiu no React Native 0.88: espalhar ele não fazia nada).
   backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     width: '100%',
     height: '100%',
   },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(15, 7, 19, 0.42)',
     pointerEvents: 'none',
   },

@@ -125,6 +125,17 @@ public class Produto {
                 .map(ProdutoVariacao::getTamanho).distinct().collect(Collectors.toList());
     }
 
+    /**
+     * Estoque real do produto = soma das variações ativas (vai no JSON como "estoqueDisponivel").
+     * Use este campo para mostrar "esgotado"; o campo "estoque" da tabela produtos não é mais atualizado.
+     */
+    @Transient
+    @JsonProperty(value = "estoqueDisponivel", access = JsonProperty.Access.READ_ONLY)
+    public int getEstoqueDisponivel() {
+        if (variacoes == null) return 0;
+        return variacoes.stream().filter(ProdutoVariacao::isAtivo).mapToInt(ProdutoVariacao::getEstoque).sum();
+    }
+
     /** Preço com o desconto aplicado (vai no JSON como "precoFinal"); é o valor cobrado no checkout. */
     @Transient
     public BigDecimal getPrecoFinal() {

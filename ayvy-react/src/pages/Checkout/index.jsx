@@ -18,6 +18,7 @@ import {
   listEnderecos,
 } from "../../services/pedidosApi";
 import { linhaPrecisaOpcoes } from "../../utils/cartImport";
+import { montarItensDoCheckout } from "../../utils/checkoutItens";
 import { numeroPedidoLabel } from "../../utils/pedidoNumero";
 import { formatCardExpiry, formatCardNumber, formatCep } from "../../utils/cartHelpers";
 import { listPaymentMethods } from "../../utils/paymentMethodsStore";
@@ -409,20 +410,11 @@ export default function Checkout() {
       return;
     }
 
-    const apiItems = cart
-      .map((line) => {
-        const raw = line.apiId ?? line.productId;
-        const produtoId = Number(raw);
-        return {
-          produtoId: Number.isFinite(produtoId) && produtoId > 0 ? produtoId : null,
-          quantidade: line.quantity || 1,
-          cor: line.color || null,
-          tamanho: line.size || null,
-        };
-      })
-      .filter((i) => i.produtoId != null);
-
-    if (apiItems.length !== cart.length || apiItems.length === 0) {
+    const semApi = cart.filter((line) => {
+      const id = Number(line.apiId ?? line.productId);
+      return !(Number.isFinite(id) && id > 0);
+    });
+    if (semApi.length > 0 || cart.length === 0) {
       setError(
         "Há itens no carrinho que não estão na API (catálogo antigo/mock). Remova-os, compre produtos cadastrados pelo lojista e tente de novo.",
       );
@@ -431,6 +423,8 @@ export default function Checkout() {
 
     setSaving(true);
     try {
+      // Estoque por variação: cada item vai com o produtoVariacaoId da cor + tamanho escolhidos.
+      const apiItems = await montarItensDoCheckout(cart);
       const cep = String(addr.cep || "").replace(/\D/g, "");
       const pedido = await checkoutPedido({
         usuarioId: user.id,

@@ -79,7 +79,8 @@ export function montarImportacao(itens, produtosApi, carrinhoAtual) {
       avisos.push(`O produto ${nome} não está mais disponível e não foi adicionado.`);
       continue;
     }
-    const estoque = Math.max(0, Number(p.estoque) || 0);
+    // Estoque real = soma das variações ativas (o campo "estoque" do produto ficou desatualizado).
+    const estoque = Math.max(0, Number(p.estoqueDisponivel) || 0);
     if (estoque === 0) {
       avisos.push(`O produto ${nome} está esgotado e não foi adicionado.`);
       continue;

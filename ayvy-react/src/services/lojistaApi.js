@@ -26,6 +26,13 @@ import {
   registrarEnvioPedido,
 } from "./pedidosApi";
 import { precosDoProduto } from "./shopApi";
+import {
+  ativarVariacao,
+  atualizarVariacao,
+  criarVariacao,
+  desativarVariacao,
+  listarVariacoes,
+} from "./variacoesApi";
 import { resolveImageUrl } from "../utils/imageUrl";
 import { numeroPedidoLabel } from "../utils/pedidoNumero";
 import { formatBRL } from "../utils/cartHelpers";
@@ -95,7 +102,7 @@ export function mapApiProdutoToCard(p) {
     img,
     images: img ? [img] : [],
     description: p.descricao || "",
-    stock: (p.estoque ?? 0) > 0 ? "disponivel" : "indisponivel",
+    stock: Number(p.estoqueDisponivel) > 0 ? "disponivel" : "indisponivel",
     slug: p.slug,
     status: String(p.status || "").toLowerCase(),
     ...(Array.isArray(p.cores) ? { colors: p.cores } : {}),
@@ -112,6 +119,56 @@ function descontoDoForm(form) {
   const n = Math.round(Number(String(form.discountPercent ?? "").replace(",", ".")));
   if (!Number.isFinite(n) || n <= 0) return 0;
   return Math.min(90, n);
+}
+
+/** Sem cor ou sem tamanho escolhidos, a variação usa estes nomes (a API exige os dois). */
+export const COR_UNICA = "Única";
+export const TAMANHO_UNICO = "Único";
+
+/** Chave de uma variação no formulário (cor + tamanho, sem diferença de maiúsculas). */
+export function chaveVariacao(cor, tamanho) {
+  return `${String(cor).trim().toLowerCase()}|${String(tamanho).trim().toLowerCase()}`;
+}
+
+/** Todas as combinações cor × tamanho do formulário, com a quantidade digitada de cada uma. */
+export function combinacoesDoForm(form) {
+  const cores = cleanList(form.colors).length ? cleanList(form.colors) : [COR_UNICA];
+  const tamanhos = cleanList(form.sizes).length ? cleanList(form.sizes) : [TAMANHO_UNICO];
+  const lista = [];
+  for (const cor of cores) {
+    for (const tamanho of tamanhos) {
+      const n = Math.round(Number(form.variacoes?.[chaveVariacao(cor, tamanho)]));
+      lista.push({ cor, tamanho, estoque: Number.isFinite(n) && n > 0 ? n : 0 });
+    }
+  }
+  return lista;
+}
+
+/**
+ * Deixa as variações do produto iguais ao formulário: cria as novas, atualiza a quantidade,
+ * reativa as que voltaram e DESATIVA as que saíram (não apaga: podem estar em pedidos antigos).
+ */
+async function sincronizarVariacoes(produtoId, form) {
+  const desejadas = combinacoesDoForm(form);
+  const existentes = await listarVariacoes(produtoId).catch(() => []);
+  const porChave = new Map((existentes || []).map((v) => [chaveVariacao(v.cor, v.tamanho), v]));
+  const usadas = new Set();
+  for (const d of desejadas) {
+    const chave = chaveVariacao(d.cor, d.tamanho);
+    usadas.add(chave);
+    const atual = porChave.get(chave);
+    if (!atual) {
+      await criarVariacao(produtoId, d);
+      continue;
+    }
+    if (!atual.ativo) await ativarVariacao(produtoId, atual.id);
+    if (Number(atual.estoque) !== d.estoque || atual.cor !== d.cor || atual.tamanho !== d.tamanho) {
+      await atualizarVariacao(produtoId, atual.id, d);
+    }
+  }
+  for (const [chave, v] of porChave) {
+    if (!usadas.has(chave) && v.ativo) await desativarVariacao(produtoId, v.id);
+  }
 }
 
 function categoriasExtrasDoForm(form, categoriaId) {
@@ -158,10 +215,7 @@ export async function salvarProdutoLojista({
     descricao: String(form.description || form.descricao || "").trim() || null,
     preco,
     descontoPercentual: descontoDoForm(form),
-    estoque: Number(form.stock ?? form.estoque) || 0,
     imagemPrincipalUrl: caminhos[0] || null,
-    cores: cleanList(form.colors),
-    tamanhos: cleanList(form.sizes),
     status,
     lojista: { id: Number(lojistaId) },
     categoriasExtras: categoriasExtrasDoForm(form, categoriaId),
@@ -169,6 +223,8 @@ export async function salvarProdutoLojista({
   if (categoriaId) payload.categoria = { id: Number(categoriaId) };
 
   const created = await createProduto(payload);
+  // Estoque, cores e tamanhos agora ficam nas variações (POST /produtos/{id}/variacoes).
+  await sincronizarVariacoes(created.id, form);
   for (let i = 0; i < caminhos.length; i++) {
     try {
       await addProdutoImagem(created.id, { caminho: caminhos[i], ordem: i });
@@ -184,10 +240,14 @@ export async function salvarProdutoLojista({
  * Imagens existentes vêm com `caminho` (e `imagemId` quando estão na galeria).
  */
 export async function carregarProdutoParaEdicao(produtoId) {
-  const [produto, galeria] = await Promise.all([
+  const [produto, galeria, variacoes] = await Promise.all([
     getProduto(produtoId),
     listProdutoImagens(produtoId).catch(() => []),
+    listarVariacoes(produtoId).catch(() => []),
   ]);
+  const ativas = (variacoes || []).filter((v) => v.ativo);
+  const coresDoProduto = [...new Set(ativas.map((v) => v.cor))].filter((c) => c !== COR_UNICA);
+  const tamanhosDoProduto = [...new Set(ativas.map((v) => v.tamanho))].filter((t) => t !== TAMANHO_UNICO);
 
   let images = (galeria || []).map((img) => ({
     id: `img-${img.id}`,
@@ -217,10 +277,10 @@ export async function carregarProdutoParaEdicao(produtoId) {
         ? preco.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
         : "",
       discountPercent: produto.descontoPercentual ? String(produto.descontoPercentual) : "",
-      stock: produto.estoque != null ? String(produto.estoque) : "",
       extraCategoryIds: (produto.categoriasExtras || []).map((c) => String(c.id)),
-      colors: Array.isArray(produto.cores) ? produto.cores : [],
-      sizes: Array.isArray(produto.tamanhos) ? produto.tamanhos : [],
+      colors: coresDoProduto,
+      sizes: tamanhosDoProduto,
+      variacoes: Object.fromEntries(ativas.map((v) => [chaveVariacao(v.cor, v.tamanho), String(v.estoque)])),
     },
   };
 }
@@ -271,15 +331,14 @@ export async function atualizarProdutoLojista({
     descricao: String(form.description || "").trim(),
     preco,
     descontoPercentual: descontoDoForm(form),
-    estoque: Number(form.stock) || 0,
     imagemPrincipalUrl: caminhos[0],
-    cores: cleanList(form.colors),
-    tamanhos: cleanList(form.sizes),
     categoriasExtras: categoriasExtrasDoForm(form, categoriaId),
   };
   if (categoriaId) payload.categoria = { id: Number(categoriaId) };
 
-  return updateProduto(produtoId, payload);
+  const atualizado = await updateProduto(produtoId, payload);
+  await sincronizarVariacoes(produtoId, form);
+  return atualizado;
 }
 
 export async function publicarProdutoApi(produtoId) {

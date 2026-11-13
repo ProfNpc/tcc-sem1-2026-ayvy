@@ -15,7 +15,7 @@ export default function ProductCard({ product, favorite, onToggleFavorite, onAdd
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const image = resolveImageUrl(product.imagemPrincipalUrl);
-  const outOfStock = Number(product.estoque) <= 0;
+  const outOfStock = Number(product.estoqueDisponivel) <= 0;
 
   function handleAdd() {
     if (onAdd(product)) {

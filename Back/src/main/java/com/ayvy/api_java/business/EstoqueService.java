@@ -46,9 +46,9 @@ public class EstoqueService {
     public record Mes(String mes, int vendidos, double valorVendido, int devolvidos, double valorDevolvido) {}
 
     public record Movimento(String tipo, String produto, String tamanho, int quantidade, double valor,
-                            LocalDateTime data, String codigo) {}
+                            LocalDateTime data, String codigo, String cor) {}
 
-    public record ItemVendido(Integer produtoId, String tamanho, int vendidos) {}
+    public record ItemVendido(Integer produtoId, String tamanho, int vendidos, String cor, Integer produtoVariacaoId) {}
 
     public record Relatorio(List<Mes> meses, List<Movimento> movimentos, List<ItemVendido> porItem,
                             int totalVendidos, double valorVendido, int totalDevolvidos, double valorDevolvido) {}
@@ -81,10 +81,13 @@ public class EstoqueService {
                 mes[1] += valor;
                 totalVendidos += qtd;
                 valorVendido += valor;
-                String chave = item.getProduto().getId() + "|" + (item.getTamanho() == null ? "" : item.getTamanho());
+                Integer variacaoId = item.getProdutoVariacaoId();
+                String chave = variacaoId != null ? "v" + variacaoId
+                        : item.getProduto().getId() + "|" + (item.getTamanho() == null ? "" : item.getTamanho())
+                        + "|" + (item.getCor() == null ? "" : item.getCor());
                 ItemVendido atual = porItem.get(chave);
                 porItem.put(chave, new ItemVendido(item.getProduto().getId(), item.getTamanho(),
-                        (atual == null ? 0 : atual.vendidos()) + qtd));
+                        (atual == null ? 0 : atual.vendidos()) + qtd, item.getCor(), variacaoId));
             } else {
                 mes[2] += qtd;
                 mes[3] += valor;
@@ -93,7 +96,7 @@ public class EstoqueService {
             }
             String tipo = vendido ? "venda" : pedido.getStatus() == StatusPedido.reembolsado ? "reembolso" : "cancelamento";
             movimentos.add(new Movimento(tipo, item.getProduto().getNome(), item.getTamanho(), qtd, valor, data,
-                    item.getCodigoPedidoLoja()));
+                    item.getCodigoPedidoLoja(), item.getCor()));
         }
 
         List<Mes> meses = new ArrayList<>();

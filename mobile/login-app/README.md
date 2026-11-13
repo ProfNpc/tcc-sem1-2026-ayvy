@@ -26,6 +26,16 @@ npx expo start          # depois "w" para abrir no navegador ou o QR code no Exp
 
 O segundo comando instala o pacote que mede as barras do Android (status e navegação), para o layout não ficar por baixo delas.
 
+O app usa o **Expo SDK 58** (React Native 0.88). O Expo Go do celular precisa ser da mesma versão. Se aparecer "Project is incompatible with this version of Expo Go", o Expo Go foi atualizado para um SDK mais novo (no iPhone não dá para instalar versão antiga). Atualize o projeto:
+
+```sh
+npm install expo@^NOVA_VERSAO.0.0     # ex.: expo@^59.0.0
+npx expo install --fix                 # ajusta react, react-native e os outros pacotes
+npx expo-doctor                        # confere se ficou tudo compatível
+```
+
+Depois de atualizar, abra o app e confira as telas: API removida do React Native às vezes **não dá erro**, só some da tela. Ex.: no 0.88 saiu `StyleSheet.absoluteFillObject` (use `StyleSheet.absoluteFill`); o login mostrava só a imagem de fundo.
+
 ## 2. Para onde o app aponta (API e site)
 
 Crie o `.env.local` (copie de `.env.example`) e reinicie com `npx expo start --clear`.
@@ -53,7 +63,7 @@ O app usa os arquivos **da raiz** de `login-app/`. A pasta `src/` e os arquivos 
 | [`CartScreen.js`](CartScreen.js) | carrinho e "Finalizar compra no site" | [checkoutOnSite](CartScreen.js#L57) |
 | [`OrdersScreen.js`](OrdersScreen.js) | histórico de pedidos e linha do tempo | [OrdersScreen](OrdersScreen.js#L123) |
 | [`AccountScreen.js`](AccountScreen.js) | conta e sair | [AccountScreen](AccountScreen.js#L23) |
-| [`CartContext.js`](CartContext.js) | carrinho salvo na conta | [CartProvider](CartContext.js#L37) |
+| [`CartContext.js`](CartContext.js) | carrinho salvo na conta | [CartProvider](CartContext.js#L38) |
 | [`ProductCard.js`](ProductCard.js) · [`StoreScreen.js`](StoreScreen.js) · [`StoreAvatar.js`](StoreAvatar.js) · [`HorizontalList.js`](HorizontalList.js) | peças da tela inicial | — |
 | [`TabBar.js`](TabBar.js) · [`ScreenHeader.js`](ScreenHeader.js) | barra de abas e título | — |
 | [`api.js`](api.js) | toda a comunicação com a API | [apiRequest](api.js#L30) |
@@ -63,9 +73,9 @@ O app usa os arquivos **da raiz** de `login-app/`. A pasta `src/` e os arquivos 
 
 | O quê | Onde | Como funciona |
 |---|---|---|
-| Carregar o carrinho da conta | [loadFromAccount](CartContext.js#L45) | `GET /carrinho?usuarioId=` ao entrar, ao voltar para o app e a cada 20 s |
-| Salvar cada mudança | [saveAccountCart](CartContext.js#L72) | `PUT /carrinho` com o carrinho inteiro (meio segundo depois do último clique) |
-| Linha com cor/tamanho do site | [lineKey](CartContext.js#L19) | mesma peça em outra cor/tamanho é outra linha |
+| Carregar o carrinho da conta | [loadFromAccount](CartContext.js#L46) | `GET /carrinho?usuarioId=` ao entrar, ao voltar para o app e a cada 20 s |
+| Salvar cada mudança | [saveAccountCart](CartContext.js#L73) | `PUT /carrinho` com o carrinho inteiro (meio segundo depois do último clique) |
+| Linha com cor/tamanho do site | [lineKey](CartContext.js#L20) | mesma peça em outra cor/tamanho é outra linha |
 | Favoritos | [toggleFavorite](HomeScreen.js#L335) · [refreshFavorites](HomeScreen.js#L214) | `GET/POST/DELETE /favoritos`; recarrega ao voltar para o app e a cada 20 s |
 
 ## 5. Chamadas da API

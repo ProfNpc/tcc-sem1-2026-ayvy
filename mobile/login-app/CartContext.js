@@ -9,9 +9,10 @@ const CartContext = createContext(null);
 const SAVE_DELAY_MS = 500;
 const REFRESH_INTERVAL_MS = 20000;
 
-// Quantidade máxima que se pode comprar de um produto (o estoque).
+// Quantidade máxima que se pode comprar de um produto: soma das variações ativas ("estoqueDisponivel").
+// O campo "estoque" do produto ficou desatualizado depois do estoque por variação.
 function stockLimit(product) {
-  const stock = Number(product?.estoque);
+  const stock = Number(product?.estoqueDisponivel);
   return Number.isFinite(stock) ? stock : Infinity;
 }
 

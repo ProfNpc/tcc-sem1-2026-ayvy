@@ -1,6 +1,7 @@
 /**
  * Cadastro e edição de produto do lojista (/loja/:slug/produto/novo e /:productId/editar).
- * Fotos, nome, descrição, categoria (CategoriaPicker), preço, estoque, cores e tamanhos.
+ * Fotos, nome, descrição, categoria (CategoriaPicker), preço, desconto, cores, tamanhos e o
+ * estoque de cada variação (cor × tamanho), salvo em /produtos/{id}/variacoes.
  * Salva via services/lojistaApi.js (POST/PUT /produtos, /upload, /produtos/{id}/imagens).
  */
 import { useEffect, useState } from "react";
@@ -12,6 +13,10 @@ import { isShopOwner } from "../../../utils/mockAuthUsers";
 import { normalizeSlugParam } from "../../../utils/lojistaData";
 import { formatBRL } from "../../../utils/cartHelpers";
 import {
+  COR_UNICA,
+  TAMANHO_UNICO,
+  chaveVariacao,
+  combinacoesDoForm,
   atualizarProdutoLojista,
   carregarProdutoParaEdicao,
   listCategorias,
@@ -44,7 +49,7 @@ const EMPTY_FORM = {
   categoryId: "",
   price: "",
   discountPercent: "",
-  stock: "",
+  variacoes: {},
   extraCategoryIds: [],
   colors: [],
   sizes: [],
@@ -64,6 +69,7 @@ export default function LojaProdutoNovo() {
   const [colorInput, setColorInput] = useState("");
   const [sizeInput, setSizeInput] = useState("");
   const [extraAberta, setExtraAberta] = useState(false);
+  const [preencherTodas, setPreencherTodas] = useState("");
   const [sucesso, setSucesso] = useState(null);
   const [saving, setSaving] = useState(false);
   const [categorias, setCategorias] = useState([]);
@@ -116,6 +122,22 @@ export default function LojaProdutoNovo() {
 
   if (!isShopOwner(user, slug)) {
     return <Navigate to={lojaPath} replace />;
+  }
+
+  function atualizarEstoqueVariacao(chave, valor) {
+    const limpo = String(valor).replace(/\D/g, "").slice(0, 6);
+    setForm((prev) => ({ ...prev, variacoes: { ...prev.variacoes, [chave]: limpo } }));
+  }
+
+  function aplicarEmTodas() {
+    const limpo = String(preencherTodas).replace(/\D/g, "").slice(0, 6);
+    if (!limpo) return;
+    setForm((prev) => ({
+      ...prev,
+      variacoes: Object.fromEntries(
+        combinacoesDoForm(prev).map((c) => [chaveVariacao(c.cor, c.tamanho), limpo]),
+      ),
+    }));
   }
 
   function updateField(field, value) {
@@ -288,6 +310,8 @@ export default function LojaProdutoNovo() {
     }
   }
 
+  const combinacoes = combinacoesDoForm(form);
+  const estoqueTotal = combinacoes.reduce((soma, c) => soma + c.estoque, 0);
   const tamanhosExtras = form.sizes.filter((s) => !TAMANHOS_PADRAO.includes(s));
   const categoriaAtual = categorias.find((c) => String(c.id) === String(form.categoryId));
   const textoCategoria = [categoriaAtual?.slug, categoriaAtual?.categoriaPai?.slug].join(" ");
@@ -506,18 +530,10 @@ export default function LojaProdutoNovo() {
               </p>
             ) : null}
 
-            <div className="produto-novo-row">
-              <label className="produto-novo-field">
-                <span>Estoque (unidades)</span>
-                <input
-                  type="number"
-                  min={0}
-                  placeholder="10"
-                  value={form.stock}
-                  onChange={(e) => updateField("stock", e.target.value)}
-                />
-              </label>
-            </div>
+            <p className="produto-novo-estoque-total">
+              <i className="fas fa-boxes-stacked" aria-hidden /> Estoque total:{" "}
+              <strong>{estoqueTotal} peça(s)</strong> — soma da tabela "Estoque por tamanho e cor" abaixo.
+            </p>
           </section>
 
           <section className="produto-novo-card">
@@ -604,6 +620,61 @@ export default function LojaProdutoNovo() {
                   Adicionar
                 </button>
               </div>
+            </div>
+          </section>
+
+          <section className="produto-novo-card">
+            <h2>
+              <i className="fas fa-boxes-stacked" aria-hidden /> Estoque por tamanho e cor
+            </h2>
+            <p className="produto-novo-hint">
+              Cada combinação é uma variação com o seu próprio estoque (ex.: Preto 38 e Preto 39 são
+              diferentes). Sem cor ou sem tamanho escolhidos, usamos "{COR_UNICA}" / "{TAMANHO_UNICO}".
+            </p>
+            <div className="produto-novo-var-preencher">
+              <span>Preencher todas com</span>
+              <input
+                type="number"
+                min={0}
+                placeholder="Ex.: 10"
+                value={preencherTodas}
+                onChange={(e) => setPreencherTodas(e.target.value)}
+              />
+              <button type="button" className="produto-novo-chip" onClick={aplicarEmTodas}>
+                Aplicar
+              </button>
+            </div>
+            <div className="produto-novo-var-tabela-wrap">
+              <table className="produto-novo-var-tabela">
+                <thead>
+                  <tr>
+                    <th>Cor</th>
+                    <th>Tamanho</th>
+                    <th>Quantidade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {combinacoes.map((c) => {
+                    const chave = chaveVariacao(c.cor, c.tamanho);
+                    return (
+                      <tr key={chave}>
+                        <td>{c.cor}</td>
+                        <td>{c.tamanho}</td>
+                        <td>
+                          <input
+                            type="number"
+                            min={0}
+                            placeholder="0"
+                            aria-label={`Quantidade de ${c.cor} ${c.tamanho}`}
+                            value={form.variacoes?.[chave] ?? ""}
+                            onChange={(e) => atualizarEstoqueVariacao(chave, e.target.value)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </section>
 

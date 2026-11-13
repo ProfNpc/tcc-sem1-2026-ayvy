@@ -25,4 +25,9 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
 
     List<Produto> findByCategoriasExtrasId(Integer categoriaId);
 
+    /** Soma 1 direto no banco: duas visitas ao mesmo tempo não se perdem (ler + salvar perderia uma). */
+    @Modifying
+    @Query("UPDATE Produto p SET p.visualizacoesTotal = COALESCE(p.visualizacoesTotal, 0) + 1 WHERE p.id = :id")
+    int somarVisualizacao(@Param("id") Integer id);
+
 }

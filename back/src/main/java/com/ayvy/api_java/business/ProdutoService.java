@@ -94,6 +94,10 @@ public class ProdutoService {
         if (produto.getStatusProduto() == null) {
             produto.setStatusProduto(StatusProduto.rascunho);
         }
+        // Coluna antiga (NOT NULL): o estoque real fica nas variações. Com @Builder.Default o Jackson deixa null.
+        if (produto.getEstoque() == null) {
+            produto.setEstoque(0);
+        }
     }
 
     public Produto buscarProdutoPorId(Integer id) {

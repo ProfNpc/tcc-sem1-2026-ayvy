@@ -32,7 +32,11 @@ public class VisualizacoesProdutoService {
 
     @Transactional
     public void registrarVisualizacao(VisualizacoesRequest request) {
-        Usuario usuario = usuarioRepository.findById(request.getUsuarioId())
+        if (request.getProdutoId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Campo 'produtoId' é obrigatório");
+        }
+        // Visitante sem login também conta no total (ranking): grava com usuario = null.
+        Usuario usuario = request.getUsuarioId() == null ? null : usuarioRepository.findById(request.getUsuarioId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
         Produto produto = produtoRepository.findById(request.getProdutoId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto não encontrado"));
@@ -45,8 +49,7 @@ public class VisualizacoesProdutoService {
 
         repository.saveAndFlush(visuaualizacao);
 
-        produto.setVisualizacoesTotal(produto.getVisualizacoesTotal() + 1);
-        produtoRepository.save(produto);
+        produtoRepository.somarVisualizacao(produto.getId());
     }
 
         public long contarPorProduto(Integer produtoId){
