@@ -13,4 +13,5 @@ public class CarrinhoItemRequest {
     private Integer quantidade;
     private String cor;
     private String tamanho;
+    private Integer produtoVariacaoId;
 }

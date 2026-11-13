@@ -17,10 +17,12 @@ import java.util.List;
 public class ProdutoVariacaoService {
     private final ProdutoVariacaoRepository produtoVariacaoRepository;
     private final ProdutoRepository produtoRepository;
+    private final CarrinhoService carrinhoService;
 
-    public ProdutoVariacaoService(ProdutoVariacaoRepository produtoVariacaoRepository, ProdutoRepository produtoRepository) {
+    public ProdutoVariacaoService(ProdutoVariacaoRepository produtoVariacaoRepository, ProdutoRepository produtoRepository, CarrinhoService carrinhoService) {
         this.produtoVariacaoRepository = produtoVariacaoRepository;
         this.produtoRepository = produtoRepository;
+        this.carrinhoService = carrinhoService;
     }
 
     //Listar todas as variações de um produto
@@ -110,6 +112,8 @@ public class ProdutoVariacaoService {
         variacao.setAtivo(false);
 
         produtoVariacaoRepository.save(variacao);
+
+        carrinhoService.removerVariacaoDosCarrinhos(variacaoId);
     }
 
     //Ativar novamente

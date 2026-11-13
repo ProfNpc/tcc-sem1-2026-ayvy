@@ -26,6 +26,11 @@ import java.util.Optional;
  * manualmente e identifica os pedidos gerados por uma chave estável para que
  * o bootstrap possa ser executado repetidamente sem duplicações.
  * Cores, tamanhos e estoque dos produtos são criados como ProdutoVariacoes.
+ *
+ * Estoque da demonstração: toda variação nasce com bastante peça (mínimo ESTOQUE_MINIMO_VARIACAO),
+ * para não aparecer aviso de "estoque baixo" (o front avisa quando restam {@value #ESTOQUE_BAIXO_FRONT}
+ * ou menos). Só as variações listadas em CENARIOS ficam com estoque baixo ou esgotadas de propósito,
+ * para mostrar na apresentação. Os pedidos demo nunca mexem nessas variações.
  */
 @Component
 @Profile("!prod")
@@ -34,6 +39,21 @@ public class DemoDataBootstrap implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DemoDataBootstrap.class);
     private static final String MARCADOR_PEDIDO = "AYVY_DEMO_SEED_V1";
+
+    /** Mesmo limite do front (MeuEstoque/index.jsx, ESTOQUE_BAIXO): 1 ou 2 peças = baixo, 0 = esgotado. */
+    private static final int ESTOQUE_BAIXO_FRONT = 2;
+
+    /** Estoque mínimo de qualquer variação "normal" da demonstração. */
+    private static final int ESTOQUE_MINIMO_VARIACAO = 20;
+
+    /** Variação que fica com estoque baixo (1 ou 2) ou esgotada (0) na apresentação. */
+    private record Cenario(String slugProduto, String tamanho, int estoque) {}
+
+    private static final List<Cenario> CENARIOS = List.of(
+            new Cenario("tenis-samba-vinho", "38", 2),      // estoque baixo
+            new Cenario("jaqueta-couro-marrom", "G", 1),    // estoque baixo
+            new Cenario("top-canelado", "GG", 0)            // esgotada
+    );
 
     private final UsuarioRepository usuarioRepository;
     private final ClienteRepository clienteRepository;
@@ -92,6 +112,7 @@ public class DemoDataBootstrap implements ApplicationRunner {
         List<Produto> produtos = completarCatalogo();
         criarFavoritos(clientes, produtos);
         criarPedidosDemonstracao(clientes, lojas);
+        sincronizarEstoqueDosProdutos();
 
         log.info("DemoDataBootstrap concluído: {} clientes, {} lojas e {} produtos verificados.",
                 clientes.size(), lojas.size(), produtoRepository.count());
@@ -296,19 +317,50 @@ public class DemoDataBootstrap implements ApplicationRunner {
 
     /**
      * Cria uma variação para cada combinação tamanho x cor do produto, caso ele ainda não tenha nenhuma.
-     * O estoque total informado é dividido entre as variações (mínimo de 2 peças cada, para os pedidos demo).
+     * Cada variação nasce com pelo menos ESTOQUE_MINIMO_VARIACAO peças (o parâmetro estoqueTotal é só
+     * uma referência: se dividido pelas variações der mais que isso, usa o maior). As variações em
+     * CENARIOS nascem com o estoque baixo/esgotado definido lá.
      */
     private void garantirVariacoes(Produto produto, List<String> tamanhos, List<String> cores, int estoqueTotal) {
         if (!produtoVariacaoRepository.findByProdutoId(produto.getId()).isEmpty()) return;
         List<String> listaTamanhos = (tamanhos == null || tamanhos.isEmpty()) ? List.of("Único") : tamanhos;
         List<String> listaCores = (cores == null || cores.isEmpty()) ? List.of("Conforme imagem") : cores;
         int totalVariacoes = listaTamanhos.size() * listaCores.size();
-        int porVariacao = Math.max(2, estoqueTotal / totalVariacoes);
+        int porVariacao = Math.max(ESTOQUE_MINIMO_VARIACAO, estoqueTotal / totalVariacoes);
+        int indice = 0;
         for (String tamanho : listaTamanhos) {
             for (String cor : listaCores) {
+                Integer cenario = estoqueDoCenario(produto.getSlug(), tamanho);
+                // Pequena variação por posição (0 a 5) para os números não ficarem todos iguais.
+                int estoque = cenario != null ? cenario : porVariacao + (indice % 6);
                 produtoVariacaoRepository.save(ProdutoVariacao.builder()
                         .produto(produto).tamanho(tamanho).cor(cor)
-                        .estoque(porVariacao).ativo(true).build());
+                        .estoque(estoque).ativo(true).build());
+                indice++;
+            }
+        }
+    }
+
+    /** Estoque fixo do cenário de demonstração para essa variação, ou null se ela for "normal". */
+    private Integer estoqueDoCenario(String slugProduto, String tamanho) {
+        for (Cenario cenario : CENARIOS) {
+            if (cenario.slugProduto().equals(slugProduto) && cenario.tamanho().equalsIgnoreCase(tamanho)) {
+                return cenario.estoque();
+            }
+        }
+        return null;
+    }
+
+    /** Mantém produtos.estoque igual à soma das variações ativas (nenhum outro ponto do back recalcula). */
+    private void sincronizarEstoqueDosProdutos() {
+        for (Produto produto : produtoRepository.findAll()) {
+            List<ProdutoVariacao> variacoes = produtoVariacaoRepository.findByProdutoId(produto.getId());
+            if (variacoes.isEmpty()) continue;
+            int total = variacoes.stream().filter(ProdutoVariacao::isAtivo)
+                    .mapToInt(ProdutoVariacao::getEstoque).sum();
+            if (produto.getEstoque() == null || produto.getEstoque() != total) {
+                produto.setEstoque(total);
+                produtoRepository.save(produto);
             }
         }
     }
@@ -411,10 +463,11 @@ public class DemoDataBootstrap implements ApplicationRunner {
                 List<Produto> produtosLoja = produtoRepository.findByLojistaId(loja.getId());
                 if (produtosLoja.isEmpty()) continue;
                 Produto produto = produtosLoja.get(Math.floorMod(ci + si, produtosLoja.size()));
-                List<ProdutoVariacao> variacoes = produtoVariacaoRepository.findByProdutoIdAndAtivoTrue(produto.getId());
+                // Só usa variações com estoque folgado: as de cenário (baixo/esgotada) ficam intactas.
+                List<ProdutoVariacao> variacoes = produtoVariacaoRepository.findByProdutoIdAndAtivoTrue(produto.getId())
+                        .stream().filter(v -> v.getEstoque() > ESTOQUE_BAIXO_FRONT).toList();
                 if (variacoes.isEmpty()) continue;
                 ProdutoVariacao variacao = variacoes.get(Math.min(1, variacoes.size() - 1));
-                if (variacao.getEstoque() <= 0) variacao.setEstoque(5);
 
                 StatusPedido status = statusPorIndice[Math.floorMod(ci + si, statusPorIndice.length)];
                 // Pedido cancelado não consome estoque; os demais representam venda concluída/ativa.

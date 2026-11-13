@@ -29,6 +29,10 @@ public class CarrinhoItem {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
+    @ManyToOne
+    @JoinColumn(name = "produto_variacao_id")
+    private ProdutoVariacao produtoVariacao;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "produto_id", nullable = false)
     private Produto produto;
